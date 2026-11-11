@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>calibly Cover-Galerie v2</title>
+<style>
+:root{--bg:#16171b;--side:#1b1c21;--card:#212228;--card2:#2a2b32;--line:#2c2d34;--tx:#ececef;--mut:#8f8f99;--dim:#62626b;--or:#ff8a3d;--orD:#1a0d03;--bl:#6ea8ff;--gr:#5fcf80}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:2400px;background:#e7e3dc;font-family:"Segoe UI",system-ui,sans-serif;color:#1d1d1f;padding:40px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px}
+.head h1{font-size:44px;font-weight:700;letter-spacing:-.5px}.head h1 span{color:#c2571a}
+.head p{font-size:18px;color:#5b5750;margin-top:6px}
+.head .legend{display:flex;gap:26px;font-size:15px;color:#5b5750}
+.head .legend i{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:7px;vertical-align:-2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+.full{grid-column:1/3}
+.card{background:#fbfaf8;border-radius:18px;padding:22px 20px 20px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.card h2{font-size:24px;font-weight:650;display:flex;align-items:center;gap:12px}
+.card h2 .n{min-width:36px;height:36px;padding:0 10px;border-radius:18px;background:#c2571a;color:#fff;display:grid;place-items:center;font-size:17px}
+.card .desc{font-size:15px;color:#5b5750;margin:6px 0 16px 50px;line-height:1.45}
+.notes{display:flex;gap:14px;margin:14px 0 0 0}
+.notes div{flex:1;background:#f2eee7;border-radius:10px;padding:10px 13px;font-size:13.5px;line-height:1.45;color:#46423b}
+.notes b{display:block;color:#1d1d1f;margin-bottom:2px}
+.notes em{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#1d1d1f;color:#fff;font-size:11px;font-weight:700;margin-right:6px}
+
+.win{background:var(--bg);color:var(--tx);border-radius:10px;overflow:hidden;border:1px solid #0b0b0d;display:flex;flex-direction:column;font-size:12px;position:relative}
+.tb{height:30px;display:flex;align-items:center;padding:0 12px;gap:8px;background:#0f1013;color:#9a9aa3;flex:none}
+.tb .dots{margin-left:auto;display:flex;gap:14px;opacity:.6}
+.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.body{flex:1;display:flex;min-height:0;position:relative}
+
+/* sidebar */
+.side{width:220px;background:var(--side);padding:16px 10px;display:flex;flex-direction:column;gap:1px;flex:none;border-right:1px solid #111215}
+.logo{font-size:20px;font-weight:700;padding:0 9px 14px;letter-spacing:-.3px}.logo span{color:var(--or)}
+.nav{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;color:#b8b8c0;font-size:12.5px}
+.nav.on{background:#2b2c33;color:#fff}.nav.on .i{color:var(--or)}
+.nav em{margin-left:auto;font-style:normal;font-size:11px;color:var(--dim)}
+.nav .dot{width:9px;height:9px;border-radius:3px;margin:0 3px}
+.sep{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);padding:14px 10px 5px;display:flex}
+.sep span{margin-left:auto;font-size:14px;line-height:10px}
+.store{margin-top:auto;padding:10px;font-size:11px;color:var(--mut)}
+.store .pb{margin:6px 0 8px}
+
+/* bits */
+.pb{height:4px;border-radius:2px;background:#34353c;overflow:hidden;position:relative}.pb i{position:absolute;left:0;top:0;bottom:0;background:var(--or)}
+.pb.b i{background:var(--bl)}
+.chip{padding:6px 12px;border-radius:20px;background:var(--card);color:#c9c9d0;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.chip.on{background:var(--or);color:var(--orD);font-weight:650}
+.chip.ol{background:none;border:1px solid var(--line)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;font-weight:600;white-space:nowrap}
+.btn.or{background:var(--or);color:var(--orD)}.btn.bl{background:var(--bl);color:#06152b}
+.btn.gh{background:var(--card2);color:#ddd}
+.kbd{font-family:Consolas,monospace;font-size:10px;border:1px solid #3a3b42;border-bottom-width:2px;border-radius:4px;padding:0 4px;color:var(--mut)}
+.sec{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
+.sec h3{font-size:15px;font-weight:650}.sec span{color:var(--mut)}
+.sec .more{margin-left:auto;color:var(--mut);display:flex;gap:6px;align-items:center}
+.circ{width:26px;height:26px;border-radius:50%;background:var(--card);display:grid;place-items:center;color:#bbb}
+
+/* covers / tiles */
+.cov{position:absolute;inset:0;border-radius:4px;overflow:hidden;color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:.6em .6em .7em;font-family:Georgia,serif;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.cov b{font-size:1em;line-height:1.12;font-weight:700;padding-right:2.6em}
+.cov small{font-size:.6em;opacity:.8;font-family:"Segoe UI",sans-serif}
+.g1{background:linear-gradient(160deg,#274b6d,#0f2236)}.g2{background:linear-gradient(160deg,#9b3d2a,#4a160c)}
+.g3{background:linear-gradient(160deg,#3f6b4a,#16301d)}.g4{background:linear-gradient(160deg,#c49a3a,#6e4c10)}
+.g5{background:linear-gradient(160deg,#5c3f78,#25133a)}.g6{background:linear-gradient(160deg,#2f6f73,#0d3234)}
+.g7{background:linear-gradient(160deg,#a8475f,#4d1424)}.g8{background:linear-gradient(160deg,#575d66,#1f2328)}
+.g9{background:linear-gradient(160deg,#c46a2b,#5d2a07)}.g10{background:linear-gradient(160deg,#3a4f9c,#141e4d)}
+.g11{background:linear-gradient(160deg,#7a6a50,#352b1b)}.g12{background:linear-gradient(160deg,#4d7e8f,#173743)}
+.tile{min-width:0;position:relative}
+.art{position:relative;aspect-ratio:2/3;font-size:15px;border-radius:5px}
+.art .blur{position:absolute;inset:0;border-radius:4px;filter:blur(10px) brightness(.6);transform:scale(.96);opacity:.9}
+.art.sq .cov{inset:auto 0 auto 0;top:50%;transform:translateY(-50%);aspect-ratio:1/1;height:auto}
+.art.sq{background:#101114;border-radius:4px;overflow:hidden}
+.art.stack::before,.art.stack::after{content:"";position:absolute;inset:0;border-radius:4px;background:#3a3b44;transform:translate(6px,-6px);z-index:0}
+.art.stack::after{transform:translate(3px,-3px);background:#4a4b55}
+.art.stack .cov{z-index:1}
+.bd{position:absolute;top:.45em;right:.45em;display:flex;flex-direction:column;gap:3px;z-index:3}
+.bd span{width:20px;height:20px;border-radius:50%;background:rgba(10,10,12,.7);display:grid;place-items:center;backdrop-filter:blur(2px)}
+.bd span.e{color:var(--bl)}.bd span.a{color:var(--or)}
+.bd .i{width:11px;height:11px;stroke-width:2.2}
+.pr{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;flex-direction:column;gap:1px;border-radius:0 0 4px 4px;overflow:hidden}
+.pr i{display:block;height:3px;background:rgba(0,0,0,.5);position:relative}.pr i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--w)}
+.pr i.e::after{background:var(--bl)}.pr i.a::after{background:var(--or)}
+.hasflag .cov b{margin-top:1.5em}
+.flag{position:absolute;left:.45em;top:.45em;z-index:3;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:4px;font-family:"Segoe UI",sans-serif;letter-spacing:.3px}
+.flag.done{background:var(--gr);color:#062010}.flag.new{background:var(--or);color:var(--orD)}.flag.miss{background:#e05a5a;color:#fff}.flag.ser{background:rgba(10,10,12,.75);color:#ddd}
+.tile .t{font-size:12px;font-weight:600;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .s{font-size:11px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hov{position:absolute;inset:0;z-index:4;background:rgba(8,8,10,.62);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;outline:2px solid #fff;outline-offset:2px}
+.hov .hb{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:20px;font-size:11px;font-weight:650;width:76%;justify-content:center;font-family:"Segoe UI",sans-serif}
+.hov .mn{position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.15);display:grid;place-items:center;font-size:14px;line-height:0}
+.hov .ck{position:absolute;bottom:8px;left:8px;width:18px;height:18px;border-radius:50%;border:2px solid #fff}
+.sel .art{outline:2px solid var(--or);outline-offset:3px}
+.sel .tick{position:absolute;left:-6px;top:-6px;z-index:5;width:22px;height:22px;border-radius:50%;background:var(--or);color:var(--orD);display:grid;place-items:center;box-shadow:0 0 0 3px var(--bg)}
+.sel .tick .i{width:13px;height:13px;stroke-width:3}
+.miss .art .cov{filter:grayscale(1) brightness(.6)}
+
+/* now playing */
+.np{height:68px;background:#0f1013;display:flex;align-items:center;padding:0 18px;gap:16px;border-top:1px solid #26272d;flex:none}
+.np .sc{width:46px;height:46px;border-radius:4px;flex:none}
+.np .bp{width:38px;height:38px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center}
+.np .scrub{flex:1;position:relative}
+.np .scrub .pb{height:5px}
+.np .ticks{position:absolute;inset:0;display:flex;justify-content:space-between;pointer-events:none}
+.np .ticks b{width:2px;height:5px;background:#0f1013}
+
+/* ===== A main ===== */
+.wA{width:2280px;height:1010px}
+.wA .main{flex:1;padding:16px 24px 0;overflow:hidden;min-width:0;position:relative}
+.topbar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.srch{flex:0 0 420px;background:var(--card);border-radius:9px;padding:8px 12px;color:#777;display:flex;gap:8px;align-items:center}
+.srch .kbd{margin-left:auto}
+.seg2{display:flex;background:var(--card);border-radius:8px;padding:3px}
+.seg2 span{padding:4px 8px;border-radius:6px;color:#aaa;display:grid;place-items:center}.seg2 span.on{background:#3a3b43;color:#fff}
+.dens{display:flex;align-items:center;gap:8px;color:var(--mut)}
+.dens .rail{width:90px;height:4px;background:#34353c;border-radius:2px;position:relative}.dens .rail b{position:absolute;left:55%;top:-5px;width:14px;height:14px;border-radius:50%;background:#ddd}
+.filters{display:flex;align-items:center;gap:8px;margin-bottom:18px}
+.vl{width:1px;height:22px;background:var(--line);margin:0 4px}
+.contRow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.cc{background:var(--card);border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center;position:relative;overflow:hidden}
+.cc .ccov{width:64px;height:92px;position:relative;flex:none;font-size:10px}
+.cc .ccov.sq{height:64px}
+.cc .t{font-weight:650;font-size:13.5px}.cc .s{color:var(--mut);font-size:11.5px;margin:3px 0 8px;display:flex;gap:5px;align-items:center}
+.cc .pl{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none}
+.cc .pl.a{background:var(--or);color:var(--orD)}.cc .pl.e{background:var(--bl);color:#06152b}
+.cc .src{font-size:10.5px;color:var(--dim);margin-top:5px}
+.gridA{display:grid;grid-template-columns:repeat(10,1fr);gap:20px 18px}
+.bulk{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:#2e2f37;border:1px solid #3c3d45;border-radius:12px;padding:8px 10px 8px 16px;display:flex;align-items:center;gap:6px;box-shadow:0 12px 30px rgba(0,0,0,.5);z-index:10;white-space:nowrap}
+.bulk b{margin-right:10px}
+.bulk span{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:7px;color:#ddd}
+.bulk span.x{color:#ff8f8f}
+.callout{position:absolute;z-index:20;background:#c2571a;color:#fff;font-weight:700;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;box-shadow:0 0 0 4px rgba(194,87,26,.35)}
+
+/* ===== B drawer ===== */
+.wH{width:1100px;height:720px}
+.bgGrid{position:absolute;inset:0;padding:16px;display:grid;grid-template-columns:repeat(6,1fr);gap:16px;align-content:start;filter:brightness(.4) blur(.5px)}
+.drawer{position:absolute;right:0;top:0;bottom:0;width:560px;background:#1c1d22;border-left:1px solid #2c2d34;box-shadow:-20px 0 50px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden}
+.dHero{height:250px;position:relative;padding:22px;display:flex;gap:18px;flex:none}
+.dHero .bg{position:absolute;inset:-30px;filter:blur(30px) brightness(.55)}
+.dHero .x{position:absolute;right:14px;top:12px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.35);display:grid;place-items:center}
+.dHero .dc{width:136px;height:204px;position:relative;font-size:17px;flex:none}
+.dHero .info{position:relative;padding-top:4px;min-width:0}
+.dHero h1{font-family:Georgia,serif;font-size:27px;line-height:1.1}
+.dHero .by{color:#ddd;margin:6px 0 2px;font-size:12.5px}.dHero .by b{color:#fff}
+.dHero .ser{color:#cfcfd6;font-size:12px;display:flex;gap:6px;align-items:center;margin-top:4px}
+.stars{color:#f2c14e;letter-spacing:1px;margin-top:8px;font-size:13px}
+.dHero .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.dHero .tags span{background:rgba(255,255,255,.12);border-radius:12px;padding:2px 9px;font-size:11px}
+.dBody{padding:16px 22px;flex:1;overflow:hidden}
+.fcards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fc{background:var(--card);border-radius:10px;padding:11px 12px;border:1px solid transparent}
+.fc.e{border-color:rgba(110,168,255,.35)}.fc.a{border-color:rgba(255,138,61,.4)}
+.fc .h{display:flex;align-items:center;gap:7px;font-weight:650;font-size:12.5px}
+.fc.e .h .i{color:var(--bl)}.fc.a .h .i{color:var(--or)}
+.fc .h small{margin-left:auto;font-weight:500;color:var(--mut);font-size:10.5px}
+.fc .m{color:var(--mut);font-size:11px;margin:4px 0 8px}
+.fc .btn{width:100%;justify-content:center;margin-top:9px;padding:7px}
+.syncbar{display:flex;gap:8px;align-items:center;background:rgba(95,207,128,.1);color:#8fe0a8;border-radius:8px;padding:8px 11px;margin:10px 0 12px;font-size:11.5px}
+.syncbar u{margin-left:auto;text-decoration:none;font-weight:650;color:#fff;background:rgba(95,207,128,.25);padding:3px 9px;border-radius:6px}
+.tabs{display:flex;gap:20px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.tabs span{padding:7px 0;color:var(--mut);font-weight:600}.tabs span.on{color:#fff;box-shadow:inset 0 -2px 0 var(--or)}
+.blurb{color:#c4c4cc;line-height:1.55;font-size:12px;margin-bottom:10px}
+.kv{display:grid;grid-template-columns:90px 1fr 90px 1fr;gap:5px 10px;font-size:11.5px}
+.kv dt{color:var(--mut)}
+.dAct{display:flex;gap:6px;padding:12px 22px;border-top:1px solid var(--line);flex:none}
+
+/* ===== C fullscreen player ===== */
+.wC .stage{flex:1;position:relative;display:flex;overflow:hidden}
+.wC .bgx{position:absolute;inset:-60px;filter:blur(60px) brightness(.45) saturate(1.3)}
+.wC .tl{position:absolute;top:14px;left:18px;right:18px;display:flex;align-items:center;gap:10px;color:#ddd;z-index:2}
+.wC .lft{position:relative;width:580px;padding:56px 40px 20px;display:flex;flex-direction:column;align-items:center}
+.wC .big{width:290px;height:290px;position:relative;font-size:26px}
+.wC .tt{font-size:20px;font-weight:700;margin-top:18px}
+.wC .st{color:#c8c8d0;margin-top:3px}
+.wC .scr{width:100%;margin-top:18px}
+.wC .scr .bar{height:6px;border-radius:3px;background:rgba(255,255,255,.18);position:relative}
+.wC .scr .bar i{position:absolute;left:0;top:0;bottom:0;width:42%;background:var(--or);border-radius:3px}
+.wC .scr .bar b{position:absolute;top:-4px;width:14px;height:14px;border-radius:50%;background:#fff;left:calc(42% - 7px)}
+.wC .scr .chap{position:absolute;top:-1px;width:2px;height:8px;background:rgba(0,0,0,.5)}
+.wC .tm{display:flex;justify-content:space-between;color:#c8c8d0;font-size:11px;margin-top:6px}
+.wC .ctl{display:flex;align-items:center;gap:26px;margin:16px 0}
+.wC .ctl .i{width:24px;height:24px}
+.wC .ctl .pp{width:64px;height:64px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center}
+.wC .row{display:flex;gap:8px}
+.wC .row span{background:rgba(255,255,255,.1);border-radius:9px;padding:7px 11px;display:flex;align-items:center;gap:6px;font-weight:600}
+.wC .row span small{font-weight:400;color:#c8c8d0}
+.wC .rgt{position:relative;flex:1;margin:56px 22px 22px 0;background:rgba(15,16,19,.55);border-radius:14px;padding:14px 16px;overflow:hidden;backdrop-filter:blur(10px)}
+.chl{display:grid;grid-template-columns:28px 1fr 64px;padding:7px 8px;border-radius:7px;color:#cfcfd6;align-items:center}
+.chl.done{color:#7d7d86}.chl.cur{background:rgba(255,138,61,.16);color:#fff;font-weight:650}
+.chl .n{color:#7d7d86}.chl.cur .n{color:var(--or)}
+.chl .d{text-align:right;font-size:11px;color:#9a9aa3}
+.chl .mini{grid-column:2/4;height:3px;background:rgba(255,255,255,.12);border-radius:2px;margin-top:6px;position:relative}.chl .mini i{position:absolute;left:0;top:0;bottom:0;width:45%;background:var(--or);border-radius:2px}
+
+/* ===== D drag & drop ===== */
+.wD .main{flex:1;padding:16px 20px;position:relative;overflow:hidden}
+.gridD{display:grid;grid-template-columns:repeat(6,1fr);gap:18px 16px}
+.dim{position:absolute;inset:0;background:rgba(12,12,15,.55);z-index:5}
+.hint{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:8;background:#2e2f37;border:1px solid #44454e;border-radius:10px;padding:9px 16px;display:flex;gap:18px;align-items:center;white-space:nowrap;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.hint span{display:flex;gap:7px;align-items:center;color:#ddd}.hint b{color:#fff}
+.target{position:relative;z-index:7}
+.target .art{outline:3px solid var(--or);outline-offset:4px;box-shadow:0 0 0 10px rgba(255,138,61,.18),0 0 40px rgba(255,138,61,.5);border-radius:5px}
+.target .lab{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);z-index:6;background:var(--or);color:var(--orD);font-weight:700;border-radius:8px;padding:6px 9px;font-size:11px;text-align:center;width:130%;line-height:1.3}
+.ghost{position:absolute;z-index:9;display:flex;flex-direction:column;gap:4px;transform:rotate(-4deg)}
+.ghost div{background:#f1f1f4;color:#222;border-radius:7px;padding:6px 10px;font-weight:600;display:flex;gap:7px;align-items:center;box-shadow:0 10px 24px rgba(0,0,0,.5);font-size:11.5px}
+.ghost div .i{color:#c2571a}
+.cursor{position:absolute;z-index:10;width:18px;height:18px}
+.queue{position:absolute;right:16px;bottom:16px;width:330px;background:#24252b;border:1px solid #393a42;border-radius:12px;z-index:8;box-shadow:0 16px 40px rgba(0,0,0,.55);overflow:hidden}
+.queue .qh{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #33343b;font-weight:650}
+.queue .qh small{margin-left:auto;color:var(--mut);font-weight:400}
+.qi{display:grid;grid-template-columns:30px 1fr auto;gap:10px;padding:8px 12px;align-items:center;border-bottom:1px solid #2d2e35}
+.qi .qc{width:30px;height:40px;position:relative;font-size:6px}
+.qi .f{font-weight:600}.qi .f small{display:block;color:var(--mut);font-weight:400;font-size:10.5px}
+.qi .st{font-size:10.5px;font-weight:650}
+.ring{width:22px;height:22px;border-radius:50%;background:conic-gradient(var(--or) var(--p),#3a3b42 0);display:grid;place-items:center}.ring::after{content:"";width:16px;height:16px;border-radius:50%;background:#24252b}
+
+/* ===== E edit modal ===== */
+.wE .back{position:absolute;inset:0;filter:brightness(.35) blur(1px);padding:16px;display:grid;grid-template-columns:repeat(7,1fr);gap:16px;align-content:start}
+.modal{position:absolute;left:36px;right:36px;top:26px;bottom:22px;background:#1e1f24;border:1px solid #33343b;border-radius:14px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.mh{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line)}
+.mh b{font-size:15px}.mh small{color:var(--mut)}
+.mb{flex:1;display:flex;min-height:0}
+.mcol{width:200px;padding:16px;border-right:1px solid var(--line);flex:none}
+.mcol .ec{width:168px;height:252px;position:relative;font-size:19px}
+.mcol .opt{margin-top:10px;display:flex;flex-direction:column;gap:5px}
+.mcol .opt span{background:var(--card);border-radius:7px;padding:6px 9px;display:flex;gap:7px;align-items:center;font-size:11px;color:#ccc}
+.mform{flex:1;padding:12px 16px;min-width:0}
+.mform .tabs{margin-bottom:12px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:9px 12px}
+.fl label{display:block;color:var(--mut);font-size:10.5px;margin-bottom:3px;display:flex;gap:5px;align-items:center}
+.fl div{background:#15161a;border:1px solid #34353c;border-radius:7px;padding:6px 9px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fl.w{grid-column:1/3}
+.fl div.hi{border-color:var(--or);box-shadow:0 0 0 3px rgba(255,138,61,.15)}
+.fl .lk{color:var(--gr)}
+.fl.ta div{height:58px;white-space:normal;line-height:1.45;color:#ccc}
+.chips2{display:flex;gap:5px;flex-wrap:wrap}.chips2 span{background:#2e2f37;border-radius:12px;padding:2px 8px;font-size:11px}
+.msug{width:300px;border-left:1px solid var(--line);padding:14px;background:#1a1b20;flex:none;overflow:hidden}
+.msug h4{font-size:12.5px;margin-bottom:8px;display:flex;justify-content:space-between}
+.sg{background:var(--card);border-radius:9px;padding:9px;margin-bottom:8px;display:flex;gap:9px;border:1px solid transparent}
+.sg.on{border-color:var(--or)}
+.sg .sc{width:38px;height:56px;position:relative;font-size:6px;flex:none}
+.sg .sc.sq{height:38px}
+.sg b{font-size:12px}.sg small{display:block;color:var(--mut);font-size:10.5px;line-height:1.4}
+.sg .m{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--gr)}
+.diff{font-size:11px;margin-top:6px}
+.diff div{display:grid;grid-template-columns:16px 60px 1fr;gap:4px;padding:3px 0;align-items:center;color:#ccc}
+.diff s{color:#9a6a6a}.diff ins{text-decoration:none;color:#8fe0a8}
+.mf{display:flex;gap:8px;align-items:center;padding:11px 18px;border-top:1px solid var(--line)}
+
+/* ===== F components ===== */
+.comp{display:flex;gap:26px;align-items:flex-start}
+.states{display:grid;grid-template-columns:repeat(10,1fr);gap:16px;flex:1;background:var(--bg);border-radius:12px;padding:18px 18px 16px}
+.states .tile .art{font-size:13px}
+.states .cap{margin-top:8px;font-size:11px;color:#bdbdc6;line-height:1.35;font-family:"Segoe UI",sans-serif}
+.states .cap b{display:block;color:#fff;font-size:11.5px}
+.side2{width:500px;display:flex;flex-direction:column;gap:14px;flex:none}
+.box{background:#f2eee7;border-radius:12px;padding:13px 16px;font-size:13.5px;color:#46423b;line-height:1.5}
+.box h5{font-size:14.5px;color:#1d1d1f;margin-bottom:6px}
+.sw{display:flex;gap:10px}
+.sw div{flex:1;border-radius:8px;height:52px;padding:6px 8px;font-size:11px;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;font-family:Consolas,monospace}
+.keys{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:5px 10px;font-size:13px;align-items:center}
+.keys code{font-family:Consolas,monospace;background:#fff;border:1px solid #d8d2c8;border-bottom-width:2px;border-radius:5px;padding:0 6px;font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+ <symbol id="book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></symbol>
+ <symbol id="head" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></symbol>
+ <symbol id="play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></symbol>
+ <symbol id="pause" viewBox="0 0 24 24"><path d="M7 4h3v16H7zM14 4h3v16h-3z" fill="currentColor" stroke="none"/></symbol>
+ <symbol id="prev" viewBox="0 0 24 24"><path d="M19 20L9 12l10-8zM5 19V5"/></symbol>
+ <symbol id="next" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8zM19 5v14"/></symbol>
+ <symbol id="back30" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
+ <symbol id="fwd30" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></symbol>
+ <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+ <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+ <symbol id="edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+ <symbol id="dev" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
+ <symbol id="gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+ <symbol id="up" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+ <symbol id="tri" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+ <symbol id="left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+ <symbol id="down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+ <symbol id="lib" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+ <symbol id="home" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+ <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+ <symbol id="mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></symbol>
+ <symbol id="layers" viewBox="0 0 24 24"><path d="M12 2l10 5-10 5L2 7z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></symbol>
+ <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+ <symbol id="sync" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></symbol>
+ <symbol id="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+ <symbol id="bm" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></symbol>
+ <symbol id="moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></symbol>
+ <symbol id="list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+ <symbol id="vol" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></symbol>
+ <symbol id="x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+ <symbol id="file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></symbol>
+ <symbol id="folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+ <symbol id="link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+ <symbol id="expand" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></symbol>
+ <symbol id="collapse" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+ <symbol id="trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15"/></symbol>
+ <symbol id="col" viewBox="0 0 24 24"><path d="M19 11H5M19 11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2M17 7H7M15 3H9"/></symbol>
+ <symbol id="filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></symbol>
+ <symbol id="img" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
+ <symbol id="dl" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+ <symbol id="queue" viewBox="0 0 24 24"><path d="M3 6h13M3 12h13M3 18h9M17 15l4 3-4 3z"/></symbol>
+ <symbol id="txt" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h10M4 18h7"/></symbol>
+ <symbol id="sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></symbol>
+</svg>
+
+<div class="head">
+ <div>
+  <h1>cali<span>bly</span> – Cover-Galerie, Version 2</h1>
+  <p>Vereinfacht als persönliches Tool · Hauptansicht, Detail, Player, Import, Metadaten und Bausteine · Prototyp, noch kein Programm</p>
+ </div>
+ <div class="legend"><span><i style="background:#6ea8ff"></i>Blau = Lesen / E-Book</span><span><i style="background:#ff8a3d"></i>Orange = Hören / Hörbuch</span><span><i style="background:#5fcf80"></i>Grün = fertig</span></div>
+</div>
+
+<div class="grid">
+
+<!-- ================= A ================= -->
+<div class="card full">
+ <h2><span class="n">A</span>Hauptansicht – Bibliothek</h2>
+ <p class="desc">Ein Regal für beide Medien. Jedes Cover zeigt auf einen Blick: welche Formate vorhanden sind, wie weit gelesen (blau) und gehört (orange) wurde, und ob es Teil einer Serie ist. Maus über ein Cover zeigt direkte Aktionen. Bewusst schlicht: keine Geräte, keine Sammlungen, keine Filter.</p>
+ <div class="win wA">
+  <div class="tb">calibly<span class="dots">— ☐ ✕</span></div>
+  <div class="body">
+   <div class="side">
+    <div class="logo">cali<span>bly</span></div>
+    <div class="nav"><svg class="i"><use href="#home"/></svg>Startseite</div>
+    <div class="nav on"><svg class="i"><use href="#lib"/></svg>Bibliothek<em>1.284</em></div>
+    <div class="nav"><svg class="i"><use href="#clock"/></svg>Weitermachen<em>6</em></div>
+    <div class="nav"><svg class="i"><use href="#layers"/></svg>Serien<em>48</em></div>
+    <div class="nav"><svg class="i"><use href="#user"/></svg>Autoren<em>402</em></div>
+    <div class="nav"><svg class="i"><use href="#mic"/></svg>Sprecher<em>96</em></div>
+    <div class="nav"><svg class="i"><use href="#bm"/></svg>Lesezeichen &amp; Notizen</div>
+    <div class="store">Bibliothek · 186 GB<div class="pb"><i style="width:62%;background:#555"></i></div><span style="display:flex;gap:7px;align-items:center;color:#b8b8c0"><svg class="i"><use href="#gear"/></svg>Einstellungen</span></div>
+   </div>
+   <div class="main">
+    <div class="topbar">
+     <div class="srch"><svg class="i"><use href="#search"/></svg>Titel, Autor, Sprecher, Serie, Schlagwort …<span class="kbd">Strg K</span></div>
+     <span class="btn or"><svg class="i"><use href="#plus"/></svg>Hinzufügen</span>
+     <span style="margin-left:auto"></span>
+     <div class="dens"><svg class="i" style="width:12px"><use href="#lib"/></svg><div class="rail"><b></b></div><svg class="i"><use href="#lib"/></svg></div>
+     <div class="seg2"><span class="on"><svg class="i"><use href="#lib"/></svg></span><span><svg class="i"><use href="#list"/></svg></span></div>
+     <span class="circ"><svg class="i"><use href="#gear"/></svg></span>
+    </div>
+    <div class="filters">
+     <span class="chip on">Alle · 1.284</span>
+     <span class="chip"><svg class="i" style="color:#6ea8ff"><use href="#book"/></svg>E-Books · 972</span>
+     <span class="chip"><svg class="i" style="color:#ff8a3d"><use href="#head"/></svg>Hörbücher · 312</span>
+     <span class="chip"><svg class="i" style="color:#6ea8ff"><use href="#book"/></svg><svg class="i" style="color:#ff8a3d;margin-left:-4px"><use href="#head"/></svg>Beides · 146</span>
+     <span style="margin-left:auto;color:var(--mut)">Sortieren</span><span class="chip ol">Zuletzt geöffnet <svg class="i" style="width:12px"><use href="#down"/></svg></span>
+     <span style="color:var(--mut)">Gruppieren</span><span class="chip ol">Keine <svg class="i" style="width:12px"><use href="#down"/></svg></span>
+    </div>
+    <div class="sec"><h3>Weitermachen</h3><span>gemeinsam für Lesen und Hören</span><span class="more"><span class="circ"><svg class="i"><use href="#left"/></svg></span><span class="circ"><svg class="i"><use href="#tri"/></svg></span></span></div>
+    <div class="contRow" id="cont"></div>
+    <div class="sec"><h3>Bibliothek</h3><span>1.284 Titel · 2 ausgewählt</span><span class="more">Alle auswählen <span class="kbd">Strg A</span></span></div>
+    <div class="gridA" id="gA"></div>
+    <div class="bulk"><b>2 ausgewählt</b><span><svg class="i"><use href="#edit"/></svg>Metadaten</span><span><svg class="i"><use href="#link"/></svg>Zu einem Werk verbinden</span><span class="x"><svg class="i"><use href="#trash"/></svg>Entfernen</span><span><svg class="i"><use href="#x"/></svg></span></div>
+    <div class="callout" style="left:1431px;top:300px">1</div>
+    <div class="callout" style="left:578px;top:292px">2</div>
+    <div class="callout" style="left:214px;top:420px">3</div>
+    <div class="callout" style="left:620px;top:420px">4</div>
+    <div class="callout" style="left:745px;top:862px">5</div>
+   </div>
+  </div>
+  <div class="np">
+   <div class="sc g1" style="position:relative"></div>
+   <div style="width:220px"><b>Moby Dick</b><div style="color:var(--mut);font-size:11px">Kap. 42 · Die Weiße des Wals · Andreas Lindner</div></div>
+   <svg class="i"><use href="#prev"/></svg><svg class="i"><use href="#back30"/></svg><span class="bp"><svg class="i"><use href="#pause"/></svg></span><svg class="i"><use href="#fwd30"/></svg><svg class="i"><use href="#next"/></svg>
+   <span style="color:var(--mut)">06:12</span>
+   <div class="scrub"><div class="pb" style="height:5px"><i style="width:42%"></i></div></div>
+   <span style="color:var(--mut)">−08:41</span>
+   <span style="color:var(--dim);font-size:11px">Kap. 42 / 135</span>
+   <span class="chip" style="padding:4px 10px">1,25×</span>
+   <span class="chip" style="padding:4px 10px"><svg class="i"><use href="#moon"/></svg>25 Min.</span>
+   <svg class="i"><use href="#vol"/></svg><svg class="i"><use href="#expand"/></svg>
+  </div>
+ </div>
+ <div class="notes">
+  <div><em>1</em><b>Hover-Aktionen</b>„Lesen“ und „Hören“ starten direkt dort, wo man aufgehört hat. „⋯“ öffnet weitere Aktionen, der Kreis wählt aus.</div>
+  <div><em>2</em><b>Format-Badges</b>Blaues Buch = E-Book, oranger Kopfhörer = Hörbuch. Zwei Badges = ein Werk mit beiden Formaten.</div>
+  <div><em>3</em><b>Quadratische Hörbuch-Cover</b>werden im einheitlichen 2:3-Raster mittig gezeigt, oben und unten mit unscharfem Cover gefüllt – das Raster bleibt ruhig.</div>
+  <div><em>4</em><b>Serien-Stapel</b>Mehrere Bände erscheinen als Stapel mit „Band 1–4“. Klick öffnet die Serie.</div>
+  <div><em>5</em><b>Mehrfachauswahl</b>Nur das Nötigste: Metadaten bearbeiten, „Zu einem Werk verbinden“ (E-Book + Hörbuch zusammenführen), Entfernen.</div>
+ </div>
+</div>
+
+<!-- ================= B ================= -->
+<div class="card">
+ <h2><span class="n">B</span>Detail-Ansicht (Klick auf Cover)</h2>
+ <p class="desc">Fährt von rechts herein, die Galerie bleibt im Hintergrund. Beide Formate stehen als eigene Karten nebeneinander, jeweils mit eigenem Fortschritt.</p>
+ <div class="win wH">
+  <div class="tb">calibly<span class="dots">— ☐ ✕</span></div>
+  <div class="body">
+   <div class="bgGrid" id="bgB"></div>
+   <div class="drawer">
+    <div class="dHero">
+     <div class="bg g12"></div>
+     <span class="x"><svg class="i"><use href="#x"/></svg></span>
+     <div class="dc"><div class="cov g12"><b>Der Hund der Baskervilles</b><small>A. C. Doyle</small></div></div>
+     <div class="info">
+      <h1>Der Hund der Baskervilles</h1>
+      <div class="by">von <b>Arthur Conan Doyle</b></div>
+      <div class="by">gelesen von <b>Maren Brandt</b></div>
+      <div class="ser"><svg class="i"><use href="#layers"/></svg>Sherlock Holmes · Band 3 von 9</div>
+      <div class="stars">★★★★<span style="color:#555">★</span> <span style="color:#aaa;font-size:11px;letter-spacing:0">4,0</span></div>
+      <div class="tags"><span>Krimi</span><span>Klassiker</span><span>Deutsch</span></div>
+     </div>
+    </div>
+    <div class="dBody">
+     <div class="fcards">
+      <div class="fc e"><div class="h"><svg class="i"><use href="#book"/></svg>E-Book<small>EPUB · 1,1 MB</small></div><div class="m">236 Seiten · Seite 107</div><div class="pb b"><i style="width:45%"></i></div><span class="btn bl"><svg class="i"><use href="#book"/></svg>Weiterlesen · 45 %</span></div>
+      <div class="fc a"><div class="h"><svg class="i"><use href="#head"/></svg>Hörbuch<small>M4B · 312 MB</small></div><div class="m">6 Std. 20 Min. · noch 2 Std. 40 Min.</div><div class="pb"><i style="width:58%"></i></div><span class="btn or"><svg class="i"><use href="#play"/></svg>Weiterhören · 58 %</span></div>
+     </div><div style="height:14px"></div>
+     <div class="tabs"><span class="on">Übersicht</span><span>Kapitel (15)</span><span>Notizen (4)</span><span>Dateien</span></div>
+     <p class="blurb">Auf dem Landsitz der Baskervilles stirbt Sir Charles unter rätselhaften Umständen – neben ihm die Spuren eines riesigen Hundes. Sherlock Holmes schickt Dr. Watson ins Moor von Devonshire …</p>
+     <dl class="kv"><dt>Erschienen</dt><dd>1902</dd><dt>Sprache</dt><dd>Deutsch</dd><dt>Verlag</dt><dd>Beispiel-Verlag</dd><dt>Audio-Verlag</dt><dd>Beispiel Audio</dd><dt>ISBN</dt><dd>978-3-0000-0000-1</dd><dt>Hinzugefügt</dt><dd>02.11.2026</dd></dl>
+    </div>
+    <div class="dAct"><span class="btn gh"><svg class="i"><use href="#edit"/></svg>Bearbeiten</span><span class="btn gh" style="margin-left:auto">⋯</span></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ================= C ================= -->
+<div class="card">
+ <h2><span class="n">C</span>Player – Vollbild</h2>
+ <p class="desc">Aufgeklappt aus der Player-Leiste. Hintergrund aus den Cover-Farben, Der Fortschrittsbalken bezieht sich auf das aktuelle Kapitel, rechts die Kapitelliste.</p>
+ <div class="win wH wC">
+  <div class="tb">calibly<span class="dots">— ☐ ✕</span></div>
+  <div class="stage">
+   <div class="bgx g1"></div>
+   <div class="tl"><svg class="i"><use href="#collapse"/></svg>Zurück zur Bibliothek<span style="margin-left:auto;display:flex;gap:16px;align-items:center"><svg class="i"><use href="#dev"/></svg><svg class="i"><use href="#vol"/></svg></span></div>
+   <div class="lft">
+    <div class="big"><div class="cov g1" style="inset:0"><b>Moby Dick</b><small>Herman Melville · Hörbuch ungekürzt</small></div></div>
+    <div class="tt">Kap. 42 · Die Weiße des Wals</div>
+    <div class="st">Moby Dick · Herman Melville · gelesen von Andreas Lindner</div>
+    <div class="scr"><div class="bar" id="cbar"><i></i><b></b></div><div class="tm"><span>06:12</span><span>Kapitel 42 von 135</span><span>−08:41</span></div><div class="tm" style="justify-content:center;color:#9a9aa3;margin-top:2px">Gesamt: 14:22:07 von 24:49:00 · 58 %</div></div>
+    <div class="ctl"><svg class="i"><use href="#prev"/></svg><svg class="i"><use href="#back30"/></svg><span class="pp"><svg class="i" style="width:26px;height:26px"><use href="#pause"/></svg></span><svg class="i"><use href="#fwd30"/></svg><svg class="i"><use href="#next"/></svg></div>
+    <div class="row"><span>1,25× <small>Tempo</small></span><span><svg class="i"><use href="#moon"/></svg>25 Min. <small>/ Kapitelende</small></span></div>
+   </div>
+   <div class="rgt">
+    <div class="tabs" style="margin-bottom:6px"><span class="on">Kapitel · 135</span></div>
+    <div id="chl"></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ================= D ================= -->
+<div class="card">
+ <h2><span class="n">D</span>Drag &amp; Drop direkt in die Galerie</h2>
+ <p class="desc">Auf eine leere Fläche ziehen = neuer Titel. Auf ein Cover ziehen = Format zu diesem Werk hinzufügen (z. B. Hörbuch zum vorhandenen E-Book). Unten rechts läuft der Import mit.</p>
+ <div class="win wH wD">
+  <div class="tb">calibly<span class="dots">— ☐ ✕</span></div>
+  <div class="body">
+   <div class="main">
+    <div class="gridD" id="gD"></div>
+    <div class="dim"></div>
+    <div class="hint"><span><svg class="i"><use href="#plus"/></svg><b>Freie Fläche</b> = als neuer Titel</span><span style="color:#555">|</span><span><svg class="i" style="color:#ff8a3d"><use href="#link"/></svg><b>Auf ein Cover</b> = Format ergänzen</span></div>
+    <div class="ghost" style="left:262px;top:205px"><div><svg class="i"><use href="#folder"/></svg>Dracula_Hoerbuch/ · 27 MP3</div></div>
+    <svg class="cursor" style="left:252px;top:192px" viewBox="0 0 24 24"><path d="M4 2l16 9-7 2-3 7z" fill="#fff" stroke="#000" stroke-width="1.2"/></svg>
+    <div class="queue">
+     <div class="qh"><svg class="i"><use href="#up"/></svg>Import<small>2 von 4 fertig</small></div>
+     <div class="qi"><div class="qc"><div class="cov g2"></div></div><div class="f">Krieg und Frieden<small>EPUB → neuer Titel</small></div><span class="st" style="color:#5fcf80">✓ fertig</span></div>
+     <div class="qi"><div class="qc"><div class="cov g11"></div></div><div class="f">Die Verwandlung<small>M4B → zu E-Book hinzugefügt</small></div><span class="st" style="color:#5fcf80">✓ fertig</span></div>
+     <div class="qi"><div class="qc"><div class="cov g8"></div></div><div class="f">Der Prozess<small>12 MP3 werden zusammengefasst …</small></div><span class="ring" style="--p:62%"></span></div>
+     <div class="qi" style="border:0"><div class="qc" style="background:#333;border-radius:3px"></div><div class="f">scan_042.pdf<small>Titel unbekannt – bitte prüfen</small></div><span class="st" style="color:#f2c14e">Prüfen</span></div>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ================= E ================= -->
+<div class="card">
+ <h2><span class="n">E</span>Metadaten bearbeiten</h2>
+ <p class="desc">Gleiche Maske für E-Book und Hörbuch. Gemeinsame Felder (🔗) gelten für beide Formate. Rechts Online-Vorschläge mit Vorher/Nachher – einzeln übernehmen.</p>
+ <div class="win wH wE">
+  <div class="tb">calibly<span class="dots">— ☐ ✕</span></div>
+  <div class="body">
+   <div class="back" id="bgE"></div>
+   <div class="modal">
+    <div class="mh"><svg class="i"><use href="#edit"/></svg><b>Metadaten bearbeiten</b><small>· Dracula · E-Book + Hörbuch</small><span style="margin-left:auto;display:flex;gap:10px;color:var(--mut);align-items:center"><svg class="i"><use href="#left"/></svg>3 / 12<svg class="i"><use href="#tri"/></svg><svg class="i" style="margin-left:8px;color:#ddd"><use href="#x"/></svg></span></div>
+    <div class="mb">
+     <div class="mcol">
+      <div class="ec"><div class="cov g7"><b>Dracula</b><small>Bram Stoker</small></div></div>
+      <div class="opt"><span><svg class="i"><use href="#img"/></svg>Bild wählen …</span><span><svg class="i"><use href="#dl"/></svg>Cover herunterladen</span><span><svg class="i"><use href="#head"/></svg>Hörbuch-Cover nutzen</span></div>
+     </div>
+     <div class="mform">
+      <div class="tabs"><span class="on">Allgemein</span><span>Hörbuch</span><span>E-Book</span><span>Kapitel abgleichen</span><span>Dateien</span></div>
+      <div class="fg">
+       <div class="fl w"><label><span class="lk">🔗</span>Titel</label><div>Dracula</div></div>
+       <div class="fl"><label><span class="lk">🔗</span>Autor</label><div>Bram Stoker</div></div>
+       <div class="fl"><label><svg class="i" style="width:11px;color:#ff8a3d"><use href="#head"/></svg>Sprecher</label><div class="hi">Maren Brandt|</div></div>
+       <div class="fl"><label><span class="lk">🔗</span>Serie · Band</label><div>—</div></div>
+       <div class="fl"><label><span class="lk">🔗</span>Sprache · Jahr</label><div>Deutsch · 1897</div></div>
+       <div class="fl"><label><svg class="i" style="width:11px;color:#6ea8ff"><use href="#book"/></svg>ISBN</label><div>978-3-0000-0000-2</div></div>
+       <div class="fl"><label><svg class="i" style="width:11px;color:#ff8a3d"><use href="#head"/></svg>Länge · Kapitel</label><div>15:28:00 · 27 Kapitel</div></div>
+       <div class="fl w"><label><span class="lk">🔗</span>Schlagwörter</label><div class="chips2"><span>Horror ×</span><span>Klassiker ×</span><span>Briefroman ×</span><span style="background:none;color:#888">+ hinzufügen</span></div></div>
+       <div class="fl w ta"><label><span class="lk">🔗</span>Beschreibung</label><div>Der junge Anwalt Jonathan Harker reist nach Transsilvanien, um mit dem geheimnisvollen Grafen Dracula einen Hauskauf in London abzuschließen …</div></div>
+      </div>
+     </div>
+     <div class="msug">
+      <h4>Online-Vorschläge <span style="color:var(--or);font-weight:500">Suchen ↻</span></h4>
+      <div class="sg on"><div class="sc"><div class="cov g7"></div></div><div><b>Dracula</b><small>Bram Stoker · 1897<br>Open Library · Google Books</small></div><span class="m">98 %</span></div>
+      <div class="sg"><div class="sc sq"><div class="cov g2"></div></div><div><b>Dracula (Hörbuch)</b><small>Bram Stoker · M. Brandt<br>Hörbuch-Katalog</small></div><span class="m">91 %</span></div>
+      <div class="diff">
+       <div><input type="checkbox" checked><span style="color:var(--mut)">Untertitel</span><span><ins>+ Ein Vampirroman</ins></span></div>
+       <div><input type="checkbox" checked><span style="color:var(--mut)">Verlag</span><span><s>—</s> → <ins>Beispiel-Verlag</ins></span></div>
+       <div><input type="checkbox"><span style="color:var(--mut)">Cover</span><span>höhere Auflösung (1600 px)</span></div>
+       <div><input type="checkbox" checked><span style="color:var(--mut)">Seiten</span><span><s>0</s> → <ins>512</ins></span></div>
+      </div>
+      <span class="btn gh" style="width:100%;justify-content:center;margin-top:10px">3 Felder übernehmen</span>
+     </div>
+    </div>
+    <div class="mf"><span style="color:var(--mut)">🔗 = gilt für E-Book und Hörbuch</span><span class="btn gh" style="margin-left:auto">Abbrechen</span><span class="btn or">Speichern</span></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ================= F ================= -->
+<div class="card full">
+ <h2><span class="n">F</span>Bausteine – Zustände eines Covers &amp; Grundregeln</h2>
+ <p class="desc">Ein Cover muss ohne Text erklären, was man besitzt und wo man steht. Diese Zustände decken die Fälle aus E-Book, Hörbuch und Import ab.</p>
+ <div class="comp">
+  <div class="states" id="states"></div>
+  <div class="side2">
+   <div class="box"><h5>Farben</h5>
+    <div class="sw"><div style="background:#16171b">#16171b<br>Grund</div><div style="background:#212228">#212228<br>Karte</div><div style="background:#6ea8ff;color:#06152b">#6ea8ff<br>Lesen</div><div style="background:#ff8a3d;color:#1a0d03">#ff8a3d<br>Hören</div><div style="background:#5fcf80;color:#062010">#5fcf80<br>Fertig</div></div>
+   </div>
+   <div class="box"><h5>Tastatur</h5>
+    <div class="keys"><code>Leertaste</code><span>Play / Pause</span><code>Strg K</code><span>Suche</span><code>Enter</code><span>Detail öffnen</span><code>L / H</code><span>Lesen / Hören</span><code>← →</code><span>±30 Sekunden</span><code>Strg A</code><span>Alle auswählen</span></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+</div>
+
+<script>
+// t, author, gradient, formats(e/a/ea), read%, listen%, extra
+const B=[
+ {t:"Moby Dick",a:"Herman Melville",g:"g1",f:"ea",r:31,l:58},
+ {t:"Dracula",a:"Bram Stoker",g:"g7",f:"a",l:33},
+ {t:"Faust I",a:"J. W. von Goethe",g:"g5",f:"e",r:42},
+ {t:"Sherlock Holmes",a:"A. C. Doyle",g:"g12",f:"ea",stack:"Band 1–4"},
+ {t:"Effi Briest",a:"Theodor Fontane",g:"g3",f:"e",done:1},
+ {t:"Frankenstein",a:"Mary Shelley",g:"g6",f:"a",nw:1},
+ {t:"Siddhartha",a:"Hermann Hesse",g:"g4",f:"e"},
+ {t:"Krieg und Frieden",a:"Leo Tolstoi",g:"g2",f:"ea",r:7,l:12,hov:1},
+ {t:"Stolz und Vorurteil",a:"Jane Austen",g:"g10",f:"a",l:80},
+ {t:"Die Verwandlung",a:"Franz Kafka",g:"g11",f:"ea",done:1},
+ {t:"Der Prozess",a:"Franz Kafka",g:"g8",f:"ea",r:12,sel:1},
+ {t:"Buddenbrooks",a:"Thomas Mann",g:"g9",f:"e"},
+ {t:"Die Schatzinsel",a:"R. L. Stevenson",g:"g3",f:"a",l:25,sel:1},
+ {t:"Anna Karenina",a:"Leo Tolstoi",g:"g10",f:"e"},
+ {t:"Grimms Märchen",a:"Brüder Grimm",g:"g4",f:"ea",r:64},
+ {t:"Der Steppenwolf",a:"Hermann Hesse",g:"g8",f:"e"},
+ {t:"Die Odyssee",a:"Homer",g:"g6",f:"a"},
+ {t:"Robinson Crusoe",a:"Daniel Defoe",g:"g11",f:"ea",l:90},
+ {t:"Der Zauberer von Oz",a:"L. F. Baum",g:"g9",f:"a",nw:1},
+ {t:"Die Elixiere des Teufels",a:"E. T. A. Hoffmann",g:"g7",f:"e",r:20},
+];
+const ic=(id,c="")=>`<svg class="i ${c}"><use href="#${id}"/></svg>`;
+function art(b){
+ const hasE=b.f.includes("e"),hasA=b.f.includes("a"),sq=!hasE&&hasA;
+ let h=`<div class="art${sq?' sq':''}${b.stack?' stack':''}${(b.done||b.nw||b.miss||b.stack)?' hasflag':''}">`;
+ if(sq)h+=`<div class="blur ${b.g}"></div>`;
+ h+=`<div class="cov ${b.g}"><b>${b.t}</b><small>${b.a}</small></div>`;
+ h+=`<div class="bd">${hasE?`<span class="e">${ic('book')}</span>`:''}${hasA?`<span class="a">${ic('head')}</span>`:''}</div>`;
+ if(b.done)h+=`<span class="flag done">✓ FERTIG</span>`;
+ else if(b.nw)h+=`<span class="flag new">NEU</span>`;
+ else if(b.miss)h+=`<span class="flag miss">DATEI FEHLT</span>`;
+ else if(b.stack)h+=`<span class="flag ser">${b.stack}</span>`;
+ if(b.r||b.l){h+=`<div class="pr">${b.r?`<i class="e" style="--w:${b.r}%"></i>`:''}${b.l?`<i class="a" style="--w:${b.l}%"></i>`:''}</div>`}
+ if(b.hov)h+=`<div class="hov"><span class="mn">⋯</span><span class="hb" style="background:#6ea8ff;color:#06152b">${ic('book')}Lesen</span><span class="hb" style="background:#ff8a3d;color:#1a0d03">${ic('play')}Hören</span><span class="ck"></span></div>`;
+ return h+`</div>`;
+}
+function tile(b,sub){
+ const s=sub!==undefined?sub:(b.stack?"4 Bände · Serie":b.a);
+ return `<div class="tile${b.sel?' sel':''}${b.miss?' miss':''}">${b.sel?`<span class="tick">${ic('check')}</span>`:''}${art(b)}<div class="t">${b.t}</div><div class="s">${s}</div></div>`;
+}
+document.getElementById('gA').innerHTML=B.map(b=>tile(b)).join('');
+
+// continue row
+const C=[
+ {b:B[0],m:"a",s:"Kap. 42 · noch 10 Std. 27 Min.",p:58,src:"zuletzt: heute, 08:14 · im Auto"},
+ {b:B[2],m:"e",s:"Seite 88 von 210",p:42,src:"zuletzt: gestern · Kobo Libra"},
+ {b:B[1],m:"a",s:"Kap. 9 · noch 9 Std. 2 Min.",p:33,src:"zuletzt: Mo., 22:40"},
+ {b:B[14],m:"e",s:"Rumpelstilzchen · S. 328",p:64,src:"zuletzt: So. · auch als Hörbuch"},
+];
+document.getElementById('cont').innerHTML=C.map(c=>{const sq=c.b.f==="a";return `<div class="cc"><div class="ccov${sq?' sq':''}"><div class="cov ${c.b.g}" style="font-size:9px"><b style="padding:0">${c.b.t}</b></div></div><div style="flex:1;min-width:0"><div class="t">${c.b.t}</div><div class="s">${ic(c.m==='a'?'head':'book')}${c.s}</div><div class="pb ${c.m==='e'?'b':''}"><i style="width:${c.p}%"></i></div><div class="src">${c.src}</div></div><span class="pl ${c.m}">${ic(c.m==='a'?'play':'book')}</span></div>`}).join('');
+
+// ticks
+
+
+// B background
+document.getElementById('bgB').innerHTML=B.slice(0,12).map(b=>tile(Object.assign({},b,{hov:0,sel:0}))).join('');
+// D grid
+const D=B.slice(0,12).map(b=>Object.assign({},b,{hov:0,sel:0}));
+document.getElementById('gD').innerHTML=D.map((b,i)=>i===1?
+ `<div class="tile target"><div class="art" style="position:relative">${art({t:"Dracula",a:"Bram Stoker",g:"g7",f:"e",r:10})}</div><div class="lab">Als Hörbuch zu<br>„Dracula“ hinzufügen</div><div class="t">Dracula</div><div class="s">Bram Stoker</div></div>`
+ :tile(b)).join('');
+// E background
+document.getElementById('bgE').innerHTML=B.slice(0,14).map(b=>tile(Object.assign({},b,{hov:0,sel:0}))).join('');
+
+// chapters C
+const ch=[[38,"Der Bund","10:41"],[39,"Erste Nachtwache","7:07"],[40,"Mitternacht, Vorderdeck","9:38"],[41,"Moby Dick","17:15"],[42,"Die Weiße des Wals","14:53"],[43,"Horch!","2:32"],[44,"Die Seekarte","14:49"],[45,"Die eidliche Aussage","16:20"],[46,"Vermutungen","6:58"],[47,"Der Mattenmacher","8:12"],[48,"Das erste Fieren","15:40"],[49,"Die Hyäne","5:31"]];
+document.getElementById('chl').innerHTML=ch.map(c=>{const cur=c[0]===42,done=c[0]<42;return `<div class="chl ${cur?'cur':done?'done':''}"><span class="n">${done?'✓':cur?'▶':c[0]}</span><span>${c[0]}. ${c[1]}</span><span class="d">${c[2]}</span>${cur?'<div class="mini"><i></i></div>':''}</div>`}).join('');
+// chapter marks on bar
+
+
+// states F
+const S=[
+ [{t:"Faust I",a:"Goethe",g:"g5",f:"e"},"Nur E-Book","2:3-Cover, blaues Badge"],
+ [{t:"Dracula",a:"Bram Stoker",g:"g7",f:"a"},"Nur Hörbuch","quadratisch, unscharf gefüllt"],
+ [{t:"Moby Dick",a:"Melville",g:"g1",f:"ea"},"Beide Formate","zwei Badges = ein Werk"],
+ [{t:"Faust I",a:"Goethe",g:"g5",f:"e",r:42},"Gelesen 42 %","blaue Linie unten"],
+ [{t:"Moby Dick",a:"Melville",g:"g1",f:"ea",r:31,l:58},"Lesen + Hören","zwei Linien übereinander"],
+ [{t:"Effi Briest",a:"Fontane",g:"g3",f:"e",done:1},"Fertig","grünes Label, keine Linie"],
+ [{t:"Sherlock Holmes",a:"Doyle",g:"g12",f:"ea",stack:"Band 1–4"},"Serie","gestapelt, Bandzahl"],
+ [{t:"Frankenstein",a:"Shelley",g:"g6",f:"a",nw:1},"Neu importiert","bis zum ersten Öffnen"],
+ [{t:"Der Prozess",a:"Kafka",g:"g8",f:"ea",sel:1},"Ausgewählt","oranger Rahmen + Haken"],
+ [{t:"Buddenbrooks",a:"Thomas Mann",g:"g9",f:"e",miss:1},"Datei fehlt","grau, rotes Label"],
+];
+document.getElementById('states').innerHTML=S.map(s=>`<div>${tile(s[0],'').replace('<div class="t">'+s[0].t+'</div><div class="s"></div>','')}<div class="cap"><b>${s[1]}</b>${s[2]}</div></div>`).join('');
+</script>
+</body>
+</html>
