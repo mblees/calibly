@@ -44,6 +44,19 @@ QString languageName(const QString &code)
     return name.isEmpty() ? code : name;
 }
 
+QStringList splitNames(const QString &names)
+{
+    QStringList result;
+    const QStringList parts = QString(names).replace(u';', u',').replace(QStringLiteral(" & "), QStringLiteral(","))
+                                  .split(u',', Qt::SkipEmptyParts);
+    for (const QString &part : parts) {
+        const QString name = part.simplified();
+        if (!name.isEmpty())
+            result.append(name);
+    }
+    return result;
+}
+
 QString nameSortKey(const QString &name)
 {
     const QStringList parts = name.split(u' ', Qt::SkipEmptyParts);

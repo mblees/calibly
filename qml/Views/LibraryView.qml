@@ -256,6 +256,16 @@ ViewBase {
 
     DetailDrawer {
         id: detail
+
+        onEditRequested: function(workId) {
+            metadataEditor.openFor(workId)
+        }
+    }
+
+    MetadataEditor {
+        id: metadataEditor
+
+        navigationModel: works
     }
 
     // --- empty states --------------------------------------------------------

@@ -58,6 +58,20 @@ void WorkFilterModel::setFormatFilter(FormatFilter filter)
     emit formatFilterChanged();
 }
 
+QString WorkFilterModel::workIdAt(int row) const
+{
+    return row >= 0 && row < rowCount() ? index(row, 0).data(WorkModel::WorkIdRole).toString() : QString();
+}
+
+int WorkFilterModel::rowOf(const QString &workId) const
+{
+    for (int row = 0; row < rowCount(); ++row) {
+        if (index(row, 0).data(WorkModel::WorkIdRole).toString() == workId)
+            return row;
+    }
+    return -1;
+}
+
 QVariant WorkFilterModel::data(const QModelIndex &index, int role) const
 {
     // Present the works as the selected format only.

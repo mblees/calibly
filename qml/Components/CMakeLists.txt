@@ -8,6 +8,7 @@ qt_add_qml_module(calibly_components
         CoverArt.qml
         CoverTile.qml
         FormatCard.qml
+        MetadataForm.qml
 )
 
 target_link_libraries(calibly_components PRIVATE Qt6::Quick calibly_theme calibly_controls)

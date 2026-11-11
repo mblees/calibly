@@ -8,6 +8,7 @@ qt_add_qml_module(calibly_views
         PlaceholderView.qml
         LibraryView.qml
         DetailDrawer.qml
+        MetadataEditor.qml
         ComponentGallery.qml
 )
 

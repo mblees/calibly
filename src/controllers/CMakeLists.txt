@@ -11,6 +11,8 @@ qt_add_qml_module(calibly_controllers
         languagemanager.cpp
         librarycontroller.h
         librarycontroller.cpp
+        workeditor.h
+        workeditor.cpp
 )
 
 target_include_directories(calibly_controllers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

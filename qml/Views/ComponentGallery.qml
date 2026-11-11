@@ -489,6 +489,162 @@ ViewBase {
             }
 
             Section {
+                id: formSection
+
+                property list<string> tags: [qsTr("Horror"), qsTr("Klassiker"), qsTr("Briefroman")]
+                property int rating: 3
+                property int language: 1
+
+                heading: qsTr("Formularfelder")
+                width: page.width
+
+                Flow {
+                    width: page.width
+                    spacing: Theme.spacingXl
+
+                    FormField {
+                        width: 260
+                        label: qsTr("Gemeinsames Feld")
+                        iconName: "link"
+                        iconColor: Theme.shared
+
+                        InputField {
+                            text: "Dracula"
+                        }
+                    }
+                    FormField {
+                        width: 260
+                        label: qsTr("Hörbuch-Feld, leer")
+                        iconName: "headphones"
+                        iconColor: Theme.listen
+
+                        InputField {
+                            placeholderText: qsTr("Mehrere mit Komma trennen")
+                        }
+                    }
+                    FormField {
+                        width: 260
+                        label: qsTr("E-Book-Feld, nur lesen")
+                        iconName: "book"
+                        iconColor: Theme.read
+
+                        InputField {
+                            readOnly: true
+                            text: qsTr("EPUB · 512 Seiten")
+                        }
+                    }
+                    FormField {
+                        width: 260
+                        label: qsTr("Auswahl")
+
+                        SelectMenu {
+                            boxed: true
+                            options: [qsTr("Unbekannt"), "Deutsch", "English", "Français"]
+                            currentIndex: formSection.language
+                            onActivated: function(index) {
+                                formSection.language = index
+                            }
+                        }
+                    }
+                    FormField {
+                        width: 400
+                        label: qsTr("Schlagwörter")
+
+                        TagField {
+                            tags: formSection.tags
+                            placeholderText: qsTr("+ hinzufügen")
+                            onTagsEdited: function(tags) {
+                                formSection.tags = tags
+                            }
+                        }
+                    }
+                    FormField {
+                        width: 400
+                        label: qsTr("Beschreibung")
+
+                        TextAreaField {
+                            text: qsTr("Der junge Anwalt Jonathan Harker reist nach Transsilvanien, um mit dem geheimnisvollen Grafen Dracula einen Hauskauf in London abzuschließen …")
+                        }
+                    }
+                    FormField {
+                        width: 160
+                        label: qsTr("Bewertung (klickbar)")
+
+                        Item {
+                            implicitHeight: Theme.controlHeight
+                            height: implicitHeight
+
+                            RatingStars {
+                                anchors.verticalCenter: parent.verticalCenter
+                                editable: true
+                                value: formSection.rating
+                                onRatingEdited: function(value) {
+                                    formSection.rating = value
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Section {
+                id: metadataSection
+
+                // Sample values; the form reports edits, the gallery stores them here.
+                property var values: ({
+                    title: "Dracula", authors: "Bram Stoker", narrators: "Maren Brandt",
+                    series: "", seriesIndex: 0, language: "de", publishedYear: 1897,
+                    tags: ["Horror", "Klassiker"], rating: 4,
+                    description: "Ein junger Anwalt reist nach Transsilvanien, um einen Hauskauf abzuschließen.",
+                    ebookPublisher: "Beispielverlag", ebookIsbn: "978-3-0000-0000-2",
+                    audiobookPublisher: "Beispiel Audio", audiobookIsbn: ""
+                })
+                property int tab: 0
+
+                heading: qsTr("Metadaten-Formular")
+                width: page.width
+
+                Tabs {
+                    width: Math.min(page.width, 720)
+                    tabs: [qsTr("Allgemein"), qsTr("Hörbuch"), qsTr("E-Book")]
+                    currentIndex: metadataSection.tab
+                    onActivated: function(index) {
+                        metadataSection.tab = index
+                    }
+                }
+
+                MetadataForm {
+                    width: Math.min(page.width, 720)
+                    section: [MetadataForm.General, MetadataForm.Audiobook, MetadataForm.Ebook][metadataSection.tab]
+                    title: metadataSection.values.title
+                    authors: metadataSection.values.authors
+                    narrators: metadataSection.values.narrators
+                    series: metadataSection.values.series
+                    seriesIndex: metadataSection.values.seriesIndex
+                    language: metadataSection.values.language
+                    languages: [{ code: "de", name: "Deutsch" }, { code: "en", name: "English" }]
+                    publishedYear: metadataSection.values.publishedYear
+                    tags: metadataSection.values.tags
+                    rating: metadataSection.values.rating
+                    description: metadataSection.values.description
+                    ebookPublisher: metadataSection.values.ebookPublisher
+                    ebookIsbn: metadataSection.values.ebookIsbn
+                    audiobookPublisher: metadataSection.values.audiobookPublisher
+                    audiobookIsbn: metadataSection.values.audiobookIsbn
+                    ebookFileType: "EPUB"
+                    ebookPages: 512
+                    audiobookFileType: "M4B"
+                    audiobookDurationSeconds: 55680
+
+                    onEdited: function(field, value) {
+                        const copy = Object.assign({}, metadataSection.values)
+                        copy[field] = value
+                        metadataSection.values = copy
+                    }
+                }
+            }
+
+            Section {
                 heading: qsTr("Seitenleiste")
                 width: page.width
 

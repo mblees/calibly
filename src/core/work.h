@@ -10,6 +10,10 @@
 // A Work is one title independent of its format (e.g. "Moby Dick").
 // It has one or more Formats: ebook or audiobook files with their own
 // progress and their own cover (audiobook covers are usually square).
+//
+// The fields of Work are shared by all formats (title, authors, series …).
+// Narrators only make sense for audiobooks, but are kept on the work, so the
+// search and the views find them without looking at the formats.
 
 struct Format
 {
@@ -23,6 +27,11 @@ struct Format
     qint64 fileSize = 0;        // bytes, 0 = unknown
     int pages = 0;              // ebooks, 0 = unknown
     int durationSeconds = 0;    // audiobooks, 0 = unknown
+
+    // Metadata that differs between the formats of a work, e.g. the publisher
+    // of the book and the publisher of the audiobook.
+    QString publisher;
+    QString isbn;
 };
 
 struct Work
@@ -38,13 +47,13 @@ struct Work
     int rating = 0;             // 0 – 5 stars, 0 = not rated
     QString language;           // language code, e.g. "de"
     int publishedYear = 0;      // 0 = unknown
-    QString publisher;
     QDateTime added;            // when the work was added to the library
     QDateTime lastOpened;
     QList<Format> formats;
 
     // First format of this kind, nullptr if there is none.
     const Format *format(Format::Kind kind) const;
+    Format *format(Format::Kind kind);
 
     bool hasFormat(Format::Kind kind) const { return format(kind) != nullptr; }
     bool hasEbook() const { return hasFormat(Format::Kind::Ebook); }

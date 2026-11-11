@@ -11,7 +11,10 @@
 //
 // Tables:
 //   works    one row per work (lists such as authors are stored as JSON)
-//   formats  one row per file, linked to its work
+//   formats  one row per file, linked to its work, with the metadata that
+//            differs per format (publisher, ISBN)
+// The schema version is kept in PRAGMA user_version; open() updates older
+// libraries step by step.
 class SqliteBackend : public LibraryBackend
 {
 public:

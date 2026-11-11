@@ -81,8 +81,17 @@ bool LibraryController::openFormat(const QString &workId, const QString &kind)
     // Remember for "recently opened".
     Work opened = *work;
     opened.lastOpened = QDateTime::currentDateTime();
-    m_backend.saveWork(opened);
-    m_works.updateWork(opened);
+    saveWork(opened);
+    return true;
+}
+
+bool LibraryController::saveWork(const Work &work)
+{
+    if (!m_backend.saveWork(work)) {
+        qWarning("Could not save %s to the library", qPrintable(work.title));
+        return false;
+    }
+    m_works.updateWork(work);
     return true;
 }
 

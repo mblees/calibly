@@ -14,6 +14,9 @@ QtObject {
     readonly property color surfaceSelected: "#2b2c33"
     readonly property color border: "#2c2d34"
     readonly property color divider: "#111215"
+    readonly property color dialog: "#1e1f24"
+    readonly property color inputBackground: "#15161a"
+    readonly property color inputBorder: "#34353c"
 
     // Text
     readonly property color textPrimary: "#ececef"
@@ -35,6 +38,8 @@ QtObject {
     readonly property color shadow: "#80000000"
     readonly property color scrim: "#99000000"      // dims the window behind drawers
     readonly property color rating: "#f2c14e"
+    readonly property color shared: finished        // marks fields that apply to all formats
+    readonly property real focusRingOpacity: 0.15   // accent glow around a focused input
 
     // Spacing
     readonly property int spacingXxs: 2
@@ -76,6 +81,14 @@ QtObject {
     readonly property int tabHeight: 36
     readonly property int ratingStarSize: 14
     readonly property int formatCardWidth: 260
+    readonly property int focusRingWidth: 3
+    readonly property int textAreaHeight: 120
+    readonly property int tagHeight: 22
+    readonly property int dialogWidth: 960
+    readonly property int dialogHeight: 680
+    readonly property int editorCoverWidth: 160
+    readonly property int formColumnSpacing: 14
+    readonly property int popupMaxHeight: 320
     readonly property real formatBorderOpacity: 0.4 // colored border of format cards
     readonly property int sidebarWidth: 220
     readonly property int borderWidth: 1

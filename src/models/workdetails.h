@@ -22,7 +22,9 @@
 // formats is a list with one entry per format:
 //   { kind: "ebook" | "audiobook", fileName, fileType ("EPUB", "M4B" …),
 //     fileSize (bytes), pages, durationSeconds, progress (0–1),
-//     available (the file exists) }
+//     publisher, isbn, available (the file exists) }
+// ebookPublisher, audiobookPublisher and isbn are the values of the first
+// ebook / audiobook format (isbn: of the ebook, else of the audiobook).
 class WorkDetails : public QObject
 {
     Q_OBJECT
@@ -43,7 +45,9 @@ class WorkDetails : public QObject
     Q_PROPERTY(QString language READ language NOTIFY changed)
     Q_PROPERTY(QString languageName READ languageName NOTIFY changed)
     Q_PROPERTY(int publishedYear READ publishedYear NOTIFY changed)
-    Q_PROPERTY(QString publisher READ publisher NOTIFY changed)
+    Q_PROPERTY(QString ebookPublisher READ ebookPublisher NOTIFY changed)
+    Q_PROPERTY(QString audiobookPublisher READ audiobookPublisher NOTIFY changed)
+    Q_PROPERTY(QString isbn READ isbn NOTIFY changed)
     Q_PROPERTY(QDateTime added READ added NOTIFY changed)
     Q_PROPERTY(QUrl coverUrl READ coverUrl NOTIFY changed)
     Q_PROPERTY(bool coverIsSquare READ coverIsSquare NOTIFY changed)
@@ -70,7 +74,9 @@ public:
     QString language() const;
     QString languageName() const; // e.g. "Deutsch", "English"
     int publishedYear() const;
-    QString publisher() const;
+    QString ebookPublisher() const;
+    QString audiobookPublisher() const;
+    QString isbn() const;
     QDateTime added() const;
     QUrl coverUrl() const;
     bool coverIsSquare() const;

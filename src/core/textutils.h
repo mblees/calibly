@@ -17,6 +17,10 @@ QStringList searchTerms(const QString &text);
 // Empty code gives an empty string.
 QString languageName(const QString &code);
 
+// Splits a list of names such as "Jacob Grimm, Wilhelm Grimm",
+// "A; B" or "A & B" into the single names, trimmed, without empty ones.
+QStringList splitNames(const QString &names);
+
 // Sort key of a person's name: the last word, e.g.
 // "Johann Wolfgang von Goethe" -> "Goethe", "E. T. A. Hoffmann" -> "Hoffmann".
 QString nameSortKey(const QString &name);

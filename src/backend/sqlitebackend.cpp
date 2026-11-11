@@ -15,7 +15,9 @@
 
 namespace {
 
-constexpr int kSchemaVersion = 1;
+// 1: phase 4
+// 2: publisher per format instead of per work, ISBN per format (phase 5)
+constexpr int kSchemaVersion = 2;
 
 QString toJson(const QStringList &list)
 {
@@ -93,13 +95,16 @@ bool SqliteBackend::open(QString *error)
             *error = QStringLiteral("library was created by a newer calibly version");
         return false;
     }
-    if (version == 0) {
-        const QStringList statements = {
+    // Each step brings the database from one version to the next; a new
+    // database runs through all of them.
+    QStringList statements;
+    if (version < 1) {
+        statements += {
             QStringLiteral("CREATE TABLE IF NOT EXISTS works ("
                            " id TEXT PRIMARY KEY, title TEXT NOT NULL, authors TEXT, narrators TEXT,"
                            " series TEXT, series_index INTEGER, description TEXT, tags TEXT,"
                            " rating INTEGER, language TEXT, published_year INTEGER, publisher TEXT,"
-                           " added TEXT, last_opened TEXT)"),
+                           " added TEXT, last_opened TEXT)"), // publisher: only up to version 1
             QStringLiteral("CREATE TABLE IF NOT EXISTS formats ("
                            " id INTEGER PRIMARY KEY AUTOINCREMENT,"
                            " work_id TEXT NOT NULL REFERENCES works(id) ON DELETE CASCADE,"
@@ -107,15 +112,30 @@ bool SqliteBackend::open(QString *error)
                            " cover_path TEXT, cover_square INTEGER, file_size INTEGER, pages INTEGER,"
                            " duration INTEGER)"),
             QStringLiteral("CREATE INDEX IF NOT EXISTS formats_work ON formats(work_id)"),
-            QStringLiteral("PRAGMA user_version = %1").arg(kSchemaVersion),
         };
-        for (const QString &statement : statements) {
-            query.prepare(statement);
-            if (!exec(query, error))
-                return false;
+    }
+    if (version < 2) {
+        statements += {
+            QStringLiteral("ALTER TABLE formats ADD COLUMN publisher TEXT"),
+            QStringLiteral("ALTER TABLE formats ADD COLUMN isbn TEXT"),
+            QStringLiteral("UPDATE formats SET publisher = (SELECT works.publisher FROM works"
+                           " WHERE works.id = formats.work_id)"),
+            QStringLiteral("ALTER TABLE works DROP COLUMN publisher"),
+        };
+    }
+    if (statements.isEmpty())
+        return true;
+
+    statements.append(QStringLiteral("PRAGMA user_version = %1").arg(kSchemaVersion));
+    db.transaction();
+    for (const QString &statement : std::as_const(statements)) {
+        query.prepare(statement);
+        if (!exec(query, error)) {
+            db.rollback();
+            return false;
         }
     }
-    return true;
+    return db.commit();
 }
 
 QString SqliteBackend::absolute(const QString &relativePath) const
@@ -138,7 +158,7 @@ QList<Work> SqliteBackend::loadWorks()
     QHash<QString, int> indexById;
     QSqlQuery query(db);
     query.prepare(QStringLiteral("SELECT id, title, authors, narrators, series, series_index, description, tags,"
-                                 " rating, language, published_year, publisher, added, last_opened FROM works"));
+                                 " rating, language, published_year, added, last_opened FROM works"));
     if (!exec(query, nullptr))
         return works;
     while (query.next()) {
@@ -154,15 +174,14 @@ QList<Work> SqliteBackend::loadWorks()
         work.rating = query.value(8).toInt();
         work.language = query.value(9).toString();
         work.publishedYear = query.value(10).toInt();
-        work.publisher = query.value(11).toString();
-        work.added = QDateTime::fromString(query.value(12).toString(), Qt::ISODate);
-        work.lastOpened = QDateTime::fromString(query.value(13).toString(), Qt::ISODate);
+        work.added = QDateTime::fromString(query.value(11).toString(), Qt::ISODate);
+        work.lastOpened = QDateTime::fromString(query.value(12).toString(), Qt::ISODate);
         indexById.insert(work.id, int(works.size()));
         works.append(work);
     }
 
     query.prepare(QStringLiteral("SELECT work_id, kind, file_path, progress, cover_path, cover_square, file_size,"
-                                 " pages, duration FROM formats ORDER BY work_id, position"));
+                                 " pages, duration, publisher, isbn FROM formats ORDER BY work_id, position"));
     if (!exec(query, nullptr))
         return works;
     while (query.next()) {
@@ -179,6 +198,8 @@ QList<Work> SqliteBackend::loadWorks()
         format.fileSize = query.value(6).toLongLong();
         format.pages = query.value(7).toInt();
         format.durationSeconds = query.value(8).toInt();
+        format.publisher = query.value(9).toString();
+        format.isbn = query.value(10).toString();
         works[index].formats.append(format);
     }
     return works;
@@ -193,17 +214,17 @@ bool SqliteBackend::saveWork(const Work &work)
     db.transaction();
     QSqlQuery query(db);
     query.prepare(QStringLiteral("INSERT INTO works (id, title, authors, narrators, series, series_index,"
-                                 " description, tags, rating, language, published_year, publisher, added, last_opened)"
-                                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                                 " description, tags, rating, language, published_year, added, last_opened)"
+                                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                                  " ON CONFLICT(id) DO UPDATE SET title = excluded.title, authors = excluded.authors,"
                                  " narrators = excluded.narrators, series = excluded.series,"
                                  " series_index = excluded.series_index, description = excluded.description,"
                                  " tags = excluded.tags, rating = excluded.rating, language = excluded.language,"
-                                 " published_year = excluded.published_year, publisher = excluded.publisher,"
+                                 " published_year = excluded.published_year,"
                                  " added = excluded.added, last_opened = excluded.last_opened"));
     const QVariantList values = { work.id, work.title, toJson(work.authors), toJson(work.narrators), work.series,
                                   work.seriesIndex, work.description, toJson(work.tags), work.rating, work.language,
-                                  work.publishedYear, work.publisher, toText(work.added), toText(work.lastOpened) };
+                                  work.publishedYear, toText(work.added), toText(work.lastOpened) };
     for (const QVariant &value : values)
         query.addBindValue(value);
     bool ok = exec(query, nullptr);
@@ -216,12 +237,13 @@ bool SqliteBackend::saveWork(const Work &work)
     for (int position = 0; ok && position < work.formats.size(); ++position) {
         const Format &format = work.formats.at(position);
         query.prepare(QStringLiteral("INSERT INTO formats (work_id, position, kind, file_path, progress, cover_path,"
-                                     " cover_square, file_size, pages, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+                                     " cover_square, file_size, pages, duration, publisher, isbn)"
+                                     " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
         const QVariantList formatValues = {
             work.id, position,
             format.kind == Format::Kind::Audiobook ? QStringLiteral("audiobook") : QStringLiteral("ebook"),
             relative(format.filePath), format.progress, relative(format.coverPath), format.coverIsSquare,
-            format.fileSize, format.pages, format.durationSeconds };
+            format.fileSize, format.pages, format.durationSeconds, format.publisher, format.isbn };
         for (const QVariant &value : formatValues)
             query.addBindValue(value);
         ok = exec(query, nullptr);

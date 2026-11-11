@@ -27,6 +27,8 @@ class ImportWorker;
 //   importFinished(added, skipped, failed)   added = new formats,
 //       skipped = already in the library, failed = could not be copied
 //   fileNameFilters   patterns for a file dialog, e.g. ["*.epub", "*.m4b", ...]
+//
+//   Editing metadata: see WorkEditor, which saves through saveWork().
 class LibraryController : public QObject
 {
     Q_OBJECT
@@ -49,7 +51,15 @@ public:
     // Used by the QML engine to obtain the singleton instance created in main().
     static LibraryController *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
+    // The instance created in main(), nullptr before / after.
+    static LibraryController *instance() { return s_instance; }
+
     WorkModel *works() { return &m_works; }
+    const WorkModel *works() const { return &m_works; }
+
+    // Stores the work in the backend and updates the model, so every view
+    // shows the change immediately. False if the backend cannot store it.
+    bool saveWork(const Work &work);
 
     bool canImport() const;
     QString libraryRoot() const;

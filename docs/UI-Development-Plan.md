@@ -196,7 +196,7 @@ View F from the mockup becomes a real developer view `ComponentGallery.qml` (sta
 | `CoverTile` (icons, labels, progress, hover, selection) | Components | A, D | 1 / 8 / 9 |
 | `SideDrawer`, `Tabs`, `RatingStars` | Controls | B | 3 |
 | `FormatCard` | Components | B | 3 |
-| `FormField` | Controls | E | 5 |
+| `FormField`, `InputField`, `TextAreaField`, `TagField` | Controls | E | 5 |
 | `MetadataForm` | Components | E | 5 |
 | `MiniPlayer`, `PlayerControls`, `ChapterList` | Components | A, C | 6 |
 | `DropHint`, `ImportQueue` | Components | D | 7 |
@@ -262,6 +262,8 @@ Every phase ends with a **runnable app**. A phase only starts once the previous 
 - Tabs General, Audiobook, Ebook. Navigation to the previous and next title.
 - No online suggestions yet.
 - **Done when:** changes are saved and immediately visible in the gallery and the detail view.
+
+**Implemented as:** `WorkEditor` (C++, `Calibly.Controllers`) holds an editable copy of one work, knows whether it was changed and saves through `LibraryController::saveWork()`, which updates the backend and the `WorkModel` – so the gallery and the detail view follow at once. The dialog `MetadataEditor` (opened with ✎ in the detail view) shows `MetadataForm` with the tabs General, Audiobook and Ebook (only the formats the work has). Shared fields: title, authors, series and volume, language, year, tags, rating, description. Format fields: narrators, publisher and ISBN of the audiobook; publisher and ISBN of the ebook. Publisher and ISBN are therefore stored per format (database schema 2; older libraries are updated on open), and the ISBN is read from EPUB identifiers on import. ‹ / › (Ctrl+PgUp / Ctrl+PgDown) step through the titles of the current gallery selection and keep the changes made so far, like calibre; Ctrl+S saves and closes; Esc, ✕ and "Cancel" drop unsaved changes. Changing the cover is not part of this phase.
 
 ### Phase 6 – Audiobook player
 - `PlayerController` (C++) based on Qt Multimedia. It stores the position per audiobook.

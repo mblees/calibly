@@ -230,6 +230,7 @@
     </message>
     <message>
         <location filename="../qml/Views/ComponentGallery.qml" line="476"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="494"/>
         <source>Klassiker</source>
         <translation>Classic</translation>
     </message>
@@ -249,32 +250,127 @@
         <translation>Notes</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="492"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="494"/>
+        <source>Horror</source>
+        <translation>Horror</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="494"/>
+        <source>Briefroman</source>
+        <translation>Epistolary novel</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="498"/>
+        <source>Formularfelder</source>
+        <translation>Form fields</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="507"/>
+        <source>Gemeinsames Feld</source>
+        <translation>Shared field</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="517"/>
+        <source>Hörbuch-Feld, leer</source>
+        <translation>Audiobook field, empty</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="522"/>
+        <source>Mehrere mit Komma trennen</source>
+        <translation>Separate several with commas</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="527"/>
+        <source>E-Book-Feld, nur lesen</source>
+        <translation>Ebook field, read-only</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="533"/>
+        <source>EPUB · 512 Seiten</source>
+        <translation>EPUB · 512 pages</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="538"/>
+        <source>Auswahl</source>
+        <translation>Choice</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="542"/>
+        <source>Unbekannt</source>
+        <translation>Unknown</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="551"/>
+        <source>Schlagwörter</source>
+        <translation>Tags</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="555"/>
+        <source>+ hinzufügen</source>
+        <translation>+ add</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="563"/>
+        <source>Beschreibung</source>
+        <translation>Description</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="566"/>
+        <source>Der junge Anwalt Jonathan Harker reist nach Transsilvanien, um mit dem geheimnisvollen Grafen Dracula einen Hauskauf in London abzuschließen …</source>
+        <translation>The young lawyer Jonathan Harker travels to Transylvania to close the purchase of a house in London with the mysterious Count Dracula …</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="571"/>
+        <source>Bewertung (klickbar)</source>
+        <translation>Rating (clickable)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="604"/>
+        <source>Metadaten-Formular</source>
+        <translation>Metadata form</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="609"/>
+        <source>Allgemein</source>
+        <translation>General</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="609"/>
+        <source>Hörbuch</source>
+        <translation>Audiobook</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="609"/>
+        <source>E-Book</source>
+        <translation>Ebook</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="648"/>
         <source>Seitenleiste</source>
         <translation>Sidebar</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="508"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="664"/>
         <source>Bibliothek</source>
         <translation>Library</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="509"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="665"/>
         <source>Weitermachen</source>
         <translation>Continue</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="510"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="666"/>
         <source>Serien</source>
         <translation>Series</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="511"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="667"/>
         <source>Autoren</source>
         <translation>Authors</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="512"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="668"/>
         <source>Sprecher</source>
         <translation>Narrators</translation>
     </message>
@@ -282,47 +378,62 @@
 <context>
     <name>DetailDrawer</name>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="87"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="96"/>
         <source>Schließen</source>
         <translation>Close</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="126"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="102"/>
+        <source>Metadaten bearbeiten</source>
+        <translation>Edit metadata</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="142"/>
         <source>von %1</source>
         <translation>by %1</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="134"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="150"/>
         <source>gelesen von %1</source>
         <translation>read by %1</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="151"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="167"/>
         <source>%1 · Band %2</source>
         <translation>%1 · Vol. %2</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="222"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="238"/>
         <source>Übersicht</source>
         <translation>Overview</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="242"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="258"/>
         <source>Erschienen</source>
         <translation>Published</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="244"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="260"/>
         <source>Sprache</source>
         <translation>Language</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="246"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="262"/>
         <source>Verlag</source>
         <translation>Publisher</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="248"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="264"/>
+        <source>Audio-Verlag</source>
+        <translation>Audio publisher</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="266"/>
+        <source>ISBN</source>
+        <translation>ISBN</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="268"/>
         <source>Hinzugefügt</source>
         <translation>Added</translation>
     </message>
@@ -430,7 +541,7 @@
     </message>
     <message>
         <location filename="../qml/Views/LibraryView.qml" line="95"/>
-        <location filename="../qml/Views/LibraryView.qml" line="287"/>
+        <location filename="../qml/Views/LibraryView.qml" line="297"/>
         <source>E-Books und Hörbücher hinzufügen</source>
         <translation>Add ebooks and audiobooks</translation>
     </message>
@@ -506,37 +617,37 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="271"/>
+        <location filename="../qml/Views/LibraryView.qml" line="281"/>
         <source>Noch keine Titel in der Bibliothek.</source>
         <translation>No titles in the library yet.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="272"/>
+        <location filename="../qml/Views/LibraryView.qml" line="282"/>
         <source>Keine Treffer für „%1“.</source>
         <translation>No results for “%1”.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="273"/>
+        <location filename="../qml/Views/LibraryView.qml" line="283"/>
         <source>Keine Titel in dieser Auswahl.</source>
         <translation>No titles in this selection.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="280"/>
+        <location filename="../qml/Views/LibraryView.qml" line="290"/>
         <source>Filter zurücksetzen</source>
         <translation>Reset filters</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="334"/>
+        <location filename="../qml/Views/LibraryView.qml" line="344"/>
         <source>Dateien werden gesucht …</source>
         <translation>Looking for files …</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="335"/>
+        <location filename="../qml/Views/LibraryView.qml" line="345"/>
         <source>Importiere %1 von %2: %3</source>
         <translation>Importing %1 of %2: %3</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="359"/>
+        <location filename="../qml/Views/LibraryView.qml" line="369"/>
         <source>%n Datei(en) hinzugefügt</source>
         <translation>
             <numerusform>%n file added</numerusform>
@@ -544,7 +655,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="361"/>
+        <location filename="../qml/Views/LibraryView.qml" line="371"/>
         <source>%n bereits vorhanden</source>
         <translation>
             <numerusform>%n already in the library</numerusform>
@@ -552,7 +663,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="363"/>
+        <location filename="../qml/Views/LibraryView.qml" line="373"/>
         <source>%n fehlgeschlagen</source>
         <translation>
             <numerusform>%n failed</numerusform>
@@ -594,6 +705,214 @@
     </message>
 </context>
 <context>
+    <name>MetadataEditor</name>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="50"/>
+        <source>Der Titel darf nicht leer sein.</source>
+        <translation>The title must not be empty.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="54"/>
+        <source>Die Änderungen konnten nicht gespeichert werden.</source>
+        <translation>The changes could not be saved.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="106"/>
+        <source>Allgemein</source>
+        <translation>General</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="108"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="189"/>
+        <source>Hörbuch</source>
+        <translation>Audiobook</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="110"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="189"/>
+        <source>E-Book</source>
+        <translation>Ebook</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="176"/>
+        <source>Metadaten bearbeiten</source>
+        <translation>Edit metadata</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="188"/>
+        <source>E-Book + Hörbuch</source>
+        <translation>Ebook + audiobook</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="208"/>
+        <source>Voriger Titel</source>
+        <translation>Previous title</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="214"/>
+        <source>%1 / %2</source>
+        <translation>%1 / %2</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="223"/>
+        <source>Nächster Titel</source>
+        <translation>Next title</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="229"/>
+        <source>Schließen</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="357"/>
+        <source>= gilt für E-Book und Hörbuch</source>
+        <translation>= applies to ebook and audiobook</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="372"/>
+        <source>Abbrechen</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="376"/>
+        <source>Speichern</source>
+        <translation>Save</translation>
+    </message>
+</context>
+<context>
+    <name>MetadataForm</name>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="75"/>
+        <source>%1 Std. %2 Min.</source>
+        <translation>%1 h %2 min</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="75"/>
+        <source>%1 Min.</source>
+        <translation>%1 min</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Components/MetadataForm.qml" line="83"/>
+        <source>%Ln Seiten</source>
+        <translation>
+            <numerusform>%Ln page</numerusform>
+            <numerusform>%Ln pages</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="84"/>
+        <location filename="../qml/Components/MetadataForm.qml" line="92"/>
+        <source>unbekannt</source>
+        <translation>unknown</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="142"/>
+        <source>Titel</source>
+        <translation>Title</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="146"/>
+        <source>Titel (Pflichtfeld)</source>
+        <translation>Title (required)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="151"/>
+        <source>Autor</source>
+        <translation>Author</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="155"/>
+        <location filename="../qml/Components/MetadataForm.qml" line="165"/>
+        <location filename="../qml/Components/MetadataForm.qml" line="291"/>
+        <source>Mehrere mit Komma trennen</source>
+        <translation>Separate several with commas</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="161"/>
+        <location filename="../qml/Components/MetadataForm.qml" line="287"/>
+        <source>Sprecher</source>
+        <translation>Narrator</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="170"/>
+        <source>Serie · Band</source>
+        <translation>Series · volume</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="178"/>
+        <source>keine Serie</source>
+        <translation>no series</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="187"/>
+        <source>Band</source>
+        <translation>Vol.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="192"/>
+        <source>Sprache · Jahr</source>
+        <translation>Language · year</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="200"/>
+        <source>Unbekannt</source>
+        <translation>Unknown</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="212"/>
+        <source>Jahr</source>
+        <translation>Year</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="218"/>
+        <location filename="../qml/Components/MetadataForm.qml" line="304"/>
+        <location filename="../qml/Components/MetadataForm.qml" line="341"/>
+        <source>ISBN</source>
+        <translation>ISBN</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="227"/>
+        <source>Hörbuch</source>
+        <translation>Audiobook</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="236"/>
+        <source>Schlagwörter</source>
+        <translation>Tags</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="240"/>
+        <source>+ hinzufügen</source>
+        <translation>+ add</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="248"/>
+        <source>Beschreibung</source>
+        <translation>Description</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="257"/>
+        <source>Bewertung</source>
+        <translation>Rating</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="296"/>
+        <location filename="../qml/Components/MetadataForm.qml" line="333"/>
+        <source>Verlag</source>
+        <translation>Publisher</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="313"/>
+        <source>Datei · Länge</source>
+        <translation>File · length</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MetadataForm.qml" line="350"/>
+        <source>Datei · Umfang</source>
+        <translation>File · extent</translation>
+    </message>
+</context>
+<context>
     <name>PlaceholderView</name>
     <message>
         <location filename="../qml/Views/PlaceholderView.qml" line="28"/>
@@ -604,9 +923,17 @@
 <context>
     <name>RatingStars</name>
     <message>
-        <location filename="../qml/Controls/RatingStars.qml" line="17"/>
+        <location filename="../qml/Controls/RatingStars.qml" line="34"/>
         <source>%1 von 5 Sternen</source>
         <translation>%1 of 5 stars</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Controls/RatingStars.qml" line="70"/>
+        <source>%n Stern(e)</source>
+        <translation>
+            <numerusform>%n star</numerusform>
+            <numerusform>%n stars</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -615,6 +942,14 @@
         <location filename="../qml/Controls/SearchField.qml" line="106"/>
         <source>Suche leeren</source>
         <translation>Clear search</translation>
+    </message>
+</context>
+<context>
+    <name>TagField</name>
+    <message>
+        <location filename="../qml/Controls/TagField.qml" line="106"/>
+        <source>%1 entfernen</source>
+        <translation>Remove %1</translation>
     </message>
 </context>
 </TS>

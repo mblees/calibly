@@ -52,8 +52,6 @@ void mergeInto(Work &work, const FileMetadata &file)
         work.language = file.language;
     if (work.publishedYear == 0)
         work.publishedYear = file.publishedYear;
-    if (work.publisher.isEmpty())
-        work.publisher = file.publisher;
 }
 
 bool hasDuplicate(const Work &work, const FileMetadata &file)

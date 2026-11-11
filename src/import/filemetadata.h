@@ -24,6 +24,7 @@ struct FileMetadata
     QString language;            // language code, e.g. "de"
     int publishedYear = 0;
     QString publisher;
+    QString isbn;
 
     QImage cover;
     qint64 fileSize = 0;

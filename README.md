@@ -51,6 +51,8 @@ Command line options of `calibly.exe`:
 - `--import <path>` imports a file or folder after start, as if it was picked with "Add"; can be given several times.
 - `--mock <file.json>` reads the library from your own JSON file in the format of `resources/mock/mock.json`, e.g. to try the app with real files. Relative file paths are relative to the JSON file.
 
+Metadata is edited with ✎ in the detail view of a title. Fields marked with 🔗 apply to all formats of the title, the others only to the audiobook or the ebook. Ctrl+S saves, Ctrl+PgUp / Ctrl+PgDown go to the previous / next title.
+
 The library lives in `Documents\calibly-Bibliothek`: imported files are copied there (sorted by author and title) together with the database `calibly.db`. With `--mock` the app shows sample data instead (`resources/mock/mock.json`); the files of the sample formats do not exist, so "Read" and "Listen" are disabled there. The sample covers are generated with `powershell -ExecutionPolicy Bypass -File tools/generate-mock-covers.ps1`.
 
 ## Translations

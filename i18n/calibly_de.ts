@@ -39,7 +39,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="359"/>
+        <location filename="../qml/Views/LibraryView.qml" line="369"/>
         <source>%n Datei(en) hinzugefügt</source>
         <translation>
             <numerusform>%n Datei hinzugefügt</numerusform>
@@ -47,7 +47,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="361"/>
+        <location filename="../qml/Views/LibraryView.qml" line="371"/>
         <source>%n bereits vorhanden</source>
         <translation>
             <numerusform>%n bereits vorhanden</numerusform>
@@ -55,11 +55,33 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="363"/>
+        <location filename="../qml/Views/LibraryView.qml" line="373"/>
         <source>%n fehlgeschlagen</source>
         <translation>
             <numerusform>%n fehlgeschlagen</numerusform>
             <numerusform>%n fehlgeschlagen</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>MetadataForm</name>
+    <message numerus="yes">
+        <location filename="../qml/Components/MetadataForm.qml" line="83"/>
+        <source>%Ln Seiten</source>
+        <translation type="unfinished">
+            <numerusform>%Ln Seite</numerusform>
+            <numerusform>%Ln Seiten</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>RatingStars</name>
+    <message numerus="yes">
+        <location filename="../qml/Controls/RatingStars.qml" line="70"/>
+        <source>%n Stern(e)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
 </context>

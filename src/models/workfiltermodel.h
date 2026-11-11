@@ -27,6 +27,8 @@
 // series; case and accents are ignored ("marchen" finds "Märchen").
 // The count* properties count the works that match the search, per format,
 // so the format chips can show how many works each of them would show.
+// workIdAt(row) and rowOf(workId) step through the shown works, e.g. for
+// "previous / next title" in the metadata editor.
 class WorkFilterModel : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -67,6 +69,10 @@ public:
     void setSortOrder(SortOrder order);
 
     int count() const { return rowCount(); }
+    // Work id in this row, "" for an invalid row.
+    Q_INVOKABLE QString workIdAt(int row) const;
+    // Row of the work, -1 if it is not shown.
+    Q_INVOKABLE int rowOf(const QString &workId) const;
     int countAll() const { return m_countAll; }
     int countEbook() const { return m_countEbook; }
     int countAudiobook() const { return m_countAudiobook; }

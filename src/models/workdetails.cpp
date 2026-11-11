@@ -65,11 +65,36 @@ WORK_FIELD(int, rating, m_work->rating, 0)
 WORK_FIELD(QString, language, m_work->language, QString())
 WORK_FIELD(QString, languageName, TextUtils::languageName(m_work->language), QString())
 WORK_FIELD(int, publishedYear, m_work->publishedYear, 0)
-WORK_FIELD(QString, publisher, m_work->publisher, QString())
 WORK_FIELD(QDateTime, added, m_work->added, QDateTime())
 WORK_FIELD(bool, coverIsSquare, m_work->coverIsSquare(m_work->primaryKind()), false)
 
 #undef WORK_FIELD
+
+namespace {
+
+QString formatField(const Work *work, Format::Kind kind, QString Format::*field)
+{
+    const Format *format = work ? work->format(kind) : nullptr;
+    return format ? format->*field : QString();
+}
+
+} // namespace
+
+QString WorkDetails::ebookPublisher() const
+{
+    return formatField(m_work, Format::Kind::Ebook, &Format::publisher);
+}
+
+QString WorkDetails::audiobookPublisher() const
+{
+    return formatField(m_work, Format::Kind::Audiobook, &Format::publisher);
+}
+
+QString WorkDetails::isbn() const
+{
+    const QString ebook = formatField(m_work, Format::Kind::Ebook, &Format::isbn);
+    return ebook.isEmpty() ? formatField(m_work, Format::Kind::Audiobook, &Format::isbn) : ebook;
+}
 
 QUrl WorkDetails::coverUrl() const
 {
@@ -95,6 +120,8 @@ QVariantList WorkDetails::formats() const
             { QStringLiteral("pages"), format.pages },
             { QStringLiteral("durationSeconds"), format.durationSeconds },
             { QStringLiteral("progress"), format.progress },
+            { QStringLiteral("publisher"), format.publisher },
+            { QStringLiteral("isbn"), format.isbn },
             { QStringLiteral("available"), !format.filePath.isEmpty() && file.exists() },
         });
     }

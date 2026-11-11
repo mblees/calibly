@@ -1,6 +1,9 @@
 #include <QBuffer>
 #include <QPainter>
 #include <QPdfWriter>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
 #include <QDir>
 #include <QTemporaryDir>
 #include <QTest>
@@ -46,6 +49,8 @@ void writeEpub(const QString &path)
                 "<dc:creator opf:role='aut'>Andy Weir</dc:creator>"
                 "<dc:creator opf:role='trl'>Jemand Anderes</dc:creator>"
                 "<dc:language>de-DE</dc:language>"
+                "<dc:identifier opf:scheme='uuid'>urn:uuid:0a5e7c2e-1d4b-4bb9-9c29-7c3c0f5c1a11</dc:identifier>"
+                "<dc:identifier>urn:isbn:978-3-16-148410-0</dc:identifier>"
                 "<dc:publisher>Testverlag</dc:publisher>"
                 "<dc:date>2014-10-01</dc:date>"
                 "<dc:description>&lt;p&gt;Ein Astronaut &amp;amp; der Mars.&lt;/p&gt;</dc:description>"
@@ -124,6 +129,7 @@ private slots:
         QCOMPARE(metadata.authors, QStringList{ QStringLiteral("Andy Weir") }); // translator left out
         QCOMPARE(metadata.language, QStringLiteral("de"));
         QCOMPARE(metadata.publisher, QStringLiteral("Testverlag"));
+        QCOMPARE(metadata.isbn, QStringLiteral("978-3-16-148410-0")); // not the UUID
         QCOMPARE(metadata.publishedYear, 2014);
         QCOMPARE(metadata.description, QStringLiteral("Ein Astronaut & der Mars."));
         QCOMPARE(metadata.tags, QStringList{ QStringLiteral("Science-Fiction") });
@@ -263,6 +269,8 @@ private slots:
         format.coverIsSquare = true;
         format.durationSeconds = 3600;
         format.progress = 0.25;
+        format.publisher = QStringLiteral("Hörverlag");
+        format.isbn = QStringLiteral("978-3-16-148410-0");
         work.formats = { format };
 
         {
@@ -292,6 +300,55 @@ private slots:
         QCOMPARE(loaded.formats.first().coverIsSquare, true);
         QCOMPARE(loaded.formats.first().durationSeconds, 3600);
         QCOMPARE(loaded.formats.first().progress, 0.25);
+        QCOMPARE(loaded.formats.first().publisher, QStringLiteral("Hörverlag"));
+        QCOMPARE(loaded.formats.first().isbn, QStringLiteral("978-3-16-148410-0"));
+    }
+
+    // A library of phase 4 (schema 1, publisher per work) is updated on open.
+    void sqliteMigratesVersion1()
+    {
+        QTemporaryDir dir;
+        const QString root = dir.path();
+        {
+            QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), QStringLiteral("v1"));
+            db.setDatabaseName(root + QStringLiteral("/calibly.db"));
+            QVERIFY(db.open());
+            QSqlQuery query(db);
+            const QStringList statements = {
+                QStringLiteral("CREATE TABLE works (id TEXT PRIMARY KEY, title TEXT NOT NULL, authors TEXT,"
+                               " narrators TEXT, series TEXT, series_index INTEGER, description TEXT, tags TEXT,"
+                               " rating INTEGER, language TEXT, published_year INTEGER, publisher TEXT,"
+                               " added TEXT, last_opened TEXT)"),
+                QStringLiteral("CREATE TABLE formats (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                               " work_id TEXT NOT NULL REFERENCES works(id) ON DELETE CASCADE, position INTEGER,"
+                               " kind TEXT NOT NULL, file_path TEXT, progress REAL, cover_path TEXT,"
+                               " cover_square INTEGER, file_size INTEGER, pages INTEGER, duration INTEGER)"),
+                QStringLiteral("INSERT INTO works (id, title, publisher) VALUES ('w1', 'Faust', 'Reclam')"),
+                QStringLiteral("INSERT INTO formats (work_id, position, kind, file_path) VALUES ('w1', 0, 'ebook', 'faust.epub')"),
+                QStringLiteral("INSERT INTO formats (work_id, position, kind, file_path) VALUES ('w1', 1, 'audiobook', 'faust.m4b')"),
+                QStringLiteral("PRAGMA user_version = 1"),
+            };
+            for (const QString &statement : statements)
+                QVERIFY2(query.exec(statement), qPrintable(query.lastError().text()));
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(QStringLiteral("v1"));
+
+        SqliteBackend backend(root);
+        QString error;
+        QVERIFY2(backend.open(&error), qPrintable(error));
+        const QList<Work> works = backend.loadWorks();
+        QCOMPARE(works.size(), 1);
+        QCOMPARE(works.first().title, QStringLiteral("Faust"));
+        QCOMPARE(works.first().formats.size(), 2);
+        QCOMPARE(works.first().formats.at(0).publisher, QStringLiteral("Reclam"));
+        QCOMPARE(works.first().formats.at(1).publisher, QStringLiteral("Reclam"));
+        QVERIFY(backend.saveWork(works.first()));
+
+        // Opening again does not run the update a second time.
+        SqliteBackend reopened(root);
+        QVERIFY(reopened.open());
+        QCOMPARE(reopened.loadWorks().first().formats.at(0).publisher, QStringLiteral("Reclam"));
     }
 };
 

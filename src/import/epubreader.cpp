@@ -18,6 +18,20 @@ struct ManifestItem
     QString properties;
 };
 
+// ISBN from a <dc:identifier>, e.g. "urn:isbn:978-3-…", "isbn:…" or an
+// identifier with opf:scheme="ISBN"; empty if it is no ISBN (e.g. a UUID).
+QString isbnFrom(const QString &identifier, const QString &scheme)
+{
+    QString value = identifier.trimmed();
+    static const QRegularExpression prefix(QStringLiteral("^(urn:)?isbn:"), QRegularExpression::CaseInsensitiveOption);
+    const bool marked = scheme.compare(QLatin1String("ISBN"), Qt::CaseInsensitive) == 0 || value.contains(prefix);
+    value.remove(prefix);
+    // ISBN-10 (last character may be X) or ISBN-13, with optional hyphens.
+    static const QRegularExpression isbn(QStringLiteral("^(\\d{9}[\\dXx]|97[89]\\d{10})$"));
+    const bool looksLikeIsbn = isbn.match(QString(value).remove(u'-').remove(u' ')).hasMatch();
+    return marked || looksLikeIsbn ? value : QString();
+}
+
 QString plainText(QString html)
 {
     static const QRegularExpression tags(QStringLiteral("<[^>]*>"));
@@ -87,6 +101,9 @@ void readEpub(const QString &path, FileMetadata &metadata)
                 metadata.authors.append(creator);
         } else if (name == QLatin1String("language") && metadata.language.isEmpty()) {
             metadata.language = xml.readElementText().trimmed().section(u'-', 0, 0).toLower();
+        } else if (name == QLatin1String("identifier") && metadata.isbn.isEmpty()) {
+            const QString scheme = attributes.value(QStringLiteral("opf:scheme")).toString();
+            metadata.isbn = isbnFrom(xml.readElementText(), scheme);
         } else if (name == QLatin1String("publisher")) {
             metadata.publisher = xml.readElementText().simplified();
         } else if (name == QLatin1String("date") && metadata.publishedYear == 0) {

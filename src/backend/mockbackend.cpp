@@ -94,7 +94,8 @@ QList<Work> MockBackend::readJson() const
         work.rating = std::clamp(item.value(QStringLiteral("rating")).toInt(), 0, 5);
         work.language = item.value(QStringLiteral("language")).toString();
         work.publishedYear = item.value(QStringLiteral("published")).toInt();
-        work.publisher = item.value(QStringLiteral("publisher")).toString();
+        // A "publisher" of the work applies to all its formats that have none of their own.
+        const QString publisher = item.value(QStringLiteral("publisher")).toString();
         work.added = QDateTime::fromString(item.value(QStringLiteral("added")).toString(), Qt::ISODate);
         work.lastOpened = QDateTime::fromString(item.value(QStringLiteral("lastOpened")).toString(),
                                                 Qt::ISODate);
@@ -114,6 +115,8 @@ QList<Work> MockBackend::readJson() const
                 format.fileSize = QFileInfo(format.filePath).size(); // 0 if missing
             format.pages = formatObject.value(QStringLiteral("pages")).toInt();
             format.durationSeconds = formatObject.value(QStringLiteral("duration")).toInt();
+            format.publisher = formatObject.value(QStringLiteral("publisher")).toString(publisher);
+            format.isbn = formatObject.value(QStringLiteral("isbn")).toString();
             const QString cover = formatObject.value(QStringLiteral("cover")).toString();
             if (!cover.isEmpty()) {
                 format.coverPath = coverDir + cover;

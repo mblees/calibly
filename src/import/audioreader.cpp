@@ -2,6 +2,8 @@
 
 #include <QFile>
 
+#include "textutils.h"
+
 #include <fileref.h>
 #include <tpropertymap.h>
 #include <tvariant.h>
@@ -27,18 +29,6 @@ QString firstValue(const TagLib::PropertyMap &properties, std::initializer_list<
     return QString();
 }
 
-QStringList splitNames(const QString &names)
-{
-    QStringList result;
-    const QStringList parts = QString(names).replace(u';', u',').replace(QStringLiteral(" & "), QStringLiteral(","))
-                                  .split(u',', Qt::SkipEmptyParts);
-    for (const QString &part : parts) {
-        if (!part.trimmed().isEmpty())
-            result.append(part.trimmed());
-    }
-    return result;
-}
-
 } // namespace
 
 void readAudio(const QString &path, FileMetadata &metadata)
@@ -58,12 +48,13 @@ void readAudio(const QString &path, FileMetadata &metadata)
 
     const TagLib::PropertyMap properties = file.properties();
     metadata.title = firstValue(properties, { "ALBUM", "TITLE" });
-    metadata.authors = splitNames(firstValue(properties, { "ALBUMARTIST", "ARTIST" }));
-    metadata.narrators = splitNames(firstValue(properties, { "NARRATOR", "NARRATEDBY", "COMPOSER" }));
+    metadata.authors = TextUtils::splitNames(firstValue(properties, { "ALBUMARTIST", "ARTIST" }));
+    metadata.narrators = TextUtils::splitNames(firstValue(properties, { "NARRATOR", "NARRATEDBY", "COMPOSER" }));
     metadata.series = firstValue(properties, { "SERIES", "MOVEMENTNAME" });
     metadata.seriesIndex = int(firstValue(properties, { "SERIES-PART", "SERIESPART", "MOVEMENT", "MOVEMENTNUMBER" }).toDouble());
     metadata.description = firstValue(properties, { "DESCRIPTION", "LONGDESCRIPTION", "COMMENT" });
     metadata.publisher = firstValue(properties, { "LABEL", "PUBLISHER" });
+    metadata.isbn = firstValue(properties, { "ISBN" });
     metadata.publishedYear = firstValue(properties, { "DATE", "ORIGINALDATE" }).left(4).toInt();
     metadata.language = firstValue(properties, { "LANGUAGE" }).section(u'-', 0, 0).toLower().left(3);
     const QString genre = firstValue(properties, { "GENRE" });

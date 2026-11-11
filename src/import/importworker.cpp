@@ -69,6 +69,8 @@ void ImportWorker::run(const QStringList &paths, const QList<Work> &existing, co
         format.fileSize = QFileInfo(target).size();
         format.pages = file.pages;
         format.durationSeconds = file.durationSeconds;
+        format.publisher = file.publisher;
+        format.isbn = file.isbn;
         format.coverPath = LibraryFolder::saveCover(file.cover, target);
         if (!format.coverPath.isEmpty()) {
             const double ratio = double(file.cover.width()) / std::max(1, file.cover.height());

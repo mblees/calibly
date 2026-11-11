@@ -38,6 +38,25 @@ class TestWorkFilterModel : public QObject
     Q_OBJECT
 
 private slots:
+    void rowLookup()
+    {
+        WorkModel source;
+        source.setWorks({ makeWork(QStringLiteral("Woyzeck"), { QStringLiteral("Georg Büchner") }, true, false),
+                          makeWork(QStringLiteral("Dracula"), { QStringLiteral("Bram Stoker") }, false, true),
+                          makeWork(QStringLiteral("Faust"), { QStringLiteral("Goethe") }, true, false) });
+        WorkFilterModel model;
+        model.setSourceModel(&source);
+        model.setSortOrder(WorkFilterModel::Title);
+        QCOMPARE(model.workIdAt(0), QStringLiteral("Dracula"));
+        QCOMPARE(model.rowOf(QStringLiteral("Woyzeck")), 2);
+        QCOMPARE(model.workIdAt(3), QString());
+        QCOMPARE(model.workIdAt(-1), QString());
+
+        model.setFormatFilter(WorkFilterModel::Ebook);
+        QCOMPARE(model.rowOf(QStringLiteral("Dracula")), -1);
+        QCOMPARE(model.rowOf(QStringLiteral("Woyzeck")), 1);
+    }
+
     void init()
     {
         m_works.setWorks({

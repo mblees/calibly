@@ -16,6 +16,10 @@ qt_add_qml_module(calibly_controls
         SideDrawer.qml
         Tabs.qml
         RatingStars.qml
+        FormField.qml
+        InputField.qml
+        TextAreaField.qml
+        TagField.qml
 )
 
 target_link_libraries(calibly_controls PRIVATE Qt6::Quick calibly_theme)

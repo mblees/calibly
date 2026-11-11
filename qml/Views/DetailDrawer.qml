@@ -10,6 +10,10 @@ import Calibly.Models
 
 // View B of the mockup: details of one work, sliding in from the right.
 // Open with openFor(); closes with Esc, ✕ or a click outside.
+// The drawer follows changes of the work, e.g. after editing its metadata.
+//
+// Signals:
+//   editRequested(string workId)  the user wants to edit the metadata
 SideDrawer {
     id: root
 
@@ -17,6 +21,8 @@ SideDrawer {
     // The cover shown in the grid (it follows the format selection).
     property url coverUrl
     property bool coverIsSquare: false
+
+    signal editRequested(string workId)
 
     function openFor(workId: string, coverUrl: url, coverIsSquare: bool) {
         root.workId = workId
@@ -78,14 +84,24 @@ SideDrawer {
                     color: Qt.alpha(Theme.background, Theme.heroOverlayOpacity)
                 }
 
-                IconButton {
+                Column {
                     anchors.top: parent.top
                     anchors.right: parent.right
                     anchors.margins: Theme.spacingM
-                    iconName: "x"
-                    iconColor: Theme.textPrimary
-                    text: qsTr("Schließen")
-                    onClicked: root.close()
+                    spacing: Theme.spacingXs
+
+                    IconButton {
+                        iconName: "x"
+                        iconColor: Theme.textPrimary
+                        text: qsTr("Schließen")
+                        onClicked: root.close()
+                    }
+                    IconButton {
+                        iconName: "edit"
+                        iconColor: Theme.textPrimary
+                        text: qsTr("Metadaten bearbeiten")
+                        onClicked: root.editRequested(root.workId)
+                    }
                 }
 
                 CoverArt {
@@ -242,8 +258,12 @@ SideDrawer {
                             result.push({ label: qsTr("Erschienen"), value: String(details.publishedYear) })
                         if (details.languageName !== "")
                             result.push({ label: qsTr("Sprache"), value: details.languageName })
-                        if (details.publisher !== "")
-                            result.push({ label: qsTr("Verlag"), value: details.publisher })
+                        if (details.ebookPublisher !== "")
+                            result.push({ label: qsTr("Verlag"), value: details.ebookPublisher })
+                        if (details.audiobookPublisher !== "")
+                            result.push({ label: qsTr("Audio-Verlag"), value: details.audiobookPublisher })
+                        if (details.isbn !== "")
+                            result.push({ label: qsTr("ISBN"), value: details.isbn })
                         if (!isNaN(details.added.getTime()))
                             result.push({ label: qsTr("Hinzugefügt"),
                                           value: details.added.toLocaleDateString(Qt.locale(Qt.uiLanguage), Locale.ShortFormat) })
