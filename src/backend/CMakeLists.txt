@@ -1,0 +1,10 @@
+# Data sources behind the LibraryBackend interface. No UI, no QML.
+qt_add_library(calibly_backend STATIC
+    librarybackend.h
+    mockbackend.h
+    mockbackend.cpp
+)
+
+target_include_directories(calibly_backend PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# Qt GUI is only needed for QImageReader (cover sizes).
+target_link_libraries(calibly_backend PUBLIC calibly_core PRIVATE Qt6::Gui)

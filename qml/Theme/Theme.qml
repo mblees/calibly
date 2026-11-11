@@ -54,13 +54,46 @@ QtObject {
     readonly property int fontTitle: 20
     readonly property int fontDisplay: 28
 
+    // Font families
+    readonly property string fontFamilySerif: "Georgia"
+
     // Sizes
     readonly property int iconSize: 16
+    readonly property int iconSizeSmall: 11
     readonly property int iconSizeLarge: 48
     readonly property int controlHeight: 34
     readonly property int sidebarWidth: 220
     readonly property int borderWidth: 1
     readonly property int focusWidth: 2
+    readonly property int badgeSize: 20
+    readonly property real badgeIconStrokeWidth: 2.4 // thicker lines, so the small icons stay readable
+    readonly property real disabledOpacity: 0.4
+    readonly property int progressHeight: 3
+
+    // Covers
+    readonly property real coverAspect: 1.5        // height / width of the 2:3 frame
+    readonly property int coverTileMinWidth: 150   // grid columns are derived from this
+    readonly property int coverTileTextHeight: 44  // title + author below a cover
+    readonly property int coverDecodeWidth: 400    // decode size of cover images (memory)
+    readonly property int coverStackOffset: 3      // offset of the sheets behind a series stack
+    readonly property int coverBlurMax: 48
+    readonly property real coverFillDarkening: 2.2  // Qt.darker() factor for the fill around square placeholders
+    readonly property real coverBlurBrightness: -0.2 // darkening of the blurred fill around square images
+    readonly property real coverTitleScale: 0.1      // placeholder title font size relative to the cover width
+    readonly property real coverTitleHeight: 0.6     // share of the cover height available to the placeholder title
+    readonly property real coverAuthorOpacity: 0.8   // placeholder author text
+    readonly property color coverOverlay: "#b30a0a0c"     // background of badges on covers
+    readonly property color coverProgressTrack: "#80000000"
+    readonly property color coverStackBack: "#3a3b44"
+    readonly property color coverStackMiddle: "#4a4b55"
+    readonly property color coverPlaceholderText: "#ffffff"
+    // Gradients (top, bottom) for works without a cover image.
+    readonly property var coverPalette: [
+        ["#274b6d", "#0f2236"], ["#9b3d2a", "#4a160c"], ["#3f6b4a", "#16301d"],
+        ["#c49a3a", "#6e4c10"], ["#5c3f78", "#25133a"], ["#2f6f73", "#0d3234"],
+        ["#a8475f", "#4d1424"], ["#575d66", "#1f2328"], ["#c46a2b", "#5d2a07"],
+        ["#3a4f9c", "#141e4d"], ["#7a6a50", "#352b1b"], ["#4d7e8f", "#173743"]
+    ]
 
     // Motion
     readonly property int durationFast: 120

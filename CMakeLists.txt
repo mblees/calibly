@@ -24,6 +24,11 @@ qt_standard_project_setup(REQUIRES 6.8
 # find every module (Calibly, Calibly.Theme, Calibly.Controls, ...).
 set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
+# C++ layers, bottom to top: core (data classes) -> backend (data sources)
+# -> models (Qt item models) -> controllers (used by the QML views).
+add_subdirectory(src/core)
+add_subdirectory(src/backend)
+add_subdirectory(src/models)
 add_subdirectory(src/controllers)
 add_subdirectory(qml)
 
@@ -36,6 +41,16 @@ qt_add_qml_module(calibly
     VERSION 1.0
     QML_FILES
         qml/Main.qml
+)
+
+# Sample library for development (MockBackend), see resources/mock.
+file(GLOB mock_covers RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS resources/mock/covers/*.jpg)
+qt_add_resources(calibly "mock_data"
+    PREFIX /mock
+    BASE resources/mock
+    FILES
+        resources/mock/mock.json
+        ${mock_covers}
 )
 
 set_target_properties(calibly PROPERTIES
@@ -51,6 +66,7 @@ target_link_libraries(calibly PRIVATE
     Qt6::QuickControls2
     calibly_controllers
     calibly_controllersplugin
+    calibly_modelsplugin
     calibly_themeplugin
     calibly_controlsplugin
     calibly_componentsplugin
@@ -72,6 +88,8 @@ qt_add_translations(calibly
         calibly_views
     TS_FILE_DIR i18n
     TS_FILE_BASE calibly
+    # Drop texts that no longer exist in the code from the .ts files.
+    LUPDATE_OPTIONS -no-obsolete
     MERGE_QT_TRANSLATIONS
     QT_TRANSLATION_CATALOGS qtbase qtdeclarative
 )

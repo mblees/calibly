@@ -6,6 +6,7 @@ qt_add_qml_module(calibly_views
     QML_FILES
         ViewBase.qml
         PlaceholderView.qml
+        LibraryView.qml
         ComponentGallery.qml
 )
 

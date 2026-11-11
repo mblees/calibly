@@ -6,6 +6,8 @@ qt_add_qml_module(calibly_controls
     QML_FILES
         AppButton.qml
         IconButton.qml
+        ProgressLine.qml
+        Badge.qml
 )
 
 target_link_libraries(calibly_controls PRIVATE Qt6::Quick calibly_theme)

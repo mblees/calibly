@@ -89,7 +89,7 @@ T.Button {
     background: Rectangle {
         implicitHeight: Theme.controlHeight
         radius: Theme.radiusM
-        opacity: control.enabled ? 1 : 0.4
+        opacity: control.enabled ? 1 : Theme.disabledOpacity
         color: control.down ? Qt.darker(control.baseColor, 1.15)
                             : control.hovered ? Qt.lighter(control.baseColor, 1.1)
                                               : control.baseColor

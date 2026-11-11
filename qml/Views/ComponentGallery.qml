@@ -67,7 +67,7 @@ ViewBase {
                     font.weight: Font.Bold
                 }
                 Text {
-                    text: qsTr("Phase 0 · Theme, Icons, Buttons, Seitenleiste")
+                    text: qsTr("Alle Bausteine mit Beispieldaten")
                     color: Theme.textMuted
                     font.pixelSize: Theme.fontBody
                 }
@@ -234,6 +234,121 @@ ViewBase {
                         text: qsTr("Schließen")
                         iconName: "x"
                         round: false
+                    }
+                }
+            }
+
+            Section {
+                heading: qsTr("Fortschritt und Badges")
+                width: page.width
+
+                Row {
+                    spacing: Theme.spacingXl
+
+                    Column {
+                        spacing: Theme.spacingS
+
+                        ProgressLine { width: 160; value: 0.42; color: Theme.read }
+                        ProgressLine { width: 160; value: 0.58; color: Theme.listen }
+                        ProgressLine { width: 160; value: 1.0; color: Theme.finished }
+                        Caption { text: qsTr("42 % · 58 % · 100 %") }
+                    }
+
+                    Row {
+                        spacing: Theme.spacingS
+
+                        Badge { iconName: "book"; color: Theme.read }
+                        Badge { iconName: "headphones"; color: Theme.listen }
+                        Badge { text: qsTr("Band 1–4") }
+                    }
+                }
+            }
+
+            Section {
+                heading: qsTr("Cover")
+                width: page.width
+
+                Flow {
+                    width: page.width
+                    spacing: Theme.spacingXl
+
+                    Repeater {
+                        model: [
+                            { caption: qsTr("Bild 2:3"), title: "Moby Dick", author: "Herman Melville", cover: "qrc:/mock/covers/moby-dick.jpg", square: false, stacked: false },
+                            { caption: qsTr("Bild quadratisch"), title: "Dracula", author: "Bram Stoker", cover: "qrc:/mock/covers/dracula.jpg", square: true, stacked: false },
+                            { caption: qsTr("Ohne Bild"), title: "Der Schimmelreiter", author: "Theodor Storm", cover: "", square: false, stacked: false },
+                            { caption: qsTr("Ohne Bild, quadratisch"), title: "Die Odyssee", author: "Homer", cover: "", square: true, stacked: false },
+                            { caption: qsTr("Serien-Stapel"), title: "Der Hund der Baskervilles", author: "Arthur Conan Doyle", cover: "", square: false, stacked: true },
+                            { caption: qsTr("Bild fehlt (Fehler)"), title: "Woyzeck", author: "Georg Büchner", cover: "qrc:/mock/covers/does-not-exist.jpg", square: false, stacked: false }
+                        ]
+
+                        delegate: Column {
+                            id: coverSample
+
+                            required property var modelData
+
+                            spacing: Theme.spacingS
+
+                            CoverArt {
+                                width: Theme.coverTileMinWidth
+                                height: Math.round(width * Theme.coverAspect)
+                                title: coverSample.modelData.title
+                                author: coverSample.modelData.author
+                                coverUrl: coverSample.modelData.cover
+                                coverIsSquare: coverSample.modelData.square
+                                stacked: coverSample.modelData.stacked
+                            }
+                            Caption {
+                                text: coverSample.modelData.caption
+                            }
+                        }
+                    }
+                }
+            }
+
+            Section {
+                heading: qsTr("Cover-Kacheln")
+                width: page.width
+
+                Flow {
+                    width: page.width
+                    spacing: Theme.spacingXl
+
+                    Repeater {
+                        model: [
+                            { caption: qsTr("Nur E-Book"), title: "Faust I", author: "J. W. von Goethe", cover: "qrc:/mock/covers/faust.jpg", square: false, ebook: true, audio: false, read: 0, listen: 0, stacked: false },
+                            { caption: qsTr("Nur Hörbuch"), title: "Dracula", author: "Bram Stoker", cover: "qrc:/mock/covers/dracula.jpg", square: true, ebook: false, audio: true, read: 0, listen: 0, stacked: false },
+                            { caption: qsTr("Beide Formate"), title: "Moby Dick", author: "Herman Melville", cover: "qrc:/mock/covers/moby-dick.jpg", square: false, ebook: true, audio: true, read: 0, listen: 0, stacked: false },
+                            { caption: qsTr("Gelesen 42 %"), title: "Faust I", author: "J. W. von Goethe", cover: "qrc:/mock/covers/faust.jpg", square: false, ebook: true, audio: false, read: 0.42, listen: 0, stacked: false },
+                            { caption: qsTr("Gehört 33 %"), title: "Dracula", author: "Bram Stoker", cover: "qrc:/mock/covers/dracula.jpg", square: true, ebook: false, audio: true, read: 0, listen: 0.33, stacked: false },
+                            { caption: qsTr("Lesen + Hören"), title: "Moby Dick", author: "Herman Melville", cover: "qrc:/mock/covers/moby-dick.jpg", square: false, ebook: true, audio: true, read: 0.31, listen: 0.58, stacked: false },
+                            { caption: qsTr("Ohne Cover"), title: "Der Prozess", author: "Franz Kafka", cover: "", square: false, ebook: true, audio: true, read: 0.12, listen: 0, stacked: false },
+                            { caption: qsTr("Serie"), title: "Der Hund der Baskervilles", author: "Arthur Conan Doyle", cover: "", square: false, ebook: true, audio: true, read: 0, listen: 0, stacked: true }
+                        ]
+
+                        delegate: Column {
+                            id: tileSample
+
+                            required property var modelData
+
+                            spacing: Theme.spacingXs
+
+                            CoverTile {
+                                width: Theme.coverTileMinWidth
+                                title: tileSample.modelData.title
+                                author: tileSample.modelData.author
+                                coverUrl: tileSample.modelData.cover
+                                coverIsSquare: tileSample.modelData.square
+                                hasEbook: tileSample.modelData.ebook
+                                hasAudiobook: tileSample.modelData.audio
+                                readProgress: tileSample.modelData.read
+                                listenProgress: tileSample.modelData.listen
+                                stacked: tileSample.modelData.stacked
+                            }
+                            Caption {
+                                text: tileSample.modelData.caption
+                            }
+                        }
                     }
                 }
             }
