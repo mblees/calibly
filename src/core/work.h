@@ -15,6 +15,23 @@
 // Narrators only make sense for audiobooks, but are kept on the work, so the
 // search and the views find them without looking at the formats.
 
+// A chapter of an audiobook. Audiobooks from several files (e.g. an MP3
+// folder) name the file of each chapter; a chapter without a file belongs
+// to the format's own file. Times are relative to the start of that file.
+struct Chapter
+{
+    QString title;              // empty = untitled, the UI shows "Kapitel n"
+    QString filePath;           // empty = Format::filePath
+    qint64 startMs = 0;
+    qint64 durationMs = 0;
+
+    bool operator==(const Chapter &other) const
+    {
+        return title == other.title && filePath == other.filePath && startMs == other.startMs
+            && durationMs == other.durationMs;
+    }
+};
+
 struct Format
 {
     enum class Kind { Ebook, Audiobook };
@@ -32,6 +49,11 @@ struct Format
     // of the book and the publisher of the audiobook.
     QString publisher;
     QString isbn;
+
+    // Audiobooks: chapters in playing order (empty = one file without
+    // chapters) and the saved listening position across all files.
+    QList<Chapter> chapters;
+    qint64 positionMs = 0;
 };
 
 struct Work

@@ -31,5 +31,13 @@ struct FileMetadata
     int pages = 0;
     int durationSeconds = 0;
 
+    // Audio files: exact length, the file's own title and track number (for
+    // audiobooks made of several files) and the chapters inside the file
+    // (times relative to the file, without file path).
+    qint64 durationMs = 0;
+    QString trackTitle;
+    int trackNumber = 0;
+    QList<Chapter> chapters;
+
     QString error;               // why the file could not be read, empty = fine
 };

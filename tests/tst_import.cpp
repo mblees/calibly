@@ -8,10 +8,19 @@
 #include <QTemporaryDir>
 #include <QTest>
 
+#include <QSignalSpy>
 #include <private/qzipwriter_p.h>
+
+#include <tuple>
+
+#include <chapterframe.h>
+#include <id3v2tag.h>
+#include <mpegfile.h>
+#include <textidentificationframe.h>
 
 #include "filenameparser.h"
 #include "importplanner.h"
+#include "importworker.h"
 #include "libraryfolder.h"
 #include "metadatareader.h"
 #include "pdfreader.h"
@@ -64,6 +73,43 @@ void writeEpub(const QString &path)
                 "</package>");
     zip.addFile(QStringLiteral("OEBPS/images/cover art.png"), pngCover(400, 600));
     zip.close();
+}
+
+// Writes an MP3 of silence (MPEG-1 Layer III, 128 kbit/s, 44.1 kHz, mono)
+// with ID3v2 tags. chapters: (title, start ms, end ms) as ID3v2 CHAP frames.
+void writeMp3(const QString &path, int durationMs, const QString &album, const QString &title, int track,
+              const QList<std::tuple<QString, int, int>> &chapters = {})
+{
+    {
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QByteArray frame(417, '\0');
+        frame[0] = char(0xFF);
+        frame[1] = char(0xFB);
+        frame[2] = char(0x90);
+        frame[3] = char(0xC4);
+        const int frames = int(durationMs / (1152.0 / 44.1));
+        for (int i = 0; i < frames; ++i)
+            file.write(frame);
+    }
+    TagLib::MPEG::File mp3(reinterpret_cast<const wchar_t *>(path.utf16()));
+    QVERIFY(mp3.isValid());
+    TagLib::ID3v2::Tag *tag = mp3.ID3v2Tag(true);
+    tag->setAlbum(TagLib::String(album.toStdWString()));
+    tag->setArtist(TagLib::String("Andy Weir"));
+    tag->setTitle(TagLib::String(title.toStdWString()));
+    tag->setTrack(unsigned(track));
+    unsigned index = 0;
+    for (const auto &[chapterTitle, start, end] : chapters) {
+        auto *titleFrame = new TagLib::ID3v2::TextIdentificationFrame("TIT2", TagLib::String::UTF8);
+        titleFrame->setText(TagLib::String(chapterTitle.toStdWString()));
+        const TagLib::ByteVector id(QByteArray("ch" + QByteArray::number(index++)).constData()); // no null bytes
+        TagLib::ID3v2::FrameList embedded;
+        embedded.append(titleFrame);
+        tag->addFrame(new TagLib::ID3v2::ChapterFrame(id, unsigned(start), unsigned(end), 0xFFFFFFFF, 0xFFFFFFFF,
+                                                      embedded));
+    }
+    QVERIFY(mp3.save(TagLib::MPEG::File::ID3v2));
 }
 
 FileMetadata file(const QString &path, Format::Kind kind, const QString &title, const QString &author,
@@ -179,6 +225,67 @@ private slots:
         QCOMPARE(metadata.fileSize, 1);
     }
 
+    void readMp3Chapters()
+    {
+        QTemporaryDir dir;
+        const QString path = dir.filePath(QStringLiteral("marsianer.mp3"));
+        writeMp3(path, 10000, QStringLiteral("Der Marsianer"), QStringLiteral("Der Marsianer"), 1,
+                 { { QStringLiteral("Sol 6"), 4000, 10000 }, { QStringLiteral("Prolog"), 0, 4000 } });
+        const FileMetadata metadata = readMetadata(path);
+        QVERIFY2(metadata.error.isEmpty(), qPrintable(metadata.error));
+        QCOMPARE(metadata.kind, Format::Kind::Audiobook);
+        QVERIFY2(qAbs(metadata.durationMs - 10000) < 300, qPrintable(QString::number(metadata.durationMs)));
+        QCOMPARE(metadata.trackNumber, 1);
+        QCOMPARE(metadata.chapters.size(), 2);
+        QCOMPARE(metadata.chapters.at(0).title, QStringLiteral("Prolog")); // sorted by start
+        QCOMPARE(metadata.chapters.at(0).durationMs, 4000);
+        QCOMPARE(metadata.chapters.at(1).startMs, 4000);
+        QCOMPARE(metadata.chapters.at(1).durationMs, metadata.durationMs - 4000);
+    }
+
+    // The files of an MP3 folder become one audiobook with one chapter per
+    // file, in track order; importing them again finds them as duplicates.
+    void importMp3Folder()
+    {
+        QTemporaryDir dir;
+        const QString source = dir.filePath(QStringLiteral("in"));
+        QVERIFY(QDir().mkpath(source));
+        writeMp3(source + QStringLiteral("/Teil 10.mp3"), 3000, QStringLiteral("Der Marsianer"),
+                 QStringLiteral("Das Ende"), 3);
+        writeMp3(source + QStringLiteral("/Teil 2.mp3"), 2000, QStringLiteral("Der Marsianer"),
+                 QStringLiteral("Die Mitte"), 2);
+        writeMp3(source + QStringLiteral("/Teil 1.mp3"), 4000, QStringLiteral("Der Marsianer"), QString(), 1,
+                 { { QStringLiteral("Prolog"), 0, 1000 }, { QStringLiteral("Sol 6"), 1000, 4000 } });
+        const QString root = dir.filePath(QStringLiteral("library"));
+
+        ImportWorker worker;
+        QSignalSpy finished(&worker, &ImportWorker::finished);
+        worker.run({ source }, {}, root);
+        QCOMPARE(finished.count(), 1);
+        const QList<Work> works = finished.first().at(0).value<QList<Work>>();
+        QCOMPARE(works.size(), 1);
+        QCOMPARE(finished.first().at(1).toInt(), 3);
+        const Work &work = works.first();
+        QCOMPARE(work.title, QStringLiteral("Der Marsianer"));
+        QCOMPARE(work.formats.size(), 1);
+        const Format &format = work.formats.first();
+        QCOMPARE(QFileInfo(format.filePath).fileName(), QStringLiteral("Teil 1.mp3"));
+        QCOMPARE(format.chapters.size(), 4);
+        QCOMPARE(format.chapters.at(0).title, QStringLiteral("Prolog"));
+        QVERIFY(format.chapters.at(0).filePath.isEmpty());   // the format's own file
+        QCOMPARE(format.chapters.at(2).title, QStringLiteral("Die Mitte"));
+        QCOMPARE(QFileInfo(format.chapters.at(2).filePath).fileName(), QStringLiteral("Teil 2.mp3"));
+        QVERIFY(QFileInfo::exists(format.chapters.at(2).filePath)); // copied into the library
+        QCOMPARE(format.chapters.at(3).title, QStringLiteral("Das Ende"));
+        QVERIFY(qAbs(format.durationSeconds - 9) <= 1);
+
+        ImportWorker again;
+        QSignalSpy finishedAgain(&again, &ImportWorker::finished);
+        again.run({ source }, works, root);
+        QCOMPARE(finishedAgain.first().at(1).toInt(), 0);
+        QCOMPARE(finishedAgain.first().at(2).toStringList().size(), 3);
+    }
+
     void planGroupsFormats()
     {
         const QList<FileMetadata> files = {
@@ -271,6 +378,9 @@ private slots:
         format.progress = 0.25;
         format.publisher = QStringLiteral("Hörverlag");
         format.isbn = QStringLiteral("978-3-16-148410-0");
+        format.positionMs = 900000;
+        format.chapters = { { QStringLiteral("Eins"), QString(), 0, 1000 },
+                            { QStringLiteral("Zwei"), root + QStringLiteral("/Jacob Grimm/Grimms Märchen/02.mp3"), 0, 2000 } };
         work.formats = { format };
 
         {
@@ -302,6 +412,12 @@ private slots:
         QCOMPARE(loaded.formats.first().progress, 0.25);
         QCOMPARE(loaded.formats.first().publisher, QStringLiteral("Hörverlag"));
         QCOMPARE(loaded.formats.first().isbn, QStringLiteral("978-3-16-148410-0"));
+        QCOMPARE(loaded.formats.first().positionMs, 900000);
+        QCOMPARE(loaded.formats.first().chapters.size(), 2);
+        QCOMPARE(loaded.formats.first().chapters.at(0).filePath, QString());
+        QCOMPARE(QDir::cleanPath(loaded.formats.first().chapters.at(1).filePath),
+                 QDir::cleanPath(format.chapters.at(1).filePath));
+        QCOMPARE(loaded.formats.first().chapters.at(1).durationMs, 2000);
     }
 
     // A library of phase 4 (schema 1, publisher per work) is updated on open.

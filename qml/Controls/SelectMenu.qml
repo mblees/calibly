@@ -13,6 +13,8 @@ import Calibly.Theme
 //   options       list of option texts
 //   currentIndex  index of the current option
 //   boxed         look like an input field of a form (text left, ▾ right)
+//   valueText     shown instead of the current option, "" = the option
+//   popupAbove    open the list above the button (e.g. in a bar at the bottom)
 // Signals:
 //   activated(int index)  the user picked an option
 T.Button {
@@ -23,8 +25,11 @@ T.Button {
     property var options: []
     property int currentIndex: 0
     property bool boxed: false
+    property string valueText
+    property bool popupAbove: false
 
-    readonly property string currentText: control.options[control.currentIndex] ?? ""
+    readonly property string currentText: control.valueText !== "" ? control.valueText
+                                                                    : control.options[control.currentIndex] ?? ""
 
     signal activated(int index)
 
@@ -97,7 +102,7 @@ T.Button {
     T.Popup {
         id: popup
 
-        y: control.height + Theme.spacingXs
+        y: control.popupAbove ? -height - Theme.spacingXs : control.height + Theme.spacingXs
         x: control.boxed ? 0 : control.width - width
         width: Math.max(control.width, Theme.menuMinWidth)
         height: Math.min(implicitContentHeight + topPadding + bottomPadding, Theme.popupMaxHeight)

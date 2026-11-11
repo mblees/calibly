@@ -8,7 +8,9 @@
 // :/mock/mock.json, or any file given with --mock). Each format can have its
 // own cover; cover file names are relative to the "covers" folder next to the
 // JSON file. Relative format file paths are relative to the JSON file; for
-// existing files without a "size" the real file size is used.
+// existing files without a "size" the real file size is used. Audiobook
+// formats can list "chapters" (title, start and duration in seconds,
+// optional file).
 class MockBackend : public LibraryBackend
 {
 public:

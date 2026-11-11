@@ -17,6 +17,12 @@ QtObject {
     readonly property color dialog: "#1e1f24"
     readonly property color inputBackground: "#15161a"
     readonly property color inputBorder: "#34353c"
+    readonly property color playerBar: "#0f1013"
+    readonly property color playerPanel: "#8c0f1013"   // chapter list over the blurred cover
+    readonly property color playButton: "#ffffff"
+    readonly property color playButtonForeground: "#111111"
+    readonly property color seekTrack: "#2effffff"
+    readonly property color hoverTint: "#14ffffff"      // hover on translucent backgrounds
 
     // Text
     readonly property color textPrimary: "#ececef"
@@ -40,6 +46,7 @@ QtObject {
     readonly property color rating: "#f2c14e"
     readonly property color shared: finished        // marks fields that apply to all formats
     readonly property real focusRingOpacity: 0.15   // accent glow around a focused input
+    readonly property real currentRowOpacity: 0.16  // accent background of the current chapter
 
     // Spacing
     readonly property int spacingXxs: 2
@@ -89,6 +96,22 @@ QtObject {
     readonly property int editorCoverWidth: 160
     readonly property int formColumnSpacing: 14
     readonly property int popupMaxHeight: 320
+    readonly property int playerBarHeight: 68
+    readonly property int playerBarCoverSize: 46
+    readonly property int playerBarInfoWidth: 220
+    readonly property int playButtonSize: 38
+    readonly property int playButtonSizeLarge: 64
+    readonly property int iconSizePlayer: 22
+    readonly property int playerCoverSize: 290
+    readonly property int playerColumnWidth: 580
+    readonly property int seekHeight: 5
+    readonly property int seekHeightLarge: 6
+    readonly property int seekHandleSize: 14
+    readonly property int chapterRowHeight: 36
+    readonly property int chapterNumberWidth: 28
+    readonly property real playerBlurBrightness: -0.12 // darkening of the blurred cover behind the player
+    readonly property real playerBlurSaturation: 0.4
+    readonly property int playerBlurSourceSize: 12      // decode size of the cover behind the player
     readonly property real formatBorderOpacity: 0.4 // colored border of format cards
     readonly property int sidebarWidth: 220
     readonly property int borderWidth: 1

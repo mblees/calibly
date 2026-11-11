@@ -24,7 +24,7 @@ class ImportWorker;
 //   Import (only with a real library, see canImport):
 //   LibraryController.importFiles(urls)   files or folders, runs in the background
 //   importing, importDone, importTotal, importFileName   progress
-//   importFinished(added, skipped, failed)   added = new formats,
+//   importFinished(added, skipped, failed)   added = files added to the library,
 //       skipped = already in the library, failed = could not be copied
 //   fileNameFilters   patterns for a file dialog, e.g. ["*.epub", "*.m4b", ...]
 //

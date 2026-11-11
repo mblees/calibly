@@ -25,6 +25,7 @@ SideDrawer {
     signal editRequested(string workId)
 
     function openFor(workId: string, coverUrl: url, coverIsSquare: bool) {
+        sectionTabs.currentIndex = 0
         root.workId = workId
         root.coverUrl = coverUrl
         root.coverIsSquare = coverIsSquare
@@ -225,23 +226,50 @@ SideDrawer {
                             progress: modelData.progress
                             available: modelData.available
 
+                            // Audiobooks play in calibly, ebooks open in the default application.
                             onOpenRequested: {
-                                card.openFailed = !LibraryController.openFormat(root.workId, card.kind)
+                                card.openFailed = card.kind === "audiobook"
+                                                  ? !PlayerController.play(root.workId)
+                                                  : !LibraryController.openFormat(root.workId, card.kind)
                             }
                         }
                     }
                 }
 
-                // Only the overview for now; chapters, notes and files follow later.
+                // Overview and, for audiobooks with chapters, the chapters.
+                // Notes and files follow later.
                 Tabs {
+                    id: sectionTabs
+
                     width: parent.width
-                    tabs: [qsTr("Übersicht")]
+                    tabs: details.chapters.length > 1
+                          ? [qsTr("Übersicht"), qsTr("Kapitel · %1").arg(details.chapters.length)]
+                          : [qsTr("Übersicht")]
                     currentIndex: 0
+                    onActivated: function(index) {
+                        sectionTabs.currentIndex = index
+                    }
+                }
+
+                ChapterList {
+                    readonly property bool playingThis: PlayerController.workId === root.workId
+
+                    width: parent.width
+                    visible: sectionTabs.currentIndex === 1
+                    scrollable: false
+                    chapters: details.chapters
+                    currentIndex: playingThis ? PlayerController.chapterIndex : -1
+                    currentProgress: playingThis && PlayerController.chapterDuration > 0
+                                     ? (PlayerController.position - PlayerController.chapterStart)
+                                       / PlayerController.chapterDuration : 0
+                    onChapterActivated: function(index) {
+                        PlayerController.play(root.workId, index)
+                    }
                 }
 
                 Text {
                     width: parent.width
-                    visible: details.description !== ""
+                    visible: sectionTabs.currentIndex === 0 && details.description !== ""
                     text: details.description
                     wrapMode: Text.WordWrap
                     lineHeight: Theme.lineHeightText
@@ -251,6 +279,8 @@ SideDrawer {
 
                 Grid {
                     id: facts
+
+                    visible: sectionTabs.currentIndex === 0
 
                     readonly property var entries: {
                         const result = []

@@ -9,6 +9,10 @@ qt_add_qml_module(calibly_components
         CoverTile.qml
         FormatCard.qml
         MetadataForm.qml
+        PlayerControls.qml
+        PlaybackOptions.qml
+        ChapterList.qml
+        MiniPlayer.qml
 )
 
 target_link_libraries(calibly_components PRIVATE Qt6::Quick calibly_theme calibly_controls)

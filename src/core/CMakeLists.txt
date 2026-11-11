@@ -4,6 +4,8 @@ qt_add_library(calibly_core STATIC
     work.cpp
     textutils.h
     textutils.cpp
+    audiotimeline.h
+    audiotimeline.cpp
 )
 
 target_include_directories(calibly_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

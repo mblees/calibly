@@ -14,6 +14,9 @@
 //   * a file whose format already exists there with the same size is a
 //     duplicate and skipped.
 // Ebooks are processed first, so their metadata wins over audiobook tags.
+// Audio files come in playing order (folder, track number, file name with
+// numbers compared as numbers), so the files of an MP3 folder can be joined
+// into one audiobook (see appendAudioPart()).
 struct ImportPlan
 {
     struct PlannedFormat
@@ -33,3 +36,12 @@ ImportPlan planImport(QList<FileMetadata> files, const QList<Work> &existing);
 // title (without subtitle, case, accents, punctuation) + last name of the
 // first author.
 QString workMatchKey(const QString &title, const QStringList &authors);
+
+// The format of an imported file; target is its copy in the library. The
+// cover is not set. An audiobook without chapters gets one chapter for the
+// whole file, so further files can be appended as chapters.
+Format formatFromFile(const FileMetadata &file, const QString &target);
+
+// Appends one more file of an audiobook made of several files (e.g. the next
+// MP3 of a folder): its chapters, or one chapter for the whole file.
+void appendAudioPart(Format &format, const FileMetadata &file, const QString &target);

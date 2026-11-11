@@ -23,6 +23,9 @@
 //   { kind: "ebook" | "audiobook", fileName, fileType ("EPUB", "M4B" …),
 //     fileSize (bytes), pages, durationSeconds, progress (0–1),
 //     publisher, isbn, available (the file exists) }
+// chapters: the chapters of the (first) audiobook on one time axis, see
+//   AudioTimeline: [{ title ("" = untitled), start, duration }] in ms;
+//   empty for works without audiobook.
 // ebookPublisher, audiobookPublisher and isbn are the values of the first
 // ebook / audiobook format (isbn: of the ebook, else of the audiobook).
 class WorkDetails : public QObject
@@ -51,7 +54,11 @@ class WorkDetails : public QObject
     Q_PROPERTY(QDateTime added READ added NOTIFY changed)
     Q_PROPERTY(QUrl coverUrl READ coverUrl NOTIFY changed)
     Q_PROPERTY(bool coverIsSquare READ coverIsSquare NOTIFY changed)
+    // Cover of the audiobook (e.g. for the player), see Work::coverPath().
+    Q_PROPERTY(QUrl audiobookCoverUrl READ audiobookCoverUrl NOTIFY changed)
+    Q_PROPERTY(bool audiobookCoverIsSquare READ audiobookCoverIsSquare NOTIFY changed)
     Q_PROPERTY(QVariantList formats READ formats NOTIFY changed)
+    Q_PROPERTY(QVariantList chapters READ chapters NOTIFY changed)
 
 public:
     explicit WorkDetails(QObject *parent = nullptr);
@@ -80,7 +87,10 @@ public:
     QDateTime added() const;
     QUrl coverUrl() const;
     bool coverIsSquare() const;
+    QUrl audiobookCoverUrl() const;
+    bool audiobookCoverIsSquare() const;
     QVariantList formats() const;
+    QVariantList chapters() const;
 
 signals:
     void modelChanged();

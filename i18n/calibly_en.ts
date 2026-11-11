@@ -2,6 +2,19 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en" sourcelanguage="de">
 <context>
+    <name>ChapterList</name>
+    <message>
+        <location filename="../qml/Components/ChapterList.qml" line="30"/>
+        <source>Kapitel %1</source>
+        <translation>Chapter %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/ChapterList.qml" line="30"/>
+        <source>%1. %2</source>
+        <translation>%1. %2</translation>
+    </message>
+</context>
+<context>
     <name>ComponentGallery</name>
     <message>
         <location filename="../qml/Views/ComponentGallery.qml" line="15"/>
@@ -345,32 +358,57 @@
         <translation>Ebook</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="648"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="667"/>
+        <source>Player</source>
+        <translation>Player</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="702"/>
+        <source>Die Datei konnte nicht abgespielt werden.</source>
+        <translation>The file could not be played.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="706"/>
+        <source>Player-Leiste: spielt, mit Fehler</source>
+        <translation>Player bar: playing, with error</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="742"/>
+        <source>Vollbild: Steuerung, Kapitel-Position, Tempo und Schlaftimer</source>
+        <translation>Fullscreen: controls, chapter position, speed and sleep timer</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="767"/>
+        <source>Kapitelliste: gehört, aktuell, offen</source>
+        <translation>Chapter list: heard, current, open</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="774"/>
         <source>Seitenleiste</source>
         <translation>Sidebar</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="664"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="790"/>
         <source>Bibliothek</source>
         <translation>Library</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="665"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="791"/>
         <source>Weitermachen</source>
         <translation>Continue</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="666"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="792"/>
         <source>Serien</source>
         <translation>Series</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="667"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="793"/>
         <source>Autoren</source>
         <translation>Authors</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="668"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="794"/>
         <source>Sprecher</source>
         <translation>Narrators</translation>
     </message>
@@ -378,62 +416,68 @@
 <context>
     <name>DetailDrawer</name>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="96"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="97"/>
         <source>Schließen</source>
         <translation>Close</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="102"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="103"/>
         <source>Metadaten bearbeiten</source>
         <translation>Edit metadata</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="142"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="143"/>
         <source>von %1</source>
         <translation>by %1</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="150"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="151"/>
         <source>gelesen von %1</source>
         <translation>read by %1</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="167"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="168"/>
         <source>%1 · Band %2</source>
         <translation>%1 · Vol. %2</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="238"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="246"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="247"/>
         <source>Übersicht</source>
         <translation>Overview</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="258"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="246"/>
+        <source>Kapitel · %1</source>
+        <translation>Chapters · %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="288"/>
         <source>Erschienen</source>
         <translation>Published</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="260"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="290"/>
         <source>Sprache</source>
         <translation>Language</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="262"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="292"/>
         <source>Verlag</source>
         <translation>Publisher</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="264"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="294"/>
         <source>Audio-Verlag</source>
         <translation>Audio publisher</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="266"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="296"/>
         <source>ISBN</source>
         <translation>ISBN</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="268"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="298"/>
         <source>Hinzugefügt</source>
         <translation>Added</translation>
     </message>
@@ -913,11 +957,196 @@
     </message>
 </context>
 <context>
+    <name>MiniPlayer</name>
+    <message>
+        <location filename="../qml/Components/MiniPlayer.qml" line="145"/>
+        <source>Position im Kapitel</source>
+        <translation>Position in the chapter</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MiniPlayer.qml" line="170"/>
+        <source>Kap. %1 / %2</source>
+        <translation>Ch. %1 / %2</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MiniPlayer.qml" line="202"/>
+        <source>Player öffnen</source>
+        <translation>Open player</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MiniPlayer.qml" line="207"/>
+        <source>Player schließen</source>
+        <translation>Close player</translation>
+    </message>
+</context>
+<context>
     <name>PlaceholderView</name>
     <message>
         <location filename="../qml/Views/PlaceholderView.qml" line="28"/>
         <source>Diese Ansicht ist noch ein Platzhalter.</source>
         <translation>This view is still a placeholder.</translation>
+    </message>
+</context>
+<context>
+    <name>PlaybackOptions</name>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="30"/>
+        <source>%1×</source>
+        <translation>%1×</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="40"/>
+        <source>Tempo: %1</source>
+        <translation>Speed: %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="49"/>
+        <source>Kein Schlaftimer</source>
+        <translation>No sleep timer</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="49"/>
+        <source>15 Min.</source>
+        <translation>15 min</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="49"/>
+        <source>30 Min.</source>
+        <translation>30 min</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="49"/>
+        <source>45 Min.</source>
+        <translation>45 min</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="49"/>
+        <source>60 Min.</source>
+        <translation>60 min</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="50"/>
+        <source>Ende des Kapitels</source>
+        <translation>End of chapter</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="52"/>
+        <source>Kapitelende</source>
+        <translation>End of chapter</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="53"/>
+        <source>%1 Min.</source>
+        <translation>%1 min</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="54"/>
+        <source>Aus</source>
+        <translation>Off</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlaybackOptions.qml" line="55"/>
+        <source>Schlaftimer: %1</source>
+        <translation>Sleep timer: %1</translation>
+    </message>
+</context>
+<context>
+    <name>PlayerBar</name>
+    <message>
+        <location filename="../qml/Views/PlayerBar.qml" line="39"/>
+        <source>Kap. %1 · %2</source>
+        <translation>Ch. %1 · %2</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/PlayerBar.qml" line="40"/>
+        <source>Kapitel %1</source>
+        <translation>Chapter %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/PlayerBar.qml" line="49"/>
+        <source>Die Datei konnte nicht abgespielt werden.</source>
+        <translation>The file could not be played.</translation>
+    </message>
+</context>
+<context>
+    <name>PlayerControls</name>
+    <message>
+        <location filename="../qml/Components/PlayerControls.qml" line="42"/>
+        <source>Voriges Kapitel</source>
+        <translation>Previous chapter</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlayerControls.qml" line="47"/>
+        <source>30 Sekunden zurück</source>
+        <translation>Back 30 seconds</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlayerControls.qml" line="57"/>
+        <source>Pause</source>
+        <translation>Pause</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlayerControls.qml" line="57"/>
+        <source>Abspielen</source>
+        <translation>Play</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlayerControls.qml" line="85"/>
+        <source>30 Sekunden vor</source>
+        <translation>Forward 30 seconds</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/PlayerControls.qml" line="90"/>
+        <source>Nächstes Kapitel</source>
+        <translation>Next chapter</translation>
+    </message>
+</context>
+<context>
+    <name>PlayerView</name>
+    <message>
+        <location filename="../qml/Views/PlayerView.qml" line="103"/>
+        <source>Zurück zur Bibliothek</source>
+        <translation>Back to the library</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/PlayerView.qml" line="171"/>
+        <source>Kap. %1 · %2</source>
+        <translation>Ch. %1 · %2</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/PlayerView.qml" line="172"/>
+        <source>Kapitel %1</source>
+        <translation>Chapter %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/PlayerView.qml" line="187"/>
+        <source>gelesen von %1</source>
+        <translation>read by %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/PlayerView.qml" line="197"/>
+        <source>Die Datei konnte nicht abgespielt werden.</source>
+        <translation>The file could not be played.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/PlayerView.qml" line="214"/>
+        <source>Position im Kapitel</source>
+        <translation>Position in the chapter</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/PlayerView.qml" line="234"/>
+        <source>Kapitel %1 von %2</source>
+        <translation>Chapter %1 of %2</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/PlayerView.qml" line="250"/>
+        <source>Gesamt: %1 von %2 · %3 %</source>
+        <translation>Total: %1 of %2 · %3 %</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/PlayerView.qml" line="310"/>
+        <source>Kapitel · %1</source>
+        <translation>Chapters · %1</translation>
     </message>
 </context>
 <context>

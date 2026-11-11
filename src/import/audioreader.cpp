@@ -4,9 +4,15 @@
 
 #include "textutils.h"
 
+#include <chapterframe.h>
 #include <fileref.h>
+#include <id3v2tag.h>
+#include <mp4file.h>
+#include <mpegfile.h>
 #include <tpropertymap.h>
 #include <tvariant.h>
+
+#include <algorithm>
 
 namespace {
 
@@ -29,6 +35,43 @@ QString firstValue(const TagLib::PropertyMap &properties, std::initializer_list<
     return QString();
 }
 
+// Chapters of M4B / M4A files (QuickTime chapter track, else Nero chapters)
+// and of MP3 files (ID3v2 CHAP frames), sorted by start. The durations are
+// derived from the next chapter's start and the file length.
+QList<Chapter> readChapters(TagLib::File *file, qint64 fileDurationMs)
+{
+    QList<Chapter> chapters;
+    if (auto *mp4 = dynamic_cast<TagLib::MP4::File *>(file)) {
+        TagLib::MP4::ChapterList list = mp4->qtChapters();
+        if (list.isEmpty())
+            list = mp4->neroChapters();
+        for (const TagLib::MP4::Chapter &chapter : list)
+            chapters.append({ toQString(chapter.title()), QString(), chapter.startTime(), 0 });
+    } else if (auto *mpeg = dynamic_cast<TagLib::MPEG::File *>(file)) {
+        if (mpeg->hasID3v2Tag()) {
+            for (const TagLib::ID3v2::Frame *frame : mpeg->ID3v2Tag()->frameList("CHAP")) {
+                const auto *chapter = dynamic_cast<const TagLib::ID3v2::ChapterFrame *>(frame);
+                if (!chapter)
+                    continue;
+                const TagLib::ID3v2::FrameList titles = chapter->embeddedFrameList("TIT2");
+                chapters.append({ titles.isEmpty() ? QString() : toQString(titles.front()->toString()),
+                                  QString(), qint64(chapter->startTime()), 0 });
+            }
+        }
+    }
+
+    std::stable_sort(chapters.begin(), chapters.end(),
+                     [](const Chapter &a, const Chapter &b) { return a.startMs < b.startMs; });
+    for (int i = 0; i < chapters.size(); ++i) {
+        const qint64 end = i + 1 < chapters.size() ? chapters.at(i + 1).startMs : fileDurationMs;
+        chapters[i].durationMs = std::max<qint64>(0, end - chapters.at(i).startMs);
+    }
+    // A single chapter at 0 says nothing the file does not say itself.
+    if (chapters.size() == 1 && chapters.first().startMs == 0)
+        chapters.clear();
+    return chapters;
+}
+
 } // namespace
 
 void readAudio(const QString &path, FileMetadata &metadata)
@@ -43,11 +86,16 @@ void readAudio(const QString &path, FileMetadata &metadata)
         return;
     }
 
-    if (const TagLib::AudioProperties *audio = file.audioProperties())
-        metadata.durationSeconds = audio->lengthInSeconds();
+    if (const TagLib::AudioProperties *audio = file.audioProperties()) {
+        metadata.durationMs = audio->lengthInMilliseconds();
+        metadata.durationSeconds = int((metadata.durationMs + 500) / 1000);
+    }
 
     const TagLib::PropertyMap properties = file.properties();
     metadata.title = firstValue(properties, { "ALBUM", "TITLE" });
+    metadata.trackTitle = firstValue(properties, { "TITLE" });
+    metadata.trackNumber = firstValue(properties, { "TRACKNUMBER" }).section(u'/', 0, 0).toInt(); // "3/12"
+    metadata.chapters = readChapters(file.file(), metadata.durationMs);
     metadata.authors = TextUtils::splitNames(firstValue(properties, { "ALBUMARTIST", "ARTIST" }));
     metadata.narrators = TextUtils::splitNames(firstValue(properties, { "NARRATOR", "NARRATEDBY", "COMPOSER" }));
     metadata.series = firstValue(properties, { "SERIES", "MOVEMENTNAME" });

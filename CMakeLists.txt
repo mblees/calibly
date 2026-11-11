@@ -31,6 +31,10 @@ else()
     message(STATUS "calibly: Qt PDF not found, PDFs get placeholder covers")
 endif()
 
+# Phase 6: Qt Multimedia plays the audiobooks (Qt Maintenance Tool:
+# Qt 6.x -> Additional Libraries -> Qt Multimedia).
+find_package(Qt6 6.8 REQUIRED COMPONENTS Multimedia)
+
 include(cmake/Dependencies.cmake)
 
 # All QML modules are written below <build>/qml, so that tools like qmllint

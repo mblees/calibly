@@ -198,7 +198,8 @@ View F from the mockup becomes a real developer view `ComponentGallery.qml` (sta
 | `FormatCard` | Components | B | 3 |
 | `FormField`, `InputField`, `TextAreaField`, `TagField` | Controls | E | 5 |
 | `MetadataForm` | Components | E | 5 |
-| `MiniPlayer`, `PlayerControls`, `ChapterList` | Components | A, C | 6 |
+| `SeekBar` | Controls | A, C | 6 |
+| `MiniPlayer`, `PlayerControls`, `PlaybackOptions`, `ChapterList` | Components | A, B, C | 6 |
 | `DropHint`, `ImportQueue` | Components | D | 7 |
 | `ContinueCard` | Components | A | 8 |
 | `BulkActionBar` | Components | A | 9 |
@@ -271,6 +272,8 @@ Every phase ends with a **runnable app**. A phase only starts once the previous 
 - Playback speed and sleep timer. Space for play/pause, ← / → skip 30 seconds.
 - Chapters come from the M4B file or from the files of an MP3 folder.
 - **Done when:** an audiobook resumes at the same position after a restart.
+
+**Implemented as:** `AudioTimeline` (core) puts the files and chapters of an audiobook on one time axis, so an MP3 folder plays like one file. Chapters are read on import (M4B/M4A: QuickTime or Nero chapters via TagLib, MP3: ID3v2 CHAP frames); the files of an MP3 folder become one audiobook format with one chapter per file, ordered by folder, track number and file name. Chapters and the listening position are stored per format (database schema 3). `PlayerController` (Qt Multimedia) plays, follows the chapter, saves the position on pause, on chapter changes, every 15 seconds and on quit, and loads the last audiobook paused on the next start. Speed (0.75–2.5×, with pitch correction) and sleep timer (minutes or end of chapter, fades out) are part of the controller. The player bar (`PlayerBar` with `MiniPlayer`) sits below the library; it opens `PlayerView` in fullscreen. "Continue listening" in the detail view plays in calibly instead of the default application, and the detail view got the "Chapters" tab. Space plays / pauses, ← / → skip 30 seconds when no control uses these keys. Audiobooks imported in phase 4 from an MP3 folder stay several formats; joining them is part of phase 9 (merging).
 
 ### Phase 7 – Drag & drop
 - `DropArea` on the gallery and on every cover. A hint shows what will happen on release.

@@ -12,9 +12,19 @@ qt_add_executable(tst_workeditor tst_workeditor.cpp)
 target_link_libraries(tst_workeditor PRIVATE Qt6::Test calibly_models calibly_controllers)
 add_test(NAME tst_workeditor COMMAND tst_workeditor)
 
+qt_add_executable(tst_player tst_player.cpp)
+target_link_libraries(tst_player PRIVATE Qt6::Test calibly_models calibly_controllers)
+add_test(NAME tst_player COMMAND tst_player)
+
+qt_add_executable(tst_audiotimeline tst_audiotimeline.cpp)
+target_link_libraries(tst_audiotimeline PRIVATE Qt6::Test calibly_core)
+add_test(NAME tst_audiotimeline COMMAND tst_audiotimeline)
+
 qt_add_executable(tst_import tst_import.cpp)
 # QZipWriter (Qt-internal) creates a small EPUB for the test.
-target_link_libraries(tst_import PRIVATE Qt6::Test Qt6::CorePrivate Qt6::Sql calibly_import calibly_backend)
+# TagLib writes the tags and chapters of the test MP3 files.
+target_link_libraries(tst_import PRIVATE Qt6::Test Qt6::CorePrivate Qt6::Sql calibly_import calibly_backend
+    calibly_taglib)
 add_test(NAME tst_import COMMAND tst_import)
 # The PDF test only runs when calibly is built with Qt PDF.
 target_link_libraries(tst_import PRIVATE Qt6::Gui)

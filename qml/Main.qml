@@ -47,39 +47,67 @@ Window {
         }
     }
 
-    RowLayout {
+    // Library and player bar. Keys that no control used go to the player:
+    // Space plays / pauses, ← / → skip 30 seconds.
+    ColumnLayout {
         anchors.fill: parent
         spacing: 0
         visible: !root.galleryMode
+        focus: true
 
-        SidebarNav {
-            id: sidebar
+        Keys.onPressed: function(event) {
+            if (!PlayerController.hasWork)
+                return
+            if (event.key === Qt.Key_Space)
+                PlayerController.togglePlay()
+            else if (event.key === Qt.Key_Left)
+                PlayerController.skip(-30)
+            else if (event.key === Qt.Key_Right)
+                PlayerController.skip(30)
+            else
+                return
+            event.accepted = true
+        }
 
+        RowLayout {
+            Layout.fillWidth: true
             Layout.fillHeight: true
-            model: navigation
+            spacing: 0
 
-            onActivated: function(index) {
-                sidebar.currentIndex = index
+            SidebarNav {
+                id: sidebar
+
+                Layout.fillHeight: true
+                model: navigation
+
+                onActivated: function(index) {
+                    sidebar.currentIndex = index
+                }
+            }
+
+            Loader {
+                id: content
+
+                readonly property var entry: navigation.get(sidebar.currentIndex)
+
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                sourceComponent: Qt.createComponent("Calibly.Views", content.entry.view)
+
+                // Bindings (not plain assignments), so the title follows a language change.
+                onLoaded: {
+                    const view = content.item as ViewBase
+                    if (view) {
+                        view.title = Qt.binding(() => content.entry.title)
+                        view.iconName = Qt.binding(() => content.entry.iconName)
+                    }
+                }
             }
         }
 
-        Loader {
-            id: content
-
-            readonly property var entry: navigation.get(sidebar.currentIndex)
-
+        PlayerBar {
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            sourceComponent: Qt.createComponent("Calibly.Views", content.entry.view)
-
-            // Bindings (not plain assignments), so the title follows a language change.
-            onLoaded: {
-                const view = content.item as ViewBase
-                if (view) {
-                    view.title = Qt.binding(() => content.entry.title)
-                    view.iconName = Qt.binding(() => content.entry.iconName)
-                }
-            }
+            Layout.preferredHeight: implicitHeight
         }
     }
 

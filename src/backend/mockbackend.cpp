@@ -117,6 +117,18 @@ QList<Work> MockBackend::readJson() const
             format.durationSeconds = formatObject.value(QStringLiteral("duration")).toInt();
             format.publisher = formatObject.value(QStringLiteral("publisher")).toString(publisher);
             format.isbn = formatObject.value(QStringLiteral("isbn")).toString();
+            // Chapters: [{ "title", "start" and "duration" in seconds, optional "file" }]
+            const QJsonArray chapters = formatObject.value(QStringLiteral("chapters")).toArray();
+            for (const QJsonValue &chapterValue : chapters) {
+                const QJsonObject chapterObject = chapterValue.toObject();
+                const QString chapterFile = chapterObject.value(QStringLiteral("file")).toString();
+                format.chapters.append({ chapterObject.value(QStringLiteral("title")).toString(),
+                                         chapterFile.isEmpty() || QDir::isAbsolutePath(chapterFile)
+                                             ? chapterFile : jsonDir.filePath(chapterFile),
+                                         qint64(chapterObject.value(QStringLiteral("start")).toDouble() * 1000),
+                                         qint64(chapterObject.value(QStringLiteral("duration")).toDouble() * 1000) });
+            }
+            format.positionMs = qint64(format.progress * format.durationSeconds * 1000);
             const QString cover = formatObject.value(QStringLiteral("cover")).toString();
             if (!cover.isEmpty()) {
                 format.coverPath = coverDir + cover;

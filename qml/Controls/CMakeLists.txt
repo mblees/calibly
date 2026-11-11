@@ -20,6 +20,8 @@ qt_add_qml_module(calibly_controls
         InputField.qml
         TextAreaField.qml
         TagField.qml
+        SeekBar.qml
+        TimeFormat.js
 )
 
 target_link_libraries(calibly_controls PRIVATE Qt6::Quick calibly_theme)

@@ -645,6 +645,132 @@ ViewBase {
             }
 
             Section {
+                id: playerSection
+
+                // Sample state; the components report actions, the gallery applies them.
+                property bool playing: true
+                property real position: 372000
+                property real speed: 1.25
+                property int sleepMinutes: 25
+                property bool sleepAtChapterEnd: false
+                property int chapter: 4
+                readonly property var chapters: [
+                    { title: "Der Bund", start: 0, duration: 641000 },
+                    { title: "Erste Nachtwache", start: 641000, duration: 427000 },
+                    { title: "", start: 1068000, duration: 578000 },
+                    { title: "Moby Dick", start: 1646000, duration: 1035000 },
+                    { title: "Die Weiße des Wals", start: 2681000, duration: 893000 },
+                    { title: "Horch!", start: 3574000, duration: 152000 },
+                    { title: "Die Seekarte", start: 3726000, duration: 889000 }
+                ]
+
+                heading: qsTr("Player")
+                width: page.width
+
+                MiniPlayer {
+                    width: page.width
+                    title: "Moby Dick"
+                    coverUrl: "qrc:/mock/covers/moby-dick-hoerbuch.jpg"
+                    subtitle: "Kap. 5 · Die Weiße des Wals · Andreas Lindner"
+                    playing: playerSection.playing
+                    chapterPosition: playerSection.position
+                    chapterDuration: 893000
+                    chapterNumber: playerSection.chapter + 1
+                    chapterCount: playerSection.chapters.length
+                    speed: playerSection.speed
+                    sleepMinutesLeft: playerSection.sleepMinutes
+                    sleepAtChapterEnd: playerSection.sleepAtChapterEnd
+                    onPlayToggled: playerSection.playing = !playerSection.playing
+                    onSkipRequested: function(seconds) {
+                        playerSection.position = Math.max(0, Math.min(893000, playerSection.position + seconds * 1000))
+                    }
+                    onSeekRequested: function(value) {
+                        playerSection.position = value
+                    }
+                    onSpeedPicked: function(speed) {
+                        playerSection.speed = speed
+                    }
+                    onSleepPicked: function(minutes) {
+                        playerSection.sleepAtChapterEnd = minutes < 0
+                        playerSection.sleepMinutes = Math.max(0, minutes)
+                    }
+                }
+
+                MiniPlayer {
+                    width: page.width
+                    title: "Dracula"
+                    errorText: qsTr("Die Datei konnte nicht abgespielt werden.")
+                    chapterDuration: 55680000
+                }
+                Caption {
+                    text: qsTr("Player-Leiste: spielt, mit Fehler")
+                }
+
+                Row {
+                    spacing: Theme.spacingXxl
+
+                    Column {
+                        spacing: Theme.spacingL
+
+                        PlayerControls {
+                            large: true
+                            playing: playerSection.playing
+                            onPlayToggled: playerSection.playing = !playerSection.playing
+                        }
+                        SeekBar {
+                            width: 320
+                            large: true
+                            to: 893000
+                            value: playerSection.position
+                            onSeekRequested: function(value) {
+                                playerSection.position = value
+                            }
+                        }
+                        PlaybackOptions {
+                            speed: playerSection.speed
+                            sleepMinutesLeft: playerSection.sleepMinutes
+                            sleepAtChapterEnd: playerSection.sleepAtChapterEnd
+                            onSpeedPicked: function(speed) {
+                                playerSection.speed = speed
+                            }
+                            onSleepPicked: function(minutes) {
+                                playerSection.sleepAtChapterEnd = minutes < 0
+                                playerSection.sleepMinutes = Math.max(0, minutes)
+                            }
+                        }
+                        Caption {
+                            text: qsTr("Vollbild: Steuerung, Kapitel-Position, Tempo und Schlaftimer")
+                        }
+                    }
+
+                    Column {
+                        spacing: Theme.spacingS
+
+                        Rectangle {
+                            width: 380
+                            height: 300
+                            radius: Theme.radiusL
+                            color: Theme.playerPanel
+
+                            ChapterList {
+                                anchors.fill: parent
+                                anchors.margins: Theme.spacingS
+                                chapters: playerSection.chapters
+                                currentIndex: playerSection.chapter
+                                currentProgress: playerSection.position / 893000
+                                onChapterActivated: function(index) {
+                                    playerSection.chapter = index
+                                }
+                            }
+                        }
+                        Caption {
+                            text: qsTr("Kapitelliste: gehört, aktuell, offen")
+                        }
+                    }
+                }
+            }
+
+            Section {
                 heading: qsTr("Seitenleiste")
                 width: page.width
 

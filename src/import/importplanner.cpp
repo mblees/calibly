@@ -1,5 +1,6 @@
 #include "importplanner.h"
 
+#include <QCollator>
 #include <QDateTime>
 #include <QFileInfo>
 #include <QHash>
@@ -7,6 +8,7 @@
 
 #include <algorithm>
 
+#include "audiotimeline.h"
 #include "textutils.h"
 
 namespace {
@@ -56,9 +58,33 @@ void mergeInto(Work &work, const FileMetadata &file)
 
 bool hasDuplicate(const Work &work, const FileMetadata &file)
 {
-    return std::any_of(work.formats.cbegin(), work.formats.cend(), [&file](const Format &format) {
-        return format.kind == file.kind && format.fileSize == file.fileSize && file.fileSize > 0;
+    const QString name = QFileInfo(file.sourcePath).fileName();
+    return std::any_of(work.formats.cbegin(), work.formats.cend(), [&file, &name](const Format &format) {
+        if (format.kind != file.kind)
+            return false;
+        if (format.fileSize == file.fileSize && file.fileSize > 0)
+            return true;
+        // Audiobooks of several files: the same file name is the same part.
+        const bool severalFiles = std::any_of(format.chapters.cbegin(), format.chapters.cend(),
+                                              [](const Chapter &chapter) { return !chapter.filePath.isEmpty(); });
+        return severalFiles && std::any_of(format.chapters.cbegin(), format.chapters.cend(), [&](const Chapter &chapter) {
+            const QString path = chapter.filePath.isEmpty() ? format.filePath : chapter.filePath;
+            return QFileInfo(path).fileName() == name;
+        });
     });
+}
+
+QList<Chapter> partChapters(const FileMetadata &file, const QString &filePath)
+{
+    if (file.chapters.isEmpty()) {
+        const QString title = file.trackTitle.isEmpty() ? QFileInfo(file.sourcePath).completeBaseName()
+                                                        : file.trackTitle;
+        return { Chapter{ title, filePath, 0, file.durationMs } };
+    }
+    QList<Chapter> chapters = file.chapters;
+    for (Chapter &chapter : chapters)
+        chapter.filePath = filePath;
+    return chapters;
 }
 
 } // namespace
@@ -73,8 +99,21 @@ QString workMatchKey(const QString &title, const QStringList &authors)
 
 ImportPlan planImport(QList<FileMetadata> files, const QList<Work> &existing)
 {
-    std::stable_sort(files.begin(), files.end(), [](const FileMetadata &a, const FileMetadata &b) {
-        return a.kind == Format::Kind::Ebook && b.kind == Format::Kind::Audiobook;
+    QCollator collator;
+    collator.setNumericMode(true);
+    collator.setCaseSensitivity(Qt::CaseInsensitive);
+    std::stable_sort(files.begin(), files.end(), [&collator](const FileMetadata &a, const FileMetadata &b) {
+        if (a.kind != b.kind)
+            return a.kind == Format::Kind::Ebook;
+        if (a.kind == Format::Kind::Ebook)
+            return false; // keep the order
+        const QFileInfo infoA(a.sourcePath);
+        const QFileInfo infoB(b.sourcePath);
+        if (const int folder = collator.compare(infoA.path(), infoB.path()); folder != 0)
+            return folder < 0;
+        if (a.trackNumber != b.trackNumber && a.trackNumber > 0 && b.trackNumber > 0)
+            return a.trackNumber < b.trackNumber;
+        return collator.compare(infoA.fileName(), infoB.fileName()) < 0;
     });
 
     QHash<QString, int> existingByKey;
@@ -121,4 +160,27 @@ ImportPlan planImport(QList<FileMetadata> files, const QList<Work> &existing)
         plan.formats.append({ workIndex, file });
     }
     return plan;
+}
+
+Format formatFromFile(const FileMetadata &file, const QString &target)
+{
+    Format format;
+    format.kind = file.kind;
+    format.filePath = target;
+    format.fileSize = file.fileSize;
+    format.pages = file.pages;
+    format.durationSeconds = file.durationSeconds;
+    format.publisher = file.publisher;
+    format.isbn = file.isbn;
+    if (file.kind == Format::Kind::Audiobook)
+        format.chapters = partChapters(file, QString()); // the format's own file
+    return format;
+}
+
+void appendAudioPart(Format &format, const FileMetadata &file, const QString &target)
+{
+    format.chapters += partChapters(file, target);
+    format.fileSize += file.fileSize;
+    const qint64 totalMs = AudioTimeline(format).durationMs();
+    format.durationSeconds = int((totalMs + 500) / 1000);
 }

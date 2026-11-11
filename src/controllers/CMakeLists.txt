@@ -13,8 +13,12 @@ qt_add_qml_module(calibly_controllers
         librarycontroller.cpp
         workeditor.h
         workeditor.cpp
+        playercontroller.h
+        playercontroller.cpp
 )
 
 target_include_directories(calibly_controllers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-# Qt GUI for QDesktopServices (open files with the default application).
-target_link_libraries(calibly_controllers PUBLIC Qt6::Qml Qt6::Gui calibly_models calibly_backend calibly_import calibly_core)
+# Qt GUI for QDesktopServices (open files with the default application),
+# Qt Multimedia for the audiobook player.
+target_link_libraries(calibly_controllers PUBLIC Qt6::Qml Qt6::Gui Qt6::Multimedia calibly_models calibly_backend
+    calibly_import calibly_core)

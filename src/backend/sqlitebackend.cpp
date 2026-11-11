@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -17,7 +18,8 @@ namespace {
 
 // 1: phase 4
 // 2: publisher per format instead of per work, ISBN per format (phase 5)
-constexpr int kSchemaVersion = 2;
+// 3: chapters and listening position per format (phase 6)
+constexpr int kSchemaVersion = 3;
 
 QString toJson(const QStringList &list)
 {
@@ -123,6 +125,12 @@ bool SqliteBackend::open(QString *error)
             QStringLiteral("ALTER TABLE works DROP COLUMN publisher"),
         };
     }
+    if (version < 3) {
+        statements += {
+            QStringLiteral("ALTER TABLE formats ADD COLUMN chapters TEXT"), // JSON, see chaptersToJson()
+            QStringLiteral("ALTER TABLE formats ADD COLUMN position_ms INTEGER"),
+        };
+    }
     if (statements.isEmpty())
         return true;
 
@@ -136,6 +144,37 @@ bool SqliteBackend::open(QString *error)
         }
     }
     return db.commit();
+}
+
+// [{ "title": …, "file": relative path or absent, "start": ms, "duration": ms }]
+QString SqliteBackend::chaptersToJson(const QList<Chapter> &chapters) const
+{
+    if (chapters.isEmpty())
+        return QString();
+    QJsonArray array;
+    for (const Chapter &chapter : chapters) {
+        QJsonObject object{ { QStringLiteral("title"), chapter.title },
+                            { QStringLiteral("start"), chapter.startMs },
+                            { QStringLiteral("duration"), chapter.durationMs } };
+        if (!chapter.filePath.isEmpty())
+            object.insert(QStringLiteral("file"), relative(chapter.filePath));
+        array.append(object);
+    }
+    return QString::fromUtf8(QJsonDocument(array).toJson(QJsonDocument::Compact));
+}
+
+QList<Chapter> SqliteBackend::chaptersFromJson(const QString &json) const
+{
+    QList<Chapter> chapters;
+    const QJsonArray array = QJsonDocument::fromJson(json.toUtf8()).array();
+    for (const QJsonValue &value : array) {
+        const QJsonObject object = value.toObject();
+        chapters.append({ object.value(QStringLiteral("title")).toString(),
+                          absolute(object.value(QStringLiteral("file")).toString()),
+                          object.value(QStringLiteral("start")).toInteger(),
+                          object.value(QStringLiteral("duration")).toInteger() });
+    }
+    return chapters;
 }
 
 QString SqliteBackend::absolute(const QString &relativePath) const
@@ -181,7 +220,8 @@ QList<Work> SqliteBackend::loadWorks()
     }
 
     query.prepare(QStringLiteral("SELECT work_id, kind, file_path, progress, cover_path, cover_square, file_size,"
-                                 " pages, duration, publisher, isbn FROM formats ORDER BY work_id, position"));
+                                 " pages, duration, publisher, isbn, chapters, position_ms FROM formats"
+                                 " ORDER BY work_id, position"));
     if (!exec(query, nullptr))
         return works;
     while (query.next()) {
@@ -200,6 +240,8 @@ QList<Work> SqliteBackend::loadWorks()
         format.durationSeconds = query.value(8).toInt();
         format.publisher = query.value(9).toString();
         format.isbn = query.value(10).toString();
+        format.chapters = chaptersFromJson(query.value(11).toString());
+        format.positionMs = query.value(12).toLongLong();
         works[index].formats.append(format);
     }
     return works;
@@ -237,13 +279,14 @@ bool SqliteBackend::saveWork(const Work &work)
     for (int position = 0; ok && position < work.formats.size(); ++position) {
         const Format &format = work.formats.at(position);
         query.prepare(QStringLiteral("INSERT INTO formats (work_id, position, kind, file_path, progress, cover_path,"
-                                     " cover_square, file_size, pages, duration, publisher, isbn)"
-                                     " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+                                     " cover_square, file_size, pages, duration, publisher, isbn, chapters, position_ms)"
+                                     " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
         const QVariantList formatValues = {
             work.id, position,
             format.kind == Format::Kind::Audiobook ? QStringLiteral("audiobook") : QStringLiteral("ebook"),
             relative(format.filePath), format.progress, relative(format.coverPath), format.coverIsSquare,
-            format.fileSize, format.pages, format.durationSeconds, format.publisher, format.isbn };
+            format.fileSize, format.pages, format.durationSeconds, format.publisher, format.isbn,
+            chaptersToJson(format.chapters), format.positionMs };
         for (const QVariant &value : formatValues)
             query.addBindValue(value);
         ok = exec(query, nullptr);

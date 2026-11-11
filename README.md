@@ -21,7 +21,7 @@ Prototype of the planned cover gallery interface (not implemented yet): main lib
 The UI will be built with Qt Quick, in small phases that each end with a runnable app. The [UI Development Plan](docs/UI-Development-Plan.md) describes the concept, the modular architecture and the phases.
 
 ## Build
-Requirements: Qt 6.12 with **MinGW 64-bit**, plus **CMake** and **Ninja** from the Qt Online Installer (under "Build Tools"). Optional: **Qt PDF** (Extensions) for PDF covers. TagLib is downloaded and built automatically on the first configure (needs internet once). The presets expect Qt in `C:\Qt`; if it is installed elsewhere, change `QT_ROOT` in `CMakePresets.json`.
+Requirements: Qt 6.12 with **MinGW 64-bit** and **Qt Multimedia** (Additional Libraries), plus **CMake** and **Ninja** from the Qt Online Installer (under "Build Tools"). Optional: **Qt PDF** (Extensions) for PDF covers. TagLib is downloaded and built automatically on the first configure (needs internet once). The presets expect Qt in `C:\Qt`; if it is installed elsewhere, change `QT_ROOT` in `CMakePresets.json`.
 
 Run the commands in the project folder. If `cmake` is not on your `PATH`, use `C:\Qt\Tools\CMake_64\bin\cmake.exe`.
 
@@ -50,6 +50,8 @@ Command line options of `calibly.exe`:
 - `--library <folder>` uses this library folder instead of the last used one (default `Documents\calibly-Bibliothek`).
 - `--import <path>` imports a file or folder after start, as if it was picked with "Add"; can be given several times.
 - `--mock <file.json>` reads the library from your own JSON file in the format of `resources/mock/mock.json`, e.g. to try the app with real files. Relative file paths are relative to the JSON file.
+
+Audiobooks play in calibly: "Continue listening" in the detail view starts the player bar at the bottom, which opens the fullscreen player. Space plays / pauses, ← / → skip 30 seconds. The position is saved, and the last audiobook is ready again after a restart.
 
 Metadata is edited with ✎ in the detail view of a title. Fields marked with 🔗 apply to all formats of the title, the others only to the audiobook or the ebook. Ctrl+S saves, Ctrl+PgUp / Ctrl+PgDown go to the previous / next title.
 

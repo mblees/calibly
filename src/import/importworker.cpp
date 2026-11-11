@@ -1,12 +1,26 @@
 #include "importworker.h"
 
 #include <QDirIterator>
+#include <QHash>
 #include <QFileInfo>
 #include <QImage>
 
 #include "importplanner.h"
 #include "libraryfolder.h"
 #include "metadatareader.h"
+
+namespace {
+
+void setCover(Format &format, const FileMetadata &file, const QString &target)
+{
+    format.coverPath = LibraryFolder::saveCover(file.cover, target);
+    if (!format.coverPath.isEmpty()) {
+        const double ratio = double(file.cover.width()) / std::max(1, file.cover.height());
+        format.coverIsSquare = ratio > 0.9 && ratio < 1.1;
+    }
+}
+
+} // namespace
 
 QStringList ImportWorker::collectFiles(const QStringList &paths)
 {
@@ -49,6 +63,9 @@ void ImportWorker::run(const QStringList &paths, const QList<Work> &existing, co
     QStringList failed;
     int added = 0;
     int done = int(plan.duplicates.size());
+    // Audiobook format created in this import, per work: further audio files
+    // of the same work (an MP3 folder) are joined into it.
+    QHash<int, int> audiobookOfWork; // work index -> index in work.formats
     for (const ImportPlan::PlannedFormat &planned : std::as_const(plan.formats)) {
         const FileMetadata &file = planned.metadata;
         emit progress(done++, total, QFileInfo(file.sourcePath).fileName());
@@ -63,20 +80,22 @@ void ImportWorker::run(const QStringList &paths, const QList<Work> &existing, co
             continue;
         }
 
-        Format format;
-        format.kind = file.kind;
-        format.filePath = target;
-        format.fileSize = QFileInfo(target).size();
-        format.pages = file.pages;
-        format.durationSeconds = file.durationSeconds;
-        format.publisher = file.publisher;
-        format.isbn = file.isbn;
-        format.coverPath = LibraryFolder::saveCover(file.cover, target);
-        if (!format.coverPath.isEmpty()) {
-            const double ratio = double(file.cover.width()) / std::max(1, file.cover.height());
-            format.coverIsSquare = ratio > 0.9 && ratio < 1.1;
+        const bool isAudiobook = file.kind == Format::Kind::Audiobook;
+        if (isAudiobook && audiobookOfWork.contains(planned.workIndex)) {
+            Format &format = work.formats[audiobookOfWork.value(planned.workIndex)];
+            appendAudioPart(format, file, target);
+            if (format.coverPath.isEmpty())
+                setCover(format, file, target);
+            ++added;
+            continue;
         }
+
+        Format format = formatFromFile(file, target);
+        format.fileSize = QFileInfo(target).size();
+        setCover(format, file, target);
         work.formats.append(format);
+        if (isAudiobook)
+            audiobookOfWork.insert(planned.workIndex, int(work.formats.size()) - 1);
         ++added;
     }
 

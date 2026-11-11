@@ -9,6 +9,8 @@ qt_add_qml_module(calibly_views
         LibraryView.qml
         DetailDrawer.qml
         MetadataEditor.qml
+        PlayerView.qml
+        PlayerBar.qml
         ComponentGallery.qml
 )
 

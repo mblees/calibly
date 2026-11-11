@@ -9,6 +9,7 @@
 #include "languagemanager.h"
 #include "librarycontroller.h"
 #include "mockbackend.h"
+#include "playercontroller.h"
 #include "sqlitebackend.h"
 
 #include <QFileInfo>
@@ -99,6 +100,8 @@ int main(int argc, char *argv[])
     auto *languageManager = new LanguageManager(&engine, &engine);
     languageManager->start(parser.value(languageOption));
     auto *libraryController = new LibraryController(*backend, &engine, &engine);
+    // Created after the library: it loads the last audiobook from it.
+    new PlayerController(*libraryController, &engine, &engine);
 
     engine.setInitialProperties({
         { QStringLiteral("galleryMode"), parser.isSet(galleryOption) },

@@ -3,6 +3,7 @@
 #include <QFileInfo>
 #include <QVariantMap>
 
+#include "audiotimeline.h"
 #include "textutils.h"
 #include "workmodel.h"
 
@@ -67,6 +68,7 @@ WORK_FIELD(QString, languageName, TextUtils::languageName(m_work->language), QSt
 WORK_FIELD(int, publishedYear, m_work->publishedYear, 0)
 WORK_FIELD(QDateTime, added, m_work->added, QDateTime())
 WORK_FIELD(bool, coverIsSquare, m_work->coverIsSquare(m_work->primaryKind()), false)
+WORK_FIELD(bool, audiobookCoverIsSquare, m_work->coverIsSquare(Format::Kind::Audiobook), true)
 
 #undef WORK_FIELD
 
@@ -94,6 +96,28 @@ QString WorkDetails::isbn() const
 {
     const QString ebook = formatField(m_work, Format::Kind::Ebook, &Format::isbn);
     return ebook.isEmpty() ? formatField(m_work, Format::Kind::Audiobook, &Format::isbn) : ebook;
+}
+
+QUrl WorkDetails::audiobookCoverUrl() const
+{
+    if (!m_model)
+        return {};
+    const int row = m_model->rowOf(m_workId);
+    return row < 0 ? QUrl() : m_model->index(row).data(WorkModel::AudiobookCoverUrlRole).toUrl();
+}
+
+QVariantList WorkDetails::chapters() const
+{
+    QVariantList list;
+    const Format *audiobook = m_work ? m_work->format(Format::Kind::Audiobook) : nullptr;
+    if (!audiobook)
+        return list;
+    for (const AudioTimeline::Entry &chapter : AudioTimeline(*audiobook).chapters()) {
+        list.append(QVariantMap{ { QStringLiteral("title"), chapter.title },
+                                 { QStringLiteral("start"), double(chapter.startMs) },
+                                 { QStringLiteral("duration"), double(chapter.durationMs) } });
+    }
+    return list;
 }
 
 QUrl WorkDetails::coverUrl() const

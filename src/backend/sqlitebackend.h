@@ -12,7 +12,8 @@
 // Tables:
 //   works    one row per work (lists such as authors are stored as JSON)
 //   formats  one row per file, linked to its work, with the metadata that
-//            differs per format (publisher, ISBN)
+//            differs per format (publisher, ISBN), the chapters (JSON) and
+//            the listening position
 // The schema version is kept in PRAGMA user_version; open() updates older
 // libraries step by step.
 class SqliteBackend : public LibraryBackend
@@ -34,6 +35,8 @@ public:
 private:
     QString absolute(const QString &relativePath) const;
     QString relative(const QString &absolutePath) const;
+    QString chaptersToJson(const QList<Chapter> &chapters) const;
+    QList<Chapter> chaptersFromJson(const QString &json) const;
 
     QString m_root;
     QString m_connectionName;
