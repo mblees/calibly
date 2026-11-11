@@ -66,6 +66,13 @@ QList<Work> MockBackend::loadWorks()
         work.narrators = toStringList(item.value(QStringLiteral("narrators")));
         work.series = item.value(QStringLiteral("series")).toString();
         work.seriesIndex = item.value(QStringLiteral("seriesIndex")).toInt();
+        work.description = item.value(QStringLiteral("description")).toString();
+        work.tags = toStringList(item.value(QStringLiteral("tags")));
+        work.rating = std::clamp(item.value(QStringLiteral("rating")).toInt(), 0, 5);
+        work.language = item.value(QStringLiteral("language")).toString();
+        work.publishedYear = item.value(QStringLiteral("published")).toInt();
+        work.publisher = item.value(QStringLiteral("publisher")).toString();
+        work.added = QDateTime::fromString(item.value(QStringLiteral("added")).toString(), Qt::ISODate);
         work.lastOpened = QDateTime::fromString(item.value(QStringLiteral("lastOpened")).toString(),
                                                 Qt::ISODate);
 
@@ -78,6 +85,9 @@ QList<Work> MockBackend::loadWorks()
                               : Format::Kind::Ebook;
             format.filePath = formatObject.value(QStringLiteral("file")).toString();
             format.progress = std::clamp(formatObject.value(QStringLiteral("progress")).toDouble(), 0.0, 1.0);
+            format.fileSize = formatObject.value(QStringLiteral("size")).toInteger();
+            format.pages = formatObject.value(QStringLiteral("pages")).toInt();
+            format.durationSeconds = formatObject.value(QStringLiteral("duration")).toInt();
             const QString cover = formatObject.value(QStringLiteral("cover")).toString();
             if (!cover.isEmpty()) {
                 format.coverPath = coverDir + cover;

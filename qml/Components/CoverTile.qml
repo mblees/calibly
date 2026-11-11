@@ -36,6 +36,7 @@ Item {
 
     Accessible.role: Accessible.Button
     Accessible.name: root.author !== "" ? root.title + ", " + root.author : root.title
+    Accessible.onPressAction: root.clicked()
 
     CoverArt {
         id: art

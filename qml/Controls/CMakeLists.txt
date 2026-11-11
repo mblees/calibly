@@ -13,6 +13,9 @@ qt_add_qml_module(calibly_controls
         SearchField.qml
         SelectMenu.qml
         AppSlider.qml
+        SideDrawer.qml
+        Tabs.qml
+        RatingStars.qml
 )
 
 target_link_libraries(calibly_controls PRIVATE Qt6::Quick calibly_theme)

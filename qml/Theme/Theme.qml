@@ -33,6 +33,8 @@ QtObject {
     readonly property color finishedForeground: "#062010"
     readonly property color danger: "#e05a5a"
     readonly property color shadow: "#80000000"
+    readonly property color scrim: "#99000000"      // dims the window behind drawers
+    readonly property color rating: "#f2c14e"
 
     // Spacing
     readonly property int spacingXxs: 2
@@ -54,6 +56,7 @@ QtObject {
     readonly property int fontLarge: 15
     readonly property int fontTitle: 20
     readonly property int fontDisplay: 28
+    readonly property real lineHeightText: 1.4 // running text such as descriptions
 
     // Font families
     readonly property string fontFamilySerif: "Georgia"
@@ -68,6 +71,12 @@ QtObject {
     readonly property int menuMinWidth: 200
     readonly property int sliderWidth: 110
     readonly property int sliderHandleSize: 14
+    readonly property int drawerWidth: 580
+    readonly property int detailCoverWidth: 150
+    readonly property int tabHeight: 36
+    readonly property int ratingStarSize: 14
+    readonly property int formatCardWidth: 260
+    readonly property real formatBorderOpacity: 0.4 // colored border of format cards
     readonly property int sidebarWidth: 220
     readonly property int borderWidth: 1
     readonly property int focusWidth: 2
@@ -105,4 +114,7 @@ QtObject {
 
     // Motion
     readonly property int durationFast: 120
+    readonly property int durationDrawer: 220
+    readonly property real heroBlurBrightness: -0.1  // darkening of the blurred cover behind the detail header
+    readonly property real heroOverlayOpacity: 0.5   // background-colored veil over it, keeps the text readable
 }

@@ -224,34 +224,191 @@
         <translation>Ctrl K</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="424"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="428"/>
+        <source>Detail-Ansicht</source>
+        <translation>Detail view</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="476"/>
+        <source>Klassiker</source>
+        <translation>Classic</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="482"/>
+        <source>Übersicht</source>
+        <translation>Overview</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="482"/>
+        <source>Kapitel</source>
+        <translation>Chapters</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="482"/>
+        <source>Notizen</source>
+        <translation>Notes</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="492"/>
         <source>Seitenleiste</source>
         <translation>Sidebar</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="440"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="508"/>
         <source>Bibliothek</source>
         <translation>Library</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="441"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="509"/>
         <source>Weitermachen</source>
         <translation>Continue</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="442"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="510"/>
         <source>Serien</source>
         <translation>Series</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="443"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="511"/>
         <source>Autoren</source>
         <translation>Authors</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="444"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="512"/>
         <source>Sprecher</source>
         <translation>Narrators</translation>
+    </message>
+</context>
+<context>
+    <name>DetailDrawer</name>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="87"/>
+        <source>Schließen</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="126"/>
+        <source>von %1</source>
+        <translation>by %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="134"/>
+        <source>gelesen von %1</source>
+        <translation>read by %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="151"/>
+        <source>%1 · Band %2</source>
+        <translation>%1 · Vol. %2</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="222"/>
+        <source>Übersicht</source>
+        <translation>Overview</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="242"/>
+        <source>Erschienen</source>
+        <translation>Published</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="245"/>
+        <source>Sprache</source>
+        <translation>Language</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="248"/>
+        <source>Verlag</source>
+        <translation>Publisher</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/DetailDrawer.qml" line="250"/>
+        <source>Hinzugefügt</source>
+        <translation>Added</translation>
+    </message>
+</context>
+<context>
+    <name>FormatCard</name>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="40"/>
+        <source>%1 Std. %2 Min.</source>
+        <translation>%1 h %2 min</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="41"/>
+        <source>%1 Min.</source>
+        <translation>%1 min</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="47"/>
+        <source>%1 GB</source>
+        <translation>%1 GB</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="48"/>
+        <source>%1 MB</source>
+        <translation>%1 MB</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="58"/>
+        <source>%1 · noch %2</source>
+        <translation>%1 · %2 left</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Components/FormatCard.qml" line="64"/>
+        <source>%Ln Seiten</source>
+        <translation>
+            <numerusform>%Ln page</numerusform>
+            <numerusform>%Ln pages</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Components/FormatCard.qml" line="65"/>
+        <source>%Ln Seiten · Seite %1</source>
+        <translation>
+            <numerusform>%Ln page · page %1</numerusform>
+            <numerusform>%Ln pages · page %1</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="99"/>
+        <source>Hörbuch</source>
+        <translation>Audiobook</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="99"/>
+        <source>E-Book</source>
+        <translation>Ebook</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="138"/>
+        <source>Weiterhören · %1 %</source>
+        <translation>Continue listening · %1%</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="139"/>
+        <source>Weiterlesen · %1 %</source>
+        <translation>Continue reading · %1%</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="140"/>
+        <source>Hören</source>
+        <translation>Listen</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="140"/>
+        <source>Lesen</source>
+        <translation>Read</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="149"/>
+        <source>Datei nicht gefunden.</source>
+        <translation>File not found.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/FormatCard.qml" line="150"/>
+        <source>Kein Programm zum Öffnen gefunden.</source>
+        <translation>No application found to open it.</translation>
     </message>
 </context>
 <context>
@@ -272,47 +429,47 @@
         <translation>Cover size</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="101"/>
+        <location filename="../qml/Views/LibraryView.qml" line="102"/>
         <source>Alle</source>
         <translation>All</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="107"/>
+        <location filename="../qml/Views/LibraryView.qml" line="108"/>
         <source>E-Books</source>
         <translation>Ebooks</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="114"/>
+        <location filename="../qml/Views/LibraryView.qml" line="115"/>
         <source>Hörbücher</source>
         <translation>Audiobooks</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="121"/>
+        <location filename="../qml/Views/LibraryView.qml" line="122"/>
         <source>Beides</source>
         <translation>Both</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="135"/>
+        <location filename="../qml/Views/LibraryView.qml" line="136"/>
         <source>Sortieren</source>
         <translation>Sort</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="136"/>
+        <location filename="../qml/Views/LibraryView.qml" line="137"/>
         <source>Zuletzt geöffnet</source>
         <translation>Recently opened</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="136"/>
+        <location filename="../qml/Views/LibraryView.qml" line="137"/>
         <source>Titel</source>
         <translation>Title</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="136"/>
+        <location filename="../qml/Views/LibraryView.qml" line="137"/>
         <source>Autor</source>
         <translation>Author</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="161"/>
+        <location filename="../qml/Views/LibraryView.qml" line="162"/>
         <source>%L1 von %Ln Titeln</source>
         <translation>
             <numerusform>%L1 of %Ln title</numerusform>
@@ -320,7 +477,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="162"/>
+        <location filename="../qml/Views/LibraryView.qml" line="163"/>
         <source>%Ln Titel</source>
         <translation>
             <numerusform>%Ln title</numerusform>
@@ -328,22 +485,22 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="235"/>
+        <location filename="../qml/Views/LibraryView.qml" line="243"/>
         <source>Noch keine Titel in der Bibliothek.</source>
         <translation>No titles in the library yet.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="236"/>
+        <location filename="../qml/Views/LibraryView.qml" line="244"/>
         <source>Keine Treffer für „%1“.</source>
         <translation>No results for “%1”.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="237"/>
+        <location filename="../qml/Views/LibraryView.qml" line="245"/>
         <source>Keine Titel in dieser Auswahl.</source>
         <translation>No titles in this selection.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="244"/>
+        <location filename="../qml/Views/LibraryView.qml" line="252"/>
         <source>Filter zurücksetzen</source>
         <translation>Reset filters</translation>
     </message>
@@ -387,6 +544,14 @@
         <location filename="../qml/Views/PlaceholderView.qml" line="28"/>
         <source>Diese Ansicht ist noch ein Platzhalter.</source>
         <translation>This view is still a placeholder.</translation>
+    </message>
+</context>
+<context>
+    <name>RatingStars</name>
+    <message>
+        <location filename="../qml/Controls/RatingStars.qml" line="17"/>
+        <source>%1 von 5 Sternen</source>
+        <translation>%1 of 5 stars</translation>
     </message>
 </context>
 <context>

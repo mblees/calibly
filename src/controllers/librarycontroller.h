@@ -12,6 +12,10 @@ class LibraryBackend;
 // In QML (import Calibly.Controllers):
 //   LibraryController.works   WorkModel with all works
 //   LibraryController.reload()  reads all works again from the backend
+//   LibraryController.openFormat(workId, kind)
+//       opens the file of a format ("ebook" or "audiobook") with the default
+//       application of the system; false if the file is missing or no
+//       application could open it
 class LibraryController : public QObject
 {
     Q_OBJECT
@@ -30,6 +34,7 @@ public:
     WorkModel *works() { return &m_works; }
 
     Q_INVOKABLE void reload();
+    Q_INVOKABLE bool openFormat(const QString &workId, const QString &kind);
 
 private:
     LibraryBackend &m_backend;

@@ -421,6 +421,74 @@ ViewBase {
             }
 
             Section {
+                id: detailSection
+
+                property int tab: 0
+
+                heading: qsTr("Detail-Ansicht")
+                width: page.width
+
+                Row {
+                    spacing: Theme.spacingL
+
+                    FormatCard {
+                        width: Theme.formatCardWidth
+                        kind: "ebook"
+                        fileType: "EPUB"
+                        fileSize: 1669200
+                        pages: 652
+                        durationSeconds: 0
+                        progress: 0.31
+                        available: true
+                    }
+                    FormatCard {
+                        width: Theme.formatCardWidth
+                        kind: "audiobook"
+                        fileType: "M4B"
+                        fileSize: 1429440000
+                        pages: 0
+                        durationSeconds: 89340
+                        progress: 0.58
+                        available: true
+                        openFailed: true
+                    }
+                    FormatCard {
+                        width: Theme.formatCardWidth
+                        kind: "audiobook"
+                        fileType: "MP3"
+                        fileSize: 0
+                        pages: 0
+                        durationSeconds: 27660
+                        progress: 0
+                        available: false
+                    }
+                }
+
+                Row {
+                    spacing: Theme.spacingXl
+
+                    RatingStars {
+                        anchors.verticalCenter: parent.verticalCenter
+                        value: 4
+                    }
+                    Badge {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: qsTr("Klassiker")
+                        backgroundColor: Theme.surfaceRaised
+                        color: Theme.textSecondary
+                    }
+                    Tabs {
+                        width: 320
+                        tabs: [qsTr("Übersicht"), qsTr("Kapitel"), qsTr("Notizen")]
+                        currentIndex: detailSection.tab
+                        onActivated: function(index) {
+                            detailSection.tab = index
+                        }
+                    }
+                }
+            }
+
+            Section {
                 heading: qsTr("Seitenleiste")
                 width: page.width
 

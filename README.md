@@ -48,7 +48,7 @@ Command line options of `calibly.exe`:
 - `--size <W>x<H>` sets the initial window size, e.g. `1900x1000`.
 - `--screenshot <file>` saves a screenshot of the window and quits.
 
-Until the real library exists (phase 4), the app shows sample data from `resources/mock/mock.json`. The sample covers are generated with `powershell -ExecutionPolicy Bypass -File tools/generate-mock-covers.ps1`.
+Until the real library exists (phase 4), the app shows sample data from `resources/mock/mock.json`. The files of the sample formats do not exist, so "Read" and "Listen" in the detail view are disabled with the note "File not found". The sample covers are generated with `powershell -ExecutionPolicy Bypass -File tools/generate-mock-covers.ps1`.
 
 ## Translations
 UI texts are written in German and translated with Qt Linguist. The English translation is in `i18n/calibly_en.ts`. After changing or adding texts, run `update_translations`, translate the new entries (e.g. with `C:\Qt\6.12.0\mingw_64\bin\linguist.exe`) and build again. Start with a specific language with `--language en`. The language can be switched at runtime, as shown in the component gallery. Details are in the [UI Development Plan](docs/UI-Development-Plan.md#translations).

@@ -33,7 +33,7 @@ public:
         ListenProgressRole, // 0.0 – 1.0
         LastOpenedRole,
         AuthorSortRole,     // sort key of the first author, e.g. "Goethe"
-        SearchTextRole,     // folded title, authors, narrators and series (see TextUtils)
+        SearchTextRole,     // folded title, authors, narrators, series and tags (see TextUtils)
         EbookCoverUrlRole,  // cover of the ebook, see Work::coverPath()
         EbookCoverIsSquareRole,
         AudiobookCoverUrlRole,
@@ -49,6 +49,11 @@ public:
 
     int count() const { return int(m_works.size()); }
     void setWorks(QList<Work> works);
+
+    // Row of the work with this id, -1 if there is none.
+    int rowOf(const QString &workId) const;
+    // Work in this row, nullptr for an invalid row.
+    const Work *workAt(int row) const;
 
 signals:
     void countChanged();

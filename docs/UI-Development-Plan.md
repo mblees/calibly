@@ -192,7 +192,7 @@ View F from the mockup becomes a real developer view `ComponentGallery.qml` (sta
 | `Badge` / `Label` | Controls | F | 1 |
 | `CoverArt` (2:3 and square, series stack) | Components | A, B, C, D, E | 1 |
 | `CoverTile` (icons, labels, progress, hover, selection) | Components | A, D | 1 / 8 / 9 |
-| `SideDrawer`, `Tabs` | Controls | B | 3 |
+| `SideDrawer`, `Tabs`, `RatingStars` | Controls | B | 3 |
 | `FormatCard` | Components | B | 3 |
 | `FormField` | Controls | E | 5 |
 | `MetadataForm` | Components | E | 5 |

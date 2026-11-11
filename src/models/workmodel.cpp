@@ -107,6 +107,20 @@ QHash<int, QByteArray> WorkModel::roleNames() const
     };
 }
 
+int WorkModel::rowOf(const QString &workId) const
+{
+    for (int row = 0; row < m_works.size(); ++row) {
+        if (m_works.at(row).id == workId)
+            return row;
+    }
+    return -1;
+}
+
+const Work *WorkModel::workAt(int row) const
+{
+    return row >= 0 && row < m_works.size() ? &m_works.at(row) : nullptr;
+}
+
 void WorkModel::setWorks(QList<Work> works)
 {
     const int oldCount = count();
@@ -115,7 +129,7 @@ void WorkModel::setWorks(QList<Work> works)
     m_searchTexts.clear();
     m_searchTexts.reserve(m_works.size());
     for (const Work &work : std::as_const(m_works)) {
-        const QStringList parts = QStringList{ work.title, work.series } + work.authors + work.narrators;
+        const QStringList parts = QStringList{ work.title, work.series } + work.authors + work.narrators + work.tags;
         m_searchTexts.append(TextUtils::foldForSearch(parts.join(u' ')));
     }
     endResetModel();

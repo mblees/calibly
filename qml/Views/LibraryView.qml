@@ -197,6 +197,7 @@ ViewBase {
         delegate: Item {
             id: cell
 
+            required property string workId
             required property string title
             required property string authorText
             required property url coverUrl
@@ -219,8 +220,14 @@ ViewBase {
                 hasAudiobook: cell.hasAudiobook
                 readProgress: cell.readProgress
                 listenProgress: cell.listenProgress
+
+                onClicked: detail.openFor(cell.workId, cell.coverUrl, cell.coverIsSquare)
             }
         }
+    }
+
+    DetailDrawer {
+        id: detail
     }
 
     // --- empty states --------------------------------------------------------

@@ -9,6 +9,8 @@ qt_add_qml_module(calibly_models
         workmodel.cpp
         workfiltermodel.h
         workfiltermodel.cpp
+        workdetails.h
+        workdetails.cpp
 )
 
 target_include_directories(calibly_models PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
