@@ -1,5 +1,6 @@
 #include "mockbackend.h"
 
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QImageReader>
@@ -39,6 +40,27 @@ MockBackend::MockBackend(QString jsonPath)
 
 QList<Work> MockBackend::loadWorks()
 {
+    if (!m_loaded) {
+        m_works = readJson();
+        m_loaded = true;
+    }
+    return m_works;
+}
+
+bool MockBackend::saveWork(const Work &work)
+{
+    for (Work &existing : m_works) {
+        if (existing.id == work.id) {
+            existing = work;
+            return true;
+        }
+    }
+    m_works.append(work);
+    return true;
+}
+
+QList<Work> MockBackend::readJson() const
+{
     QFile file(m_jsonPath);
     if (!file.open(QIODevice::ReadOnly)) {
         qWarning("MockBackend: cannot open %s", qPrintable(m_jsonPath));
@@ -52,7 +74,8 @@ QList<Work> MockBackend::loadWorks()
         return {};
     }
 
-    const QString coverDir = QFileInfo(m_jsonPath).path() + QStringLiteral("/covers/");
+    const QDir jsonDir = QFileInfo(m_jsonPath).dir();
+    const QString coverDir = jsonDir.path() + QStringLiteral("/covers/");
     QList<Work> works;
 
     const QJsonArray items = document.object().value(QStringLiteral("works")).toArray();
@@ -83,9 +106,12 @@ QList<Work> MockBackend::loadWorks()
             format.kind = formatObject.value(QStringLiteral("kind")).toString() == QLatin1String("audiobook")
                               ? Format::Kind::Audiobook
                               : Format::Kind::Ebook;
-            format.filePath = formatObject.value(QStringLiteral("file")).toString();
+            const QString file = formatObject.value(QStringLiteral("file")).toString();
+            format.filePath = file.isEmpty() || QDir::isAbsolutePath(file) ? file : jsonDir.filePath(file);
             format.progress = std::clamp(formatObject.value(QStringLiteral("progress")).toDouble(), 0.0, 1.0);
             format.fileSize = formatObject.value(QStringLiteral("size")).toInteger();
+            if (format.fileSize == 0)
+                format.fileSize = QFileInfo(format.filePath).size(); // 0 if missing
             format.pages = formatObject.value(QStringLiteral("pages")).toInt();
             format.durationSeconds = formatObject.value(QStringLiteral("duration")).toInt();
             const QString cover = formatObject.value(QStringLiteral("cover")).toString();

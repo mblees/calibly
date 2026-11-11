@@ -40,6 +40,7 @@ class FixedBackend : public LibraryBackend
 public:
     QList<Work> works;
     QList<Work> loadWorks() override { return works; }
+    bool saveWork(const Work &) override { return true; }
 };
 
 } // namespace

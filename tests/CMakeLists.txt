@@ -7,3 +7,10 @@ add_test(NAME tst_workfiltermodel COMMAND tst_workfiltermodel)
 qt_add_executable(tst_workdetails tst_workdetails.cpp)
 target_link_libraries(tst_workdetails PRIVATE Qt6::Test calibly_models calibly_controllers)
 add_test(NAME tst_workdetails COMMAND tst_workdetails)
+
+qt_add_executable(tst_import tst_import.cpp)
+# QZipWriter (Qt-internal) creates a small EPUB for the test.
+target_link_libraries(tst_import PRIVATE Qt6::Test Qt6::CorePrivate Qt6::Sql calibly_import calibly_backend)
+add_test(NAME tst_import COMMAND tst_import)
+# The PDF test only runs when calibly is built with Qt PDF.
+target_link_libraries(tst_import PRIVATE Qt6::Gui)

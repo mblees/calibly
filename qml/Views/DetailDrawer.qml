@@ -240,10 +240,8 @@ SideDrawer {
                         const result = []
                         if (details.publishedYear > 0)
                             result.push({ label: qsTr("Erschienen"), value: String(details.publishedYear) })
-                        if (details.language !== "") {
-                            const name = Qt.locale(details.language).nativeLanguageName
-                            result.push({ label: qsTr("Sprache"), value: name.charAt(0).toUpperCase() + name.slice(1) })
-                        }
+                        if (details.languageName !== "")
+                            result.push({ label: qsTr("Sprache"), value: details.languageName })
                         if (details.publisher !== "")
                             result.push({ label: qsTr("Verlag"), value: details.publisher })
                         if (!isNaN(details.added.getTime()))

@@ -66,6 +66,13 @@ private slots:
                  (QStringList{ QStringLiteral("franz"), QStringLiteral("kafka") }));
     }
 
+    void languageName()
+    {
+        QCOMPARE(TextUtils::languageName(QStringLiteral("de")), QStringLiteral("Deutsch"));
+        QCOMPARE(TextUtils::languageName(QStringLiteral("en")), QStringLiteral("English"));
+        QCOMPARE(TextUtils::languageName(QString()), QString());
+    }
+
     void nameSortKey()
     {
         QCOMPARE(TextUtils::nameSortKey(QStringLiteral("Johann Wolfgang von Goethe")), QStringLiteral("Goethe"));

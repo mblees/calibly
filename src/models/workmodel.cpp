@@ -107,6 +107,17 @@ QHash<int, QByteArray> WorkModel::roleNames() const
     };
 }
 
+void WorkModel::updateWork(const Work &work)
+{
+    const int row = rowOf(work.id);
+    if (row < 0)
+        return;
+    m_works[row] = work;
+    const QStringList parts = QStringList{ work.title, work.series } + work.authors + work.narrators + work.tags;
+    m_searchTexts[row] = TextUtils::foldForSearch(parts.join(u' '));
+    emit dataChanged(index(row), index(row));
+}
+
 int WorkModel::rowOf(const QString &workId) const
 {
     for (int row = 0; row < m_works.size(); ++row) {

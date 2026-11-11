@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtCore
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import Calibly.Theme
 import Calibly.Controls
 import Calibly.Components
@@ -59,7 +60,7 @@ ViewBase {
         }
     }
 
-    // --- toolbar: search and cover size ------------------------------------
+    // --- toolbar: search, add and cover size ---------------------------------
     SearchField {
         id: search
 
@@ -67,9 +68,36 @@ ViewBase {
         anchors.top: parent.top
         anchors.leftMargin: Theme.spacingXl
         anchors.topMargin: Theme.spacingL
-        width: Math.min(Theme.searchFieldWidth, root.width - sizeSlider.width - 3 * Theme.spacingXl)
+        width: Math.min(Theme.searchFieldWidth,
+                        root.width - sizeSlider.width - addButton.width - 4 * Theme.spacingXl)
         placeholderText: qsTr("Titel, Autor, Sprecher, Serie …")
         shortcutHint: qsTr("Strg K")
+    }
+
+    AppButton {
+        id: addButton
+
+        anchors.left: search.right
+        anchors.leftMargin: Theme.spacingM
+        anchors.verticalCenter: search.verticalCenter
+        visible: LibraryController.canImport
+        enabled: !LibraryController.importing
+        text: qsTr("Hinzufügen")
+        iconName: "plus"
+        variant: AppButton.Primary
+
+        onClicked: importDialog.open()
+    }
+
+    FileDialog {
+        id: importDialog
+
+        title: qsTr("E-Books und Hörbücher hinzufügen")
+        fileMode: FileDialog.OpenFiles
+        nameFilters: [qsTr("E-Books und Hörbücher (%1)").arg(LibraryController.fileNameFilters.join(" ")),
+                      qsTr("Alle Dateien (*)")]
+
+        onAccepted: LibraryController.importFiles(importDialog.selectedFiles)
     }
 
     AppSlider {
@@ -252,6 +280,90 @@ ViewBase {
             text: qsTr("Filter zurücksetzen")
             iconName: "x"
             onClicked: root.resetFilters()
+        }
+        AppButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: root.total === 0 && LibraryController.canImport && !LibraryController.importing
+            text: qsTr("E-Books und Hörbücher hinzufügen")
+            iconName: "plus"
+            variant: AppButton.Primary
+            onClicked: importDialog.open()
+        }
+    }
+
+    // --- import progress and result ------------------------------------------
+    Rectangle {
+        id: importStatus
+
+        property string summary
+
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: Theme.spacingL
+        width: Math.min(Theme.searchFieldWidth + Theme.formatCardWidth, parent.width - 2 * Theme.spacingXl)
+        height: statusColumn.implicitHeight + 2 * Theme.spacingM
+        radius: Theme.radiusL
+        color: Theme.surfaceRaised
+        border.width: Theme.borderWidth
+        border.color: Theme.border
+        visible: LibraryController.importing || summaryTimer.running
+
+        Accessible.role: Accessible.StatusBar
+        Accessible.name: statusText.text
+
+        Column {
+            id: statusColumn
+
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.margins: Theme.spacingM
+            spacing: Theme.spacingS
+
+            Text {
+                id: statusText
+
+                width: parent.width
+                elide: Text.ElideMiddle
+                color: Theme.textPrimary
+                font.pixelSize: Theme.fontBody
+                text: {
+                    if (!LibraryController.importing)
+                        return importStatus.summary
+                    if (LibraryController.importTotal === 0)
+                        return qsTr("Dateien werden gesucht …")
+                    return qsTr("Importiere %1 von %2: %3").arg(Math.min(LibraryController.importDone + 1,
+                                                                        LibraryController.importTotal))
+                                                         .arg(LibraryController.importTotal)
+                                                         .arg(LibraryController.importFileName)
+                }
+            }
+            ProgressLine {
+                width: parent.width
+                visible: LibraryController.importing
+                value: LibraryController.importTotal > 0
+                       ? LibraryController.importDone / LibraryController.importTotal : 0
+            }
+        }
+
+        Timer {
+            id: summaryTimer
+
+            interval: Theme.messageDuration
+        }
+
+        Connections {
+            target: LibraryController
+
+            function onImportFinished(added: int, skipped: int, failed: int) {
+                const parts = [qsTr("%n Datei(en) hinzugefügt", "", added)]
+                if (skipped > 0)
+                    parts.push(qsTr("%n bereits vorhanden", "", skipped))
+                if (failed > 0)
+                    parts.push(qsTr("%n fehlgeschlagen", "", failed))
+                importStatus.summary = parts.join(" · ")
+                summaryTimer.restart()
+            }
         }
     }
 }

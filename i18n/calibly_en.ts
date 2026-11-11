@@ -312,17 +312,17 @@
         <translation>Published</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="245"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="244"/>
         <source>Sprache</source>
         <translation>Language</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="248"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="246"/>
         <source>Verlag</source>
         <translation>Publisher</translation>
     </message>
     <message>
-        <location filename="../qml/Views/DetailDrawer.qml" line="250"/>
+        <location filename="../qml/Views/DetailDrawer.qml" line="248"/>
         <source>Hinzugefügt</source>
         <translation>Added</translation>
     </message>
@@ -414,62 +414,83 @@
 <context>
     <name>LibraryView</name>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="71"/>
+        <location filename="../qml/Views/LibraryView.qml" line="73"/>
         <source>Titel, Autor, Sprecher, Serie …</source>
         <translation>Title, author, narrator, series …</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="72"/>
+        <location filename="../qml/Views/LibraryView.qml" line="74"/>
         <source>Strg K</source>
         <translation>Ctrl K</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="86"/>
+        <location filename="../qml/Views/LibraryView.qml" line="85"/>
+        <source>Hinzufügen</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="95"/>
+        <location filename="../qml/Views/LibraryView.qml" line="287"/>
+        <source>E-Books und Hörbücher hinzufügen</source>
+        <translation>Add ebooks and audiobooks</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="97"/>
+        <source>E-Books und Hörbücher (%1)</source>
+        <translation>Ebooks and audiobooks (%1)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="98"/>
+        <source>Alle Dateien (*)</source>
+        <translation>All files (*)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="114"/>
         <source>Cover-Größe</source>
         <translation>Cover size</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="102"/>
+        <location filename="../qml/Views/LibraryView.qml" line="130"/>
         <source>Alle</source>
         <translation>All</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="108"/>
+        <location filename="../qml/Views/LibraryView.qml" line="136"/>
         <source>E-Books</source>
         <translation>Ebooks</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="115"/>
+        <location filename="../qml/Views/LibraryView.qml" line="143"/>
         <source>Hörbücher</source>
         <translation>Audiobooks</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="122"/>
+        <location filename="../qml/Views/LibraryView.qml" line="150"/>
         <source>Beides</source>
         <translation>Both</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="136"/>
+        <location filename="../qml/Views/LibraryView.qml" line="164"/>
         <source>Sortieren</source>
         <translation>Sort</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="137"/>
+        <location filename="../qml/Views/LibraryView.qml" line="165"/>
         <source>Zuletzt geöffnet</source>
         <translation>Recently opened</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="137"/>
+        <location filename="../qml/Views/LibraryView.qml" line="165"/>
         <source>Titel</source>
         <translation>Title</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="137"/>
+        <location filename="../qml/Views/LibraryView.qml" line="165"/>
         <source>Autor</source>
         <translation>Author</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="162"/>
+        <location filename="../qml/Views/LibraryView.qml" line="190"/>
         <source>%L1 von %Ln Titeln</source>
         <translation>
             <numerusform>%L1 of %Ln title</numerusform>
@@ -477,7 +498,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="163"/>
+        <location filename="../qml/Views/LibraryView.qml" line="191"/>
         <source>%Ln Titel</source>
         <translation>
             <numerusform>%Ln title</numerusform>
@@ -485,24 +506,58 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="243"/>
+        <location filename="../qml/Views/LibraryView.qml" line="271"/>
         <source>Noch keine Titel in der Bibliothek.</source>
         <translation>No titles in the library yet.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="244"/>
+        <location filename="../qml/Views/LibraryView.qml" line="272"/>
         <source>Keine Treffer für „%1“.</source>
         <translation>No results for “%1”.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="245"/>
+        <location filename="../qml/Views/LibraryView.qml" line="273"/>
         <source>Keine Titel in dieser Auswahl.</source>
         <translation>No titles in this selection.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="252"/>
+        <location filename="../qml/Views/LibraryView.qml" line="280"/>
         <source>Filter zurücksetzen</source>
         <translation>Reset filters</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="334"/>
+        <source>Dateien werden gesucht …</source>
+        <translation>Looking for files …</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="335"/>
+        <source>Importiere %1 von %2: %3</source>
+        <translation>Importing %1 of %2: %3</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Views/LibraryView.qml" line="359"/>
+        <source>%n Datei(en) hinzugefügt</source>
+        <translation>
+            <numerusform>%n file added</numerusform>
+            <numerusform>%n files added</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Views/LibraryView.qml" line="361"/>
+        <source>%n bereits vorhanden</source>
+        <translation>
+            <numerusform>%n already in the library</numerusform>
+            <numerusform>%n already in the library</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Views/LibraryView.qml" line="363"/>
+        <source>%n fehlgeschlagen</source>
+        <translation>
+            <numerusform>%n failed</numerusform>
+            <numerusform>%n failed</numerusform>
+        </translation>
     </message>
 </context>
 <context>

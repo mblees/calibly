@@ -6,3 +6,6 @@ CMakeUserPresets.json
 *.user
 .qtcreator/
 .vscode/
+
+# Testdata
+testdata/

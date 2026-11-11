@@ -21,14 +21,28 @@ qt_standard_project_setup(REQUIRES 6.8
     I18N_TRANSLATED_LANGUAGES en
 )
 
+# Phase 4: SQLite for the library database (Qt SQL), Qt PDF for covers of PDF
+# files (optional: only used when the Qt PDF module is installed).
+find_package(Qt6 6.8 REQUIRED COMPONENTS Sql CorePrivate)
+find_package(Qt6 6.8 QUIET OPTIONAL_COMPONENTS Pdf)
+if(TARGET Qt6::Pdf)
+    message(STATUS "calibly: Qt PDF found, PDF covers are enabled")
+else()
+    message(STATUS "calibly: Qt PDF not found, PDFs get placeholder covers")
+endif()
+
+include(cmake/Dependencies.cmake)
+
 # All QML modules are written below <build>/qml, so that tools like qmllint
 # find every module (Calibly, Calibly.Theme, Calibly.Controls, ...).
 set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
 # C++ layers, bottom to top: core (data classes) -> backend (data sources)
-# -> models (Qt item models) -> controllers (used by the QML views).
+# and import (reading and copying files) -> models (Qt item models)
+# -> controllers (used by the QML views).
 add_subdirectory(src/core)
 add_subdirectory(src/backend)
+add_subdirectory(src/import)
 add_subdirectory(src/models)
 add_subdirectory(src/controllers)
 add_subdirectory(qml)

@@ -9,6 +9,11 @@
 #include "languagemanager.h"
 #include "librarycontroller.h"
 #include "mockbackend.h"
+#include "sqlitebackend.h"
+
+#include <QFileInfo>
+#include <QSettings>
+#include <memory>
 
 int main(int argc, char *argv[])
 {
@@ -37,6 +42,21 @@ int main(int argc, char *argv[])
         QStringLiteral("size"),
         QStringLiteral("Initial window size, e.g. \"1280x2400\" (development, for screenshots)."),
         QStringLiteral("WxH"));
+    const QCommandLineOption mockOption(
+        QStringLiteral("mock"),
+        QStringLiteral("Read the library from this JSON file instead of the built-in sample data (development)."),
+        QStringLiteral("file"));
+    const QCommandLineOption libraryOption(
+        QStringLiteral("library"),
+        QStringLiteral("Use this library folder (default: the last used one, or Documents/calibly-Bibliothek)."),
+        QStringLiteral("folder"));
+    const QCommandLineOption importOption(
+        QStringLiteral("import"),
+        QStringLiteral("Import this file or folder into the library after start; can be given several times (development)."),
+        QStringLiteral("path"));
+    parser.addOption(libraryOption);
+    parser.addOption(importOption);
+    parser.addOption(mockOption);
     parser.addOption(galleryOption);
     parser.addOption(screenshotOption);
     parser.addOption(languageOption);
@@ -47,9 +67,28 @@ int main(int argc, char *argv[])
     // standard controls we use (e.g. ScrollBar) identical on every platform.
     QQuickStyle::setStyle(QStringLiteral("Basic"));
 
-    // Phase 1: sample data. Phase 4 replaces this with the real library.
-    // Declared before the engine, so it outlives everything that uses it.
-    MockBackend backend;
+    // The real library (SQLite in the library folder), or sample data with --mock.
+    // Created before the engine, so it outlives everything that uses it.
+    std::unique_ptr<LibraryBackend> backend;
+    if (parser.isSet(mockOption)) {
+        backend = std::make_unique<MockBackend>(parser.value(mockOption));
+    } else {
+        QSettings settings;
+        const QString root = parser.isSet(libraryOption)
+                                 ? parser.value(libraryOption)
+                                 : settings.value(QStringLiteral("library/path"), SqliteBackend::defaultLibraryRoot()).toString();
+        auto library = std::make_unique<SqliteBackend>(root);
+        QString error;
+        if (library->open(&error)) {
+            if (!parser.isSet(libraryOption))
+                settings.setValue(QStringLiteral("library/path"), root);
+            backend = std::move(library);
+        } else {
+            qWarning("Cannot open the library in %s: %s. Showing sample data instead.",
+                     qPrintable(root), qPrintable(error));
+            backend = std::make_unique<MockBackend>();
+        }
+    }
 
     QQmlApplicationEngine engine;
 
@@ -59,7 +98,7 @@ int main(int argc, char *argv[])
     // already translated.
     auto *languageManager = new LanguageManager(&engine, &engine);
     languageManager->start(parser.value(languageOption));
-    new LibraryController(backend, &engine, &engine);
+    auto *libraryController = new LibraryController(*backend, &engine, &engine);
 
     engine.setInitialProperties({
         { QStringLiteral("galleryMode"), parser.isSet(galleryOption) },
@@ -74,6 +113,13 @@ int main(int argc, char *argv[])
     auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().value(0));
     if (!window)
         return EXIT_FAILURE;
+
+    if (parser.isSet(importOption)) {
+        QList<QUrl> urls;
+        for (const QString &path : parser.values(importOption))
+            urls.append(QUrl::fromLocalFile(QFileInfo(path).absoluteFilePath()));
+        libraryController->importFiles(urls);
+    }
 
     if (parser.isSet(sizeOption)) {
         const QStringList parts = parser.value(sizeOption).split(u'x');

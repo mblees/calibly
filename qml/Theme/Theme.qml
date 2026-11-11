@@ -115,6 +115,7 @@ QtObject {
     // Motion
     readonly property int durationFast: 120
     readonly property int durationDrawer: 220
+    readonly property int messageDuration: 6000 // how long short messages stay visible
     readonly property real heroBlurBrightness: -0.1  // darkening of the blurred cover behind the detail header
     readonly property real heroOverlayOpacity: 0.5   // background-colored veil over it, keeps the text readable
 }

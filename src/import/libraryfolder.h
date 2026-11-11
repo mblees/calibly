@@ -1,0 +1,30 @@
+#pragma once
+
+#include <QImage>
+#include <QString>
+
+#include "work.h"
+
+// Layout of the library folder:
+//   <library>/<Author>/<Title>/<file>
+//   <library>/<Author>/<Title>/<file name>.cover.jpg   (cover of that format)
+//   <library>/calibly.db                               (see SqliteBackend)
+namespace LibraryFolder {
+
+// Folder of a work: the folder of its first format if it has one, otherwise
+// a new one from author and title.
+QString workFolder(const QString &libraryRoot, const Work &work);
+
+// Name usable as a file or folder name on all systems.
+QString safeName(const QString &name);
+
+// Copies the file into the folder and returns the new path. An identical file
+// (same name and size) that is already there is reused; another file with the
+// same name gets a number. Empty string on failure.
+QString copyInto(const QString &sourcePath, const QString &folder, QString *error = nullptr);
+
+// Saves the cover next to the format file; returns its path, empty if the
+// image is null or cannot be saved.
+QString saveCover(const QImage &cover, const QString &formatFilePath);
+
+} // namespace LibraryFolder

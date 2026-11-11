@@ -68,7 +68,9 @@ Further dependencies are only added in the phase that needs them:
 | Dependency | From phase | Purpose |
 |---|---|---|
 | Qt SQL (SQLite, part of qtbase) | 4 | Store the library |
-| Library for tags and chapters (e.g. TagLib) | 4 / 6 | Read metadata and chapters from audio files. Qt cannot do this sufficiently. |
+| TagLib 2.3.2 (built from source via CMake FetchContent, LGPL/MPL) | 4 | Metadata, length and cover of audio files; also has MP4 chapters for phase 6 |
+| Qt-internal ZIP reader (`QZipReader`, Qt Core private) | 4 | Read EPUB files without an extra ZIP library |
+| Qt PDF (optional, Qt Maintenance Tool → Extensions) | 4 | Cover (first page), title, author and page count of PDFs; without it PDFs get placeholders |
 | Qt Multimedia | 6 | Audio playback |
 | Qt Network | 10 | Online metadata |
 | Ebook rendering | separate plan | Integrated reader |
@@ -253,6 +255,8 @@ Every phase ends with a **runnable app**. A phase only starts once the previous 
 - The decisions on the tag library and on where files are stored are made here (see open decisions).
 - **Done when:** imported titles are still there after a restart.
 
+**Implemented as:** `SqliteBackend` keeps `calibly.db` inside the library folder with paths relative to it, so the folder can be moved as a whole. Import (`src/import`) runs in a background thread: read metadata (EPUB, TagLib, Qt PDF, file name such as `DCC 01 - Title - Author` as fallback), group files into works (same base name or same title and author; ebook metadata wins), copy into the library folder, save covers next to the files. Files already in the library (same format and size) are skipped.
+
 ### Phase 5 – Edit metadata
 - `MetadataEditor` dialog with `MetadataForm`. Shared fields (🔗) and format-specific fields.
 - Tabs General, Audiobook, Ebook. Navigation to the previous and next title.
@@ -302,7 +306,7 @@ Every phase ends with a **runnable app**. A phase only starts once the previous 
 | Question | Recommendation | Latest by |
 |---|---|---|
 | C++ or Python (PySide6)? | C++, because of mobile devices later | Phase 0 |
-| Copy files into a library folder or leave them in place? | Copy like calibre, leaving in place as an option | Phase 4 |
-| Library for tags and chapters | Evaluate TagLib | Phase 4 |
+| ~~Copy files into a library folder or leave them in place?~~ | **Decided:** copied into the library folder (`Documents\calibly-Bibliothek`, structure `<Author>/<Title>/`), like calibre | done |
+| ~~Library for tags and chapters~~ | **Decided:** TagLib for audio, Qt's ZIP reader for EPUB, Qt PDF for PDFs | done |
 | ~~UI language: German only or also English?~~ | **Decided:** German source texts, English translation, switchable at runtime (see "Translations") | done |
 | Rendering for the ebook reader | separate plan | after phase 10 |

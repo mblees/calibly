@@ -1,0 +1,234 @@
+#include "sqlitebackend.h"
+
+#include <QDir>
+#include <QHash>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QStandardPaths>
+#include <QUuid>
+#include <QVariant>
+
+#include <utility>
+
+namespace {
+
+constexpr int kSchemaVersion = 1;
+
+QString toJson(const QStringList &list)
+{
+    return QString::fromUtf8(QJsonDocument(QJsonArray::fromStringList(list)).toJson(QJsonDocument::Compact));
+}
+
+QStringList fromJson(const QString &json)
+{
+    QStringList list;
+    const QJsonArray array = QJsonDocument::fromJson(json.toUtf8()).array();
+    for (const QJsonValue &value : array)
+        list.append(value.toString());
+    return list;
+}
+
+QString toText(const QDateTime &dateTime)
+{
+    return dateTime.isValid() ? dateTime.toString(Qt::ISODate) : QString();
+}
+
+bool exec(QSqlQuery &query, QString *error)
+{
+    if (query.exec())
+        return true;
+    if (error)
+        *error = query.lastError().text();
+    qWarning("SqliteBackend: %s", qPrintable(query.lastError().text()));
+    return false;
+}
+
+} // namespace
+
+SqliteBackend::SqliteBackend(QString libraryRoot)
+    : m_root(std::move(libraryRoot))
+    , m_connectionName(QStringLiteral("calibly-") + QUuid::createUuid().toString(QUuid::WithoutBraces))
+{
+}
+
+SqliteBackend::~SqliteBackend()
+{
+    if (QSqlDatabase::contains(m_connectionName)) {
+        QSqlDatabase::database(m_connectionName).close();
+        QSqlDatabase::removeDatabase(m_connectionName);
+    }
+}
+
+QString SqliteBackend::defaultLibraryRoot()
+{
+    return QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation))
+        .filePath(QStringLiteral("calibly-Bibliothek"));
+}
+
+bool SqliteBackend::open(QString *error)
+{
+    if (!QDir().mkpath(m_root)) {
+        if (error)
+            *error = QStringLiteral("cannot create library folder %1").arg(m_root);
+        return false;
+    }
+
+    QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), m_connectionName);
+    db.setDatabaseName(QDir(m_root).filePath(QStringLiteral("calibly.db")));
+    if (!db.open()) {
+        if (error)
+            *error = db.lastError().text();
+        return false;
+    }
+
+    QSqlQuery query(db);
+    query.exec(QStringLiteral("PRAGMA foreign_keys = ON"));
+    query.exec(QStringLiteral("PRAGMA user_version"));
+    const int version = query.next() ? query.value(0).toInt() : 0;
+    if (version > kSchemaVersion) {
+        if (error)
+            *error = QStringLiteral("library was created by a newer calibly version");
+        return false;
+    }
+    if (version == 0) {
+        const QStringList statements = {
+            QStringLiteral("CREATE TABLE IF NOT EXISTS works ("
+                           " id TEXT PRIMARY KEY, title TEXT NOT NULL, authors TEXT, narrators TEXT,"
+                           " series TEXT, series_index INTEGER, description TEXT, tags TEXT,"
+                           " rating INTEGER, language TEXT, published_year INTEGER, publisher TEXT,"
+                           " added TEXT, last_opened TEXT)"),
+            QStringLiteral("CREATE TABLE IF NOT EXISTS formats ("
+                           " id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                           " work_id TEXT NOT NULL REFERENCES works(id) ON DELETE CASCADE,"
+                           " position INTEGER, kind TEXT NOT NULL, file_path TEXT, progress REAL,"
+                           " cover_path TEXT, cover_square INTEGER, file_size INTEGER, pages INTEGER,"
+                           " duration INTEGER)"),
+            QStringLiteral("CREATE INDEX IF NOT EXISTS formats_work ON formats(work_id)"),
+            QStringLiteral("PRAGMA user_version = %1").arg(kSchemaVersion),
+        };
+        for (const QString &statement : statements) {
+            query.prepare(statement);
+            if (!exec(query, error))
+                return false;
+        }
+    }
+    return true;
+}
+
+QString SqliteBackend::absolute(const QString &relativePath) const
+{
+    return relativePath.isEmpty() ? QString() : QDir::cleanPath(QDir(m_root).filePath(relativePath));
+}
+
+QString SqliteBackend::relative(const QString &absolutePath) const
+{
+    return absolutePath.isEmpty() ? QString() : QDir(m_root).relativeFilePath(absolutePath);
+}
+
+QList<Work> SqliteBackend::loadWorks()
+{
+    QList<Work> works;
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen())
+        return works;
+
+    QHash<QString, int> indexById;
+    QSqlQuery query(db);
+    query.prepare(QStringLiteral("SELECT id, title, authors, narrators, series, series_index, description, tags,"
+                                 " rating, language, published_year, publisher, added, last_opened FROM works"));
+    if (!exec(query, nullptr))
+        return works;
+    while (query.next()) {
+        Work work;
+        work.id = query.value(0).toString();
+        work.title = query.value(1).toString();
+        work.authors = fromJson(query.value(2).toString());
+        work.narrators = fromJson(query.value(3).toString());
+        work.series = query.value(4).toString();
+        work.seriesIndex = query.value(5).toInt();
+        work.description = query.value(6).toString();
+        work.tags = fromJson(query.value(7).toString());
+        work.rating = query.value(8).toInt();
+        work.language = query.value(9).toString();
+        work.publishedYear = query.value(10).toInt();
+        work.publisher = query.value(11).toString();
+        work.added = QDateTime::fromString(query.value(12).toString(), Qt::ISODate);
+        work.lastOpened = QDateTime::fromString(query.value(13).toString(), Qt::ISODate);
+        indexById.insert(work.id, int(works.size()));
+        works.append(work);
+    }
+
+    query.prepare(QStringLiteral("SELECT work_id, kind, file_path, progress, cover_path, cover_square, file_size,"
+                                 " pages, duration FROM formats ORDER BY work_id, position"));
+    if (!exec(query, nullptr))
+        return works;
+    while (query.next()) {
+        const int index = indexById.value(query.value(0).toString(), -1);
+        if (index < 0)
+            continue;
+        Format format;
+        format.kind = query.value(1).toString() == QLatin1String("audiobook") ? Format::Kind::Audiobook
+                                                                             : Format::Kind::Ebook;
+        format.filePath = absolute(query.value(2).toString());
+        format.progress = query.value(3).toDouble();
+        format.coverPath = absolute(query.value(4).toString());
+        format.coverIsSquare = query.value(5).toBool();
+        format.fileSize = query.value(6).toLongLong();
+        format.pages = query.value(7).toInt();
+        format.durationSeconds = query.value(8).toInt();
+        works[index].formats.append(format);
+    }
+    return works;
+}
+
+bool SqliteBackend::saveWork(const Work &work)
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen() || work.id.isEmpty())
+        return false;
+
+    db.transaction();
+    QSqlQuery query(db);
+    query.prepare(QStringLiteral("INSERT INTO works (id, title, authors, narrators, series, series_index,"
+                                 " description, tags, rating, language, published_year, publisher, added, last_opened)"
+                                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                                 " ON CONFLICT(id) DO UPDATE SET title = excluded.title, authors = excluded.authors,"
+                                 " narrators = excluded.narrators, series = excluded.series,"
+                                 " series_index = excluded.series_index, description = excluded.description,"
+                                 " tags = excluded.tags, rating = excluded.rating, language = excluded.language,"
+                                 " published_year = excluded.published_year, publisher = excluded.publisher,"
+                                 " added = excluded.added, last_opened = excluded.last_opened"));
+    const QVariantList values = { work.id, work.title, toJson(work.authors), toJson(work.narrators), work.series,
+                                  work.seriesIndex, work.description, toJson(work.tags), work.rating, work.language,
+                                  work.publishedYear, work.publisher, toText(work.added), toText(work.lastOpened) };
+    for (const QVariant &value : values)
+        query.addBindValue(value);
+    bool ok = exec(query, nullptr);
+
+    if (ok) {
+        query.prepare(QStringLiteral("DELETE FROM formats WHERE work_id = ?"));
+        query.addBindValue(work.id);
+        ok = exec(query, nullptr);
+    }
+    for (int position = 0; ok && position < work.formats.size(); ++position) {
+        const Format &format = work.formats.at(position);
+        query.prepare(QStringLiteral("INSERT INTO formats (work_id, position, kind, file_path, progress, cover_path,"
+                                     " cover_square, file_size, pages, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+        const QVariantList formatValues = {
+            work.id, position,
+            format.kind == Format::Kind::Audiobook ? QStringLiteral("audiobook") : QStringLiteral("ebook"),
+            relative(format.filePath), format.progress, relative(format.coverPath), format.coverIsSquare,
+            format.fileSize, format.pages, format.durationSeconds };
+        for (const QVariant &value : formatValues)
+            query.addBindValue(value);
+        ok = exec(query, nullptr);
+    }
+
+    if (ok)
+        return db.commit();
+    db.rollback();
+    return false;
+}

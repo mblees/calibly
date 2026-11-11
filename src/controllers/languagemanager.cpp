@@ -1,8 +1,9 @@
 #include "languagemanager.h"
 
+#include "textutils.h"
+
 #include <QCoreApplication>
 #include <QDir>
-#include <QHash>
 #include <QLocale>
 #include <QSettings>
 #include <QVariantMap>
@@ -12,22 +13,6 @@ namespace {
 const QString kSourceLanguage = QStringLiteral("de");
 const QString kSettingsKey = QStringLiteral("ui/language");
 const QString kTranslationDir = QStringLiteral(":/i18n");
-
-QString nativeName(const QString &code)
-{
-    // QLocale names the language of the default territory ("en" -> "American
-    // English"); for plain language codes we want the plain language name.
-    static const QHash<QString, QString> overrides = {
-        { QStringLiteral("en"), QStringLiteral("English") },
-    };
-    if (overrides.contains(code))
-        return overrides.value(code);
-
-    QString name = QLocale(code).nativeLanguageName();
-    if (!name.isEmpty())
-        name[0] = name[0].toUpper();
-    return name.isEmpty() ? code : name;
-}
 
 } // namespace
 
@@ -67,7 +52,7 @@ QVariantList LanguageManager::languages() const
     QVariantList list;
     for (const QString &code : m_codes)
         list.append(QVariantMap{ { QStringLiteral("code"), code },
-                                 { QStringLiteral("name"), nativeName(code) } });
+                                 { QStringLiteral("name"), TextUtils::languageName(code) } });
     return list;
 }
 

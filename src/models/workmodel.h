@@ -50,6 +50,9 @@ public:
     int count() const { return int(m_works.size()); }
     void setWorks(QList<Work> works);
 
+    // Replaces the work with the same id (e.g. after opening it).
+    void updateWork(const Work &work);
+
     // Row of the work with this id, -1 if there is none.
     int rowOf(const QString &workId) const;
     // Work in this row, nullptr for an invalid row.

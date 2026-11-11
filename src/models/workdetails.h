@@ -41,6 +41,7 @@ class WorkDetails : public QObject
     Q_PROPERTY(QStringList tags READ tags NOTIFY changed)
     Q_PROPERTY(int rating READ rating NOTIFY changed)
     Q_PROPERTY(QString language READ language NOTIFY changed)
+    Q_PROPERTY(QString languageName READ languageName NOTIFY changed)
     Q_PROPERTY(int publishedYear READ publishedYear NOTIFY changed)
     Q_PROPERTY(QString publisher READ publisher NOTIFY changed)
     Q_PROPERTY(QDateTime added READ added NOTIFY changed)
@@ -67,6 +68,7 @@ public:
     QStringList tags() const;
     int rating() const;
     QString language() const;
+    QString languageName() const; // e.g. "Deutsch", "English"
     int publishedYear() const;
     QString publisher() const;
     QDateTime added() const;

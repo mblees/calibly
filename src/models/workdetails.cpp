@@ -3,6 +3,7 @@
 #include <QFileInfo>
 #include <QVariantMap>
 
+#include "textutils.h"
 #include "workmodel.h"
 
 WorkDetails::WorkDetails(QObject *parent)
@@ -62,6 +63,7 @@ WORK_FIELD(QString, description, m_work->description, QString())
 WORK_FIELD(QStringList, tags, m_work->tags, QStringList())
 WORK_FIELD(int, rating, m_work->rating, 0)
 WORK_FIELD(QString, language, m_work->language, QString())
+WORK_FIELD(QString, languageName, TextUtils::languageName(m_work->language), QString())
 WORK_FIELD(int, publishedYear, m_work->publishedYear, 0)
 WORK_FIELD(QString, publisher, m_work->publisher, QString())
 WORK_FIELD(QDateTime, added, m_work->added, QDateTime())
