@@ -1,0 +1,38 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "mingw-base",
+      "hidden": true,
+      "description": "Qt 6.12.0 with MinGW 15.1 from the Qt Online Installer. Adjust QT_ROOT if Qt is installed elsewhere.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "environment": {
+        "QT_ROOT": "C:/Qt",
+        "PATH": "$env{QT_ROOT}/6.12.0/mingw_64/bin;$env{QT_ROOT}/Tools/mingw1510_64/bin;$env{QT_ROOT}/Tools/Ninja;$penv{PATH}"
+      },
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "$env{QT_ROOT}/6.12.0/mingw_64",
+        "CMAKE_CXX_COMPILER": "$env{QT_ROOT}/Tools/mingw1510_64/bin/g++.exe",
+        "CMAKE_MAKE_PROGRAM": "$env{QT_ROOT}/Tools/Ninja/ninja.exe"
+      }
+    },
+    {
+      "name": "mingw-debug",
+      "displayName": "MinGW Debug",
+      "inherits": "mingw-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "mingw-release",
+      "displayName": "MinGW Release",
+      "inherits": "mingw-base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "mingw-debug", "configurePreset": "mingw-debug" },
+    { "name": "mingw-release", "configurePreset": "mingw-release" }
+  ]
+}

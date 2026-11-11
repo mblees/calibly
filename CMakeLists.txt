@@ -1,0 +1,89 @@
+cmake_minimum_required(VERSION 3.25)
+
+project(calibly
+    VERSION 0.1.0
+    DESCRIPTION "One library for ebooks and audiobooks"
+    LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Phase 0: Qt Quick is the only dependency (see docs/UI-Development-Plan.md).
+# LinguistTools are Qt's own build tools for translations (lupdate, lrelease).
+find_package(Qt6 6.8 REQUIRED COMPONENTS Quick QuickControls2 LinguistTools)
+
+# Texts in the source code are German. Every further UI language is listed
+# in I18N_TRANSLATED_LANGUAGES and gets its own i18n/calibly_<code>.ts file.
+qt_standard_project_setup(REQUIRES 6.8
+    I18N_SOURCE_LANGUAGE de
+    I18N_TRANSLATED_LANGUAGES en
+)
+
+# All QML modules are written below <build>/qml, so that tools like qmllint
+# find every module (Calibly, Calibly.Theme, Calibly.Controls, ...).
+set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
+
+add_subdirectory(src/controllers)
+add_subdirectory(qml)
+
+qt_add_executable(calibly
+    src/main.cpp
+)
+
+qt_add_qml_module(calibly
+    URI Calibly
+    VERSION 1.0
+    QML_FILES
+        qml/Main.qml
+)
+
+set_target_properties(calibly PROPERTIES
+    WIN32_EXECUTABLE TRUE
+)
+
+target_compile_definitions(calibly PRIVATE
+    CALIBLY_VERSION="${PROJECT_VERSION}"
+)
+
+target_link_libraries(calibly PRIVATE
+    Qt6::Quick
+    Qt6::QuickControls2
+    calibly_controllers
+    calibly_controllersplugin
+    calibly_themeplugin
+    calibly_controlsplugin
+    calibly_componentsplugin
+    calibly_viewsplugin
+)
+
+# Translations (Qt Linguist):
+#   update_translations   extracts all qsTr() texts into i18n/*.ts (lupdate)
+#   release_translations  compiles them to .qm files (lrelease, runs on every build)
+# The .qm files are embedded into the app under :/i18n. Qt's own texts
+# (e.g. standard dialogs) are merged in, so no extra files need to be shipped.
+qt_add_translations(calibly
+    SOURCE_TARGETS
+        calibly
+        calibly_controllers
+        calibly_theme
+        calibly_controls
+        calibly_components
+        calibly_views
+    TS_FILE_DIR i18n
+    TS_FILE_BASE calibly
+    MERGE_QT_TRANSLATIONS
+    QT_TRANSLATION_CATALOGS qtbase qtdeclarative
+)
+
+# Convenience targets for development:
+#   cmake --build --preset mingw-debug --target run
+#   cmake --build --preset mingw-debug --target run-gallery
+add_custom_target(run
+    COMMAND calibly
+    USES_TERMINAL
+)
+add_custom_target(run-gallery
+    COMMAND calibly --gallery
+    USES_TERMINAL
+)

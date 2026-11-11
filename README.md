@@ -19,3 +19,22 @@ Prototype of the planned cover gallery interface (not implemented yet): main lib
 
 ## UI Development Plan
 The UI will be built with Qt Quick, in small phases that each end with a runnable app. The [UI Development Plan](docs/UI-Development-Plan.md) describes the concept, the modular architecture and the phases.
+
+## Build
+Requirements: Qt 6.12 with **MinGW 64-bit**, plus **CMake** and **Ninja** from the Qt Online Installer (under "Build Tools"). The presets expect Qt in `C:\Qt`; if it is installed elsewhere, change `QT_ROOT` in `CMakePresets.json`.
+
+Run the commands in the project folder. If `cmake` is not on your `PATH`, use `C:\Qt\Tools\CMake_64\bin\cmake.exe`.
+
+```bash
+cmake --preset mingw-debug
+cmake --build --preset mingw-debug
+cmake --build --preset mingw-debug --target run
+```
+
+Further targets:
+- `run-gallery` starts the component gallery (all UI building blocks with sample data).
+- `all_qmllint` checks all QML files.
+- `update_translations` collects all UI texts into `i18n/*.ts`.
+
+## Translations
+UI texts are written in German and translated with Qt Linguist. The English translation is in `i18n/calibly_en.ts`. After changing or adding texts, run `update_translations`, translate the new entries (e.g. with `C:\Qt\6.12.0\mingw_64\bin\linguist.exe`) and build again. Start with a specific language with `--language en`. The language can be switched at runtime, as shown in the component gallery. Details are in the [UI Development Plan](docs/UI-Development-Plan.md#translations).

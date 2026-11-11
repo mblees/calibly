@@ -163,7 +163,17 @@ Item {
 - **New cover state:** a new enum value and its presentation, both in exactly one place in `CoverTile`.
 - **Light theme:** components only use theme values, so a second set of values is enough.
 - **Mobile devices:** no fixed window sizes, column count derived from the available width, hover actions also available via long press.
-- **Language:** all texts are wrapped in `qsTr()` from the start. Identifiers in code are English.
+- **Language:** all texts are wrapped in `qsTr()` from the start. Identifiers in code are English. See "Translations" below.
+
+### Translations
+Uses only Qt's own tools (Qt Linguist, part of the Qt installation):
+- Texts in the source code are **German** (source language). Each further language has its own file `i18n/calibly_<code>.ts`, currently English.
+- `update_translations` (lupdate) collects all `qsTr()` texts into the `.ts` files. They are translated with Qt Linguist (`linguist.exe`) or directly in the XML.
+- On every build, lrelease compiles them into `.qm` files, which are embedded into the app under `:/i18n`. Qt's own texts (e.g. standard dialogs) are merged in.
+- The current language is `Qt.uiLanguage`. `LanguageManager` (module `Calibly.Controllers`) reacts to changes: it installs the translation, calls `QQmlEngine::retranslate()` and stores the choice. Switching therefore works at runtime, without a restart.
+- Start language: `--language <code>` > saved choice > system language > German.
+- **New language:** add the code to `I18N_TRANSLATED_LANGUAGES` in `CMakeLists.txt`, run `update_translations`, translate the new `.ts` file. It then appears automatically in `LanguageManager.languages`.
+- Rules for QML: texts that must follow a language change have to be bindings (`text: qsTr("…")` or `Qt.binding(…)`), never one-off assignments. Numbers and dates are formatted with `Qt.locale(Qt.uiLanguage)`.
 
 ### Component gallery
 View F from the mockup becomes a real developer view `ComponentGallery.qml` (started with `--gallery`). It shows every component in all its states with mock data. **New components are created there first** and only then added to a view. The gallery also serves as a quick visual test.
@@ -292,5 +302,5 @@ Every phase ends with a **runnable app**. A phase only starts once the previous 
 | C++ or Python (PySide6)? | C++, because of mobile devices later | Phase 0 |
 | Copy files into a library folder or leave them in place? | Copy like calibre, leaving in place as an option | Phase 4 |
 | Library for tags and chapters | Evaluate TagLib | Phase 4 |
-| UI language: German only or also English? | German first, `qsTr()` from the start | Phase 0 |
+| ~~UI language: German only or also English?~~ | **Decided:** German source texts, English translation, switchable at runtime (see "Translations") | done |
 | Rendering for the ebook reader | separate plan | after phase 10 |
