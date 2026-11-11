@@ -16,3 +16,6 @@ One library for ebooks and audiobooks - calibre's library management combined wi
 Prototype of the planned cover gallery interface (not implemented yet): main library view, detail view, fullscreen player, drag & drop import, metadata editor and cover states.
 
 ![calibly cover gallery mockup](mockups/calibly-cover-galerie-v2.png)
+
+## UI Development Plan
+The UI will be built with Qt Quick, in small phases that each end with a runnable app. The [UI Development Plan](docs/UI-Development-Plan.md) describes the concept, the modular architecture and the phases.
