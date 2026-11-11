@@ -354,6 +354,73 @@ ViewBase {
             }
 
             Section {
+                id: choiceSection
+
+                property int format: 0
+                property int sort: 0
+
+                heading: qsTr("Auswahl, Suche und Sortierung")
+                width: page.width
+
+                Row {
+                    spacing: Theme.spacingXl
+
+                    ChipGroup {
+                        Chip {
+                            text: qsTr("Alle")
+                            count: 24
+                            checked: choiceSection.format === 0
+                            onClicked: choiceSection.format = 0
+                        }
+                        Chip {
+                            text: qsTr("E-Books")
+                            icons: [{ name: "book", color: Theme.read }]
+                            count: 17
+                            checked: choiceSection.format === 1
+                            onClicked: choiceSection.format = 1
+                        }
+                        Chip {
+                            text: qsTr("Beides")
+                            icons: [{ name: "book", color: Theme.read }, { name: "headphones", color: Theme.listen }]
+                            count: 8
+                            checked: choiceSection.format === 2
+                            onClicked: choiceSection.format = 2
+                        }
+                    }
+
+                    SelectMenu {
+                        iconName: "sort"
+                        label: qsTr("Sortieren")
+                        options: [qsTr("Zuletzt geöffnet"), qsTr("Titel"), qsTr("Autor")]
+                        currentIndex: choiceSection.sort
+                        onActivated: function(index) {
+                            choiceSection.sort = index
+                        }
+                    }
+                }
+
+                Row {
+                    spacing: Theme.spacingXl
+
+                    SearchField {
+                        placeholderText: qsTr("Titel, Autor, Sprecher, Serie …")
+                        shortcutHint: qsTr("Strg K")
+                    }
+                    SearchField {
+                        text: "kafka"
+                    }
+                    AppSlider {
+                        anchors.verticalCenter: parent.verticalCenter
+                        from: 0
+                        to: 1
+                        value: 0.4
+                        leftIconName: "gridSmall"
+                        rightIconName: "library"
+                    }
+                }
+            }
+
+            Section {
                 heading: qsTr("Seitenleiste")
                 width: page.width
 

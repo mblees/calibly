@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
 import Calibly.Theme
@@ -117,14 +118,20 @@ Item {
         anchors.rightMargin: root.stackInset
         anchors.topMargin: root.stackInset
 
-        // Everything inside is rendered once into a texture and then masked
-        // to the rounded frame by the MultiEffect below.
+        // Everything inside is rendered into a layer and masked to the rounded
+        // frame. The item stays visible (the effect is its layer.effect), so
+        // positioners inside, e.g. the badge column of CoverTile, keep updating.
         Item {
             id: content
 
             anchors.fill: parent
-            visible: false
             layer.enabled: true
+            layer.effect: MultiEffect {
+                maskEnabled: true
+                maskSource: mask
+                maskThresholdMin: 0.5
+                maskSpreadAtMin: 1.0
+            }
 
             // --- placeholder -------------------------------------------------
             // Fill above and below a square placeholder: a clearly darker
@@ -205,15 +212,6 @@ Item {
                 radius: Theme.radiusS
                 color: Theme.textPrimary // any opaque color
             }
-        }
-
-        MultiEffect {
-            anchors.fill: parent
-            source: content
-            maskEnabled: true
-            maskSource: mask
-            maskThresholdMin: 0.5
-            maskSpreadAtMin: 1.0
         }
     }
 }

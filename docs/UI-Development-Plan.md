@@ -41,6 +41,7 @@ calibly is a **personal tool**, not a commercial product. It manages ebooks and 
 3. A **cover without text** shows what you own and where you are: format icons at the top right, progress lines at the bottom, state label at the top left.
 4. **Square audiobook covers** are centered in the uniform 2:3 grid, with the remaining space filled by a blurred version of the cover.
 5. Files enter the library **via drag & drop** or via "Add".
+6. The selection **Ebooks** or **Audiobooks** shows every work that has this format, presented as that format only: a work with both formats then shows only the cover, badge and progress of the selected format. Each format has its own cover; with no format selected the ebook cover represents the work.
 
 ### Deliberately excluded
 Devices / "Send to device", collections, smart lists, additional filters (status, language), history, the suggestion to sync positions, bookmarks, queue and "Follow along in text" in the player.
@@ -126,7 +127,7 @@ Each QML folder is its own module (`qt_add_qml_module`): `Calibly.Theme`, `Calib
 |---|---|---|
 | `workId`, `title`, `authors`, `narrators` | string / list | |
 | `series`, `seriesIndex` | string / int | |
-| `coverUrl`, `coverIsSquare` | url / bool | Controls how square covers are displayed |
+| `coverUrl`, `coverIsSquare` | url / bool | Cover of the shown format (ebook, else audiobook; in the Ebooks/Audiobooks selection that format). Controls how square covers are displayed |
 | `hasEbook`, `hasAudiobook` | bool | Determines the format icons |
 | `readProgress`, `listenProgress` | real 0–1 | Progress lines |
 | `state` | enum | `Normal`, `New`, `Finished`, `FileMissing` |
@@ -186,6 +187,7 @@ View F from the mockup becomes a real developer view `ComponentGallery.qml` (sta
 | `SidebarNav` | Components | A | 0 |
 | `Chip`, `ChipGroup` | Controls | A | 2 |
 | `SearchField` | Controls | A | 2 |
+| `SelectMenu` (sort menu), `AppSlider` (cover size) | Controls | A | 2 |
 | `ProgressLine` | Controls | A, B, C | 1 |
 | `Badge` / `Label` | Controls | F | 1 |
 | `CoverArt` (2:3 and square, series stack) | Components | A, B, C, D, E | 1 |

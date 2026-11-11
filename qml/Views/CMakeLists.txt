@@ -13,6 +13,7 @@ qt_add_qml_module(calibly_views
 target_link_libraries(calibly_views PRIVATE
     Qt6::Quick
     calibly_controllers
+    calibly_models
     calibly_theme
     calibly_controls
     calibly_components

@@ -31,6 +31,12 @@ cmake --build --preset mingw-debug
 cmake --build --preset mingw-debug --target run
 ```
 
+Run the unit tests (Qt Test):
+
+```bash
+ctest --preset mingw-debug
+```
+
 Further targets:
 - `run-gallery` starts the component gallery (all UI building blocks with sample data).
 - `all_qmllint` checks all QML files.

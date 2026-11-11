@@ -25,13 +25,19 @@ public:
         NarratorsRole,   // QStringList
         SeriesRole,
         SeriesIndexRole,
-        CoverUrlRole,    // QUrl, empty = placeholder
+        CoverUrlRole,    // QUrl of the primary format (ebook, else audiobook), empty = placeholder
         CoverIsSquareRole,
         HasEbookRole,
         HasAudiobookRole,
         ReadProgressRole,   // 0.0 – 1.0
         ListenProgressRole, // 0.0 – 1.0
         LastOpenedRole,
+        AuthorSortRole,     // sort key of the first author, e.g. "Goethe"
+        SearchTextRole,     // folded title, authors, narrators and series (see TextUtils)
+        EbookCoverUrlRole,  // cover of the ebook, see Work::coverPath()
+        EbookCoverIsSquareRole,
+        AudiobookCoverUrlRole,
+        AudiobookCoverIsSquareRole,
     };
     Q_ENUM(Role)
 
@@ -49,4 +55,5 @@ signals:
 
 private:
     QList<Work> m_works;
+    QStringList m_searchTexts; // one per work, precomputed in setWorks()
 };

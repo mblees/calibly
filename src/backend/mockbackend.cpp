@@ -78,16 +78,12 @@ QList<Work> MockBackend::loadWorks()
                               : Format::Kind::Ebook;
             format.filePath = formatObject.value(QStringLiteral("file")).toString();
             format.progress = std::clamp(formatObject.value(QStringLiteral("progress")).toDouble(), 0.0, 1.0);
+            const QString cover = formatObject.value(QStringLiteral("cover")).toString();
+            if (!cover.isEmpty()) {
+                format.coverPath = coverDir + cover;
+                format.coverIsSquare = isSquareImage(format.coverPath);
+            }
             work.formats.append(format);
-        }
-
-        const QString cover = item.value(QStringLiteral("cover")).toString();
-        if (!cover.isEmpty()) {
-            work.coverPath = coverDir + cover;
-            work.coverIsSquare = isSquareImage(work.coverPath);
-        } else {
-            // Placeholder: square for pure audiobooks, like their real covers.
-            work.coverIsSquare = work.hasAudiobook() && !work.hasEbook();
         }
 
         works.append(work);

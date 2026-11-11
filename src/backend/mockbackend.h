@@ -5,8 +5,8 @@
 #include "librarybackend.h"
 
 // Reads sample works from a JSON file (by default the embedded
-// :/mock/mock.json). Cover file names in the JSON are relative to the
-// "covers" folder next to the JSON file.
+// :/mock/mock.json). Each format can have its own cover; the file names are
+// relative to the "covers" folder next to the JSON file.
 class MockBackend : public LibraryBackend
 {
 public:

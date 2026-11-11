@@ -11,7 +11,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Phase 0: Qt Quick is the only dependency (see docs/UI-Development-Plan.md).
 # LinguistTools are Qt's own build tools for translations (lupdate, lrelease).
-find_package(Qt6 6.8 REQUIRED COMPONENTS Quick QuickControls2 LinguistTools)
+# Test (Qt Test) is only used by the unit tests in tests/.
+find_package(Qt6 6.8 REQUIRED COMPONENTS Quick QuickControls2 LinguistTools Test)
 
 # Texts in the source code are German. Every further UI language is listed
 # in I18N_TRANSLATED_LANGUAGES and gets its own i18n/calibly_<code>.ts file.
@@ -31,6 +32,9 @@ add_subdirectory(src/backend)
 add_subdirectory(src/models)
 add_subdirectory(src/controllers)
 add_subdirectory(qml)
+
+enable_testing()
+add_subdirectory(tests)
 
 qt_add_executable(calibly
     src/main.cpp

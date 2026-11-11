@@ -174,40 +174,153 @@
         <translation>Series</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="357"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="362"/>
+        <source>Auswahl, Suche und Sortierung</source>
+        <translation>Selection, search and sorting</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="370"/>
+        <source>Alle</source>
+        <translation>All</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="376"/>
+        <source>E-Books</source>
+        <translation>Ebooks</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="383"/>
+        <source>Beides</source>
+        <translation>Both</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="393"/>
+        <source>Sortieren</source>
+        <translation>Sort</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="394"/>
+        <source>Zuletzt geöffnet</source>
+        <translation>Recently opened</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="394"/>
+        <source>Titel</source>
+        <translation>Title</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="394"/>
+        <source>Autor</source>
+        <translation>Author</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="406"/>
+        <source>Titel, Autor, Sprecher, Serie …</source>
+        <translation>Title, author, narrator, series …</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="407"/>
+        <source>Strg K</source>
+        <translation>Ctrl K</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="424"/>
         <source>Seitenleiste</source>
         <translation>Sidebar</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="373"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="440"/>
         <source>Bibliothek</source>
         <translation>Library</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="374"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="441"/>
         <source>Weitermachen</source>
         <translation>Continue</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="375"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="442"/>
         <source>Serien</source>
         <translation>Series</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="376"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="443"/>
         <source>Autoren</source>
         <translation>Authors</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="377"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="444"/>
         <source>Sprecher</source>
         <translation>Narrators</translation>
     </message>
 </context>
 <context>
     <name>LibraryView</name>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="71"/>
+        <source>Titel, Autor, Sprecher, Serie …</source>
+        <translation>Title, author, narrator, series …</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="72"/>
+        <source>Strg K</source>
+        <translation>Ctrl K</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="86"/>
+        <source>Cover-Größe</source>
+        <translation>Cover size</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="101"/>
+        <source>Alle</source>
+        <translation>All</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="107"/>
+        <source>E-Books</source>
+        <translation>Ebooks</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="114"/>
+        <source>Hörbücher</source>
+        <translation>Audiobooks</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="121"/>
+        <source>Beides</source>
+        <translation>Both</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="135"/>
+        <source>Sortieren</source>
+        <translation>Sort</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="136"/>
+        <source>Zuletzt geöffnet</source>
+        <translation>Recently opened</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="136"/>
+        <source>Titel</source>
+        <translation>Title</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="136"/>
+        <source>Autor</source>
+        <translation>Author</translation>
+    </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="31"/>
+        <location filename="../qml/Views/LibraryView.qml" line="161"/>
+        <source>%L1 von %Ln Titeln</source>
+        <translation>
+            <numerusform>%L1 of %Ln title</numerusform>
+            <numerusform>%L1 of %Ln titles</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Views/LibraryView.qml" line="162"/>
         <source>%Ln Titel</source>
         <translation>
             <numerusform>%Ln title</numerusform>
@@ -215,9 +328,24 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="96"/>
+        <location filename="../qml/Views/LibraryView.qml" line="235"/>
         <source>Noch keine Titel in der Bibliothek.</source>
         <translation>No titles in the library yet.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="236"/>
+        <source>Keine Treffer für „%1“.</source>
+        <translation>No results for “%1”.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="237"/>
+        <source>Keine Titel in dieser Auswahl.</source>
+        <translation>No titles in this selection.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="244"/>
+        <source>Filter zurücksetzen</source>
+        <translation>Reset filters</translation>
     </message>
 </context>
 <context>
@@ -259,6 +387,14 @@
         <location filename="../qml/Views/PlaceholderView.qml" line="28"/>
         <source>Diese Ansicht ist noch ein Platzhalter.</source>
         <translation>This view is still a placeholder.</translation>
+    </message>
+</context>
+<context>
+    <name>SearchField</name>
+    <message>
+        <location filename="../qml/Controls/SearchField.qml" line="106"/>
+        <source>Suche leeren</source>
+        <translation>Clear search</translation>
     </message>
 </context>
 </TS>

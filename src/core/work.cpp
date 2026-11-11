@@ -2,10 +2,11 @@
 
 #include <algorithm>
 
-bool Work::hasFormat(Format::Kind kind) const
+const Format *Work::format(Format::Kind kind) const
 {
-    return std::any_of(formats.cbegin(), formats.cend(),
-                       [kind](const Format &format) { return format.kind == kind; });
+    const auto it = std::find_if(formats.cbegin(), formats.cend(),
+                                 [kind](const Format &format) { return format.kind == kind; });
+    return it == formats.cend() ? nullptr : &*it;
 }
 
 double Work::progress(Format::Kind kind) const
@@ -16,4 +17,18 @@ double Work::progress(Format::Kind kind) const
             result = std::max(result, format.progress);
     }
     return result;
+}
+
+QString Work::coverPath(Format::Kind kind) const
+{
+    const Format *f = format(kind);
+    return f ? f->coverPath : QString();
+}
+
+bool Work::coverIsSquare(Format::Kind kind) const
+{
+    const Format *f = format(kind);
+    if (f && !f->coverPath.isEmpty())
+        return f->coverIsSquare;
+    return kind == Format::Kind::Audiobook;
 }

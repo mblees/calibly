@@ -4,7 +4,15 @@
 <context>
     <name>LibraryView</name>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="31"/>
+        <location filename="../qml/Views/LibraryView.qml" line="161"/>
+        <source>%L1 von %Ln Titeln</source>
+        <translation>
+            <numerusform>%L1 von %Ln Titel</numerusform>
+            <numerusform>%L1 von %Ln Titeln</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Views/LibraryView.qml" line="162"/>
         <source>%Ln Titel</source>
         <translation>
             <numerusform>%Ln Titel</numerusform>

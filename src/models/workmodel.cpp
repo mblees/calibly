@@ -2,7 +2,21 @@
 
 #include <QUrl>
 
+#include "textutils.h"
+
 #include <utility>
+
+namespace {
+
+QUrl coverUrl(const QString &path)
+{
+    if (path.isEmpty())
+        return QUrl();
+    // Paths starting with ":" are embedded resources.
+    return path.startsWith(u':') ? QUrl(QStringLiteral("qrc") + path) : QUrl::fromLocalFile(path);
+}
+
+} // namespace
 
 WorkModel::WorkModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -37,13 +51,17 @@ QVariant WorkModel::data(const QModelIndex &index, int role) const
     case SeriesIndexRole:
         return work.seriesIndex;
     case CoverUrlRole:
-        if (work.coverPath.isEmpty())
-            return QUrl();
-        // Paths starting with ":" are embedded resources.
-        return work.coverPath.startsWith(u':') ? QUrl(QStringLiteral("qrc") + work.coverPath)
-                                               : QUrl::fromLocalFile(work.coverPath);
+        return coverUrl(work.coverPath(work.primaryKind()));
     case CoverIsSquareRole:
-        return work.coverIsSquare;
+        return work.coverIsSquare(work.primaryKind());
+    case EbookCoverUrlRole:
+        return coverUrl(work.coverPath(Format::Kind::Ebook));
+    case EbookCoverIsSquareRole:
+        return work.coverIsSquare(Format::Kind::Ebook);
+    case AudiobookCoverUrlRole:
+        return coverUrl(work.coverPath(Format::Kind::Audiobook));
+    case AudiobookCoverIsSquareRole:
+        return work.coverIsSquare(Format::Kind::Audiobook);
     case HasEbookRole:
         return work.hasEbook();
     case HasAudiobookRole:
@@ -54,6 +72,10 @@ QVariant WorkModel::data(const QModelIndex &index, int role) const
         return work.listenProgress();
     case LastOpenedRole:
         return work.lastOpened;
+    case AuthorSortRole:
+        return work.authors.isEmpty() ? QString() : TextUtils::nameSortKey(work.authors.first());
+    case SearchTextRole:
+        return m_searchTexts.at(index.row());
     default:
         return {};
     }
@@ -76,6 +98,12 @@ QHash<int, QByteArray> WorkModel::roleNames() const
         { ReadProgressRole, "readProgress" },
         { ListenProgressRole, "listenProgress" },
         { LastOpenedRole, "lastOpened" },
+        { AuthorSortRole, "authorSort" },
+        { SearchTextRole, "searchText" },
+        { EbookCoverUrlRole, "ebookCoverUrl" },
+        { EbookCoverIsSquareRole, "ebookCoverIsSquare" },
+        { AudiobookCoverUrlRole, "audiobookCoverUrl" },
+        { AudiobookCoverIsSquareRole, "audiobookCoverIsSquare" },
     };
 }
 
@@ -84,6 +112,12 @@ void WorkModel::setWorks(QList<Work> works)
     const int oldCount = count();
     beginResetModel();
     m_works = std::move(works);
+    m_searchTexts.clear();
+    m_searchTexts.reserve(m_works.size());
+    for (const Work &work : std::as_const(m_works)) {
+        const QStringList parts = QStringList{ work.title, work.series } + work.authors + work.narrators;
+        m_searchTexts.append(TextUtils::foldForSearch(parts.join(u' ')));
+    }
     endResetModel();
     if (count() != oldCount)
         emit countChanged();

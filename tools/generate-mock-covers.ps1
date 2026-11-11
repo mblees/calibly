@@ -25,7 +25,13 @@ $covers = @(
     @("dracula",             "Dracula",                "Bram Stoker",       "#a8475f", "#4d1424", $true),
     @("frankenstein",        "Frankenstein",           "Mary Shelley",      "#2f6f73", "#0d3234", $true),
     @("die-schatzinsel",     "Die Schatzinsel",        "R. L. Stevenson",   "#4d7e8f", "#173743", $true),
-    @("der-zauberer-von-oz", "Der Zauberer von Oz",    "L. Frank Baum",     "#c46a2b", "#5d2a07", $true)
+    @("der-zauberer-von-oz", "Der Zauberer von Oz",    "L. Frank Baum",     "#c46a2b", "#5d2a07", $true),
+    # Audiobook editions of works that also have an ebook (own, square cover)
+    @("moby-dick-hoerbuch",         "Moby Dick",         "Herman Melville", "#2f6f73", "#0d3234", $true),
+    @("krieg-und-frieden-hoerbuch", "Krieg und Frieden", "Leo Tolstoi",     "#575d66", "#1f2328", $true),
+    @("die-verwandlung-hoerbuch",   "Die Verwandlung",   "Franz Kafka",     "#5c3f78", "#25133a", $true),
+    @("grimms-maerchen-hoerbuch",   "Grimms M$([char]0xE4)rchen",    "Br$([char]0xFC)der Grimm",    "#3a4f9c", "#141e4d", $true),
+    @("robinson-crusoe-hoerbuch",   "Robinson Crusoe",   "Daniel Defoe",    "#3f6b4a", "#16301d", $true)
 )
 
 $jpeg = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object { $_.MimeType -eq "image/jpeg" }

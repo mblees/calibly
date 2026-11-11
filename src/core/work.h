@@ -8,7 +8,8 @@
 // Plain data classes of calibly (no Qt Quick, no UI).
 //
 // A Work is one title independent of its format (e.g. "Moby Dick").
-// It has one or more Formats: ebook or audiobook files with their own progress.
+// It has one or more Formats: ebook or audiobook files with their own
+// progress and their own cover (audiobook covers are usually square).
 
 struct Format
 {
@@ -16,7 +17,9 @@ struct Format
 
     Kind kind = Kind::Ebook;
     QString filePath;
-    double progress = 0.0; // 0.0 – 1.0
+    double progress = 0.0;      // 0.0 – 1.0
+    QString coverPath;          // empty = no cover, the UI shows a placeholder
+    bool coverIsSquare = false;
 };
 
 struct Work
@@ -27,12 +30,13 @@ struct Work
     QStringList narrators;
     QString series;
     int seriesIndex = 0;
-    QString coverPath;          // empty = no cover, UI shows a placeholder
-    bool coverIsSquare = false; // audiobook covers are usually square
     QDateTime lastOpened;
     QList<Format> formats;
 
-    bool hasFormat(Format::Kind kind) const;
+    // First format of this kind, nullptr if there is none.
+    const Format *format(Format::Kind kind) const;
+
+    bool hasFormat(Format::Kind kind) const { return format(kind) != nullptr; }
     bool hasEbook() const { return hasFormat(Format::Kind::Ebook); }
     bool hasAudiobook() const { return hasFormat(Format::Kind::Audiobook); }
 
@@ -40,4 +44,14 @@ struct Work
     double progress(Format::Kind kind) const;
     double readProgress() const { return progress(Format::Kind::Ebook); }
     double listenProgress() const { return progress(Format::Kind::Audiobook); }
+
+    // The format that represents the work when no format is selected:
+    // the ebook if there is one, otherwise the audiobook.
+    Format::Kind primaryKind() const { return hasEbook() ? Format::Kind::Ebook : Format::Kind::Audiobook; }
+
+    // Cover of a format. A missing format or cover gives an empty path;
+    // coverIsSquare() is then true for audiobooks, so their placeholder is
+    // square like a real audiobook cover.
+    QString coverPath(Format::Kind kind) const;
+    bool coverIsSquare(Format::Kind kind) const;
 };

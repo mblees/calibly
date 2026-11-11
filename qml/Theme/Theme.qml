@@ -32,6 +32,7 @@ QtObject {
     readonly property color finished: "#5fcf80"
     readonly property color finishedForeground: "#062010"
     readonly property color danger: "#e05a5a"
+    readonly property color shadow: "#80000000"
 
     // Spacing
     readonly property int spacingXxs: 2
@@ -62,6 +63,11 @@ QtObject {
     readonly property int iconSizeSmall: 11
     readonly property int iconSizeLarge: 48
     readonly property int controlHeight: 34
+    readonly property int chipHeight: 30
+    readonly property int searchFieldWidth: 380
+    readonly property int menuMinWidth: 200
+    readonly property int sliderWidth: 110
+    readonly property int sliderHandleSize: 14
     readonly property int sidebarWidth: 220
     readonly property int borderWidth: 1
     readonly property int focusWidth: 2
@@ -73,6 +79,8 @@ QtObject {
     // Covers
     readonly property real coverAspect: 1.5        // height / width of the 2:3 frame
     readonly property int coverTileMinWidth: 150   // grid columns are derived from this
+    readonly property int coverTileSmallest: 110   // range of the cover size slider
+    readonly property int coverTileLargest: 240
     readonly property int coverTileTextHeight: 44  // title + author below a cover
     readonly property int coverDecodeWidth: 400    // decode size of cover images (memory)
     readonly property int coverStackOffset: 3      // offset of the sheets behind a series stack
