@@ -27,6 +27,7 @@ qt_add_qml_module(calibly_controls
         AppMenu.qml
         AppMenuItem.qml
         AppMenuSeparator.qml
+        ToggleSwitch.qml
         TimeFormat.js
 )
 

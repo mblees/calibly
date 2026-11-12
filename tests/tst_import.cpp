@@ -477,6 +477,34 @@ private slots:
         QCOMPARE(summary.countBySuffix.value(QStringLiteral("MP3")), 2);
     }
 
+    // Text and Markdown files are imported when picked or dropped
+    // themselves, not when found in a folder (audiobook folders often hold
+    // .txt files).
+    void textFilesOnlyWhenPicked()
+    {
+        QTemporaryDir dir;
+        const QString source = dir.filePath(QStringLiteral("in"));
+        QVERIFY(QDir().mkpath(source));
+        const auto write = [&source](const QString &name) {
+            QFile f(source + u'/' + name);
+            return f.open(QIODevice::WriteOnly) && f.write("# Titel\n\nText.\n") > 0;
+        };
+        QVERIFY(write(QStringLiteral("Notizen - Testautor.md")));
+        QVERIFY(write(QStringLiteral("info.txt")));
+        writeMp3(source + QStringLiteral("/1.mp3"), 1000, QStringLiteral("Der Marsianer"), QString(), 1);
+
+        QCOMPARE(ImportWorker::collectFiles({ source }), QStringList{ source + QStringLiteral("/1.mp3") });
+        QCOMPARE(ImportWorker::inspectPaths({ source }).ebookCount, 0);
+
+        const QString picked = source + QStringLiteral("/Notizen - Testautor.md");
+        QCOMPARE(ImportWorker::collectFiles({ picked }), QStringList{ picked });
+        QCOMPARE(ImportWorker::inspectPaths({ picked }).ebookCount, 1);
+        const FileMetadata metadata = readMetadata(picked);
+        QCOMPARE(metadata.kind, Format::Kind::Ebook);
+        QCOMPARE(metadata.title, QStringLiteral("Notizen"));
+        QCOMPARE(metadata.authors, QStringList{ QStringLiteral("Testautor") });
+    }
+
     void safeNames()
     {
         QCOMPARE(LibraryFolder::safeName(QStringLiteral("Carl's: Doom? <Scenario>.")),
@@ -713,6 +741,8 @@ private slots:
             QSqlQuery query(db);
             QVERIFY2(query.exec(QStringLiteral("ALTER TABLE formats DROP COLUMN last_opened")),
                      qPrintable(query.lastError().text()));
+            QVERIFY2(query.exec(QStringLiteral("ALTER TABLE formats DROP COLUMN reading_position")),
+                     qPrintable(query.lastError().text()));
             QVERIFY(query.exec(QStringLiteral("PRAGMA user_version = 3")));
             db.close();
         }
@@ -727,6 +757,55 @@ private slots:
         QCOMPARE(works.first().formats.at(1).lastOpened, work.lastOpened);
         QVERIFY(backend.saveWork(works.first()));
         QCOMPARE(backend.loadWorks().first().formats.at(1).lastOpened, work.lastOpened);
+    }
+
+    // A library of phase 8 / 9 (schema 4) gets the reading position of the
+    // reader; everything else stays.
+    void sqliteMigratesVersion4()
+    {
+        QTemporaryDir dir;
+        const QString root = dir.path();
+        Work work;
+        work.id = QStringLiteral("w1");
+        work.title = QStringLiteral("Die Verwandlung");
+        Format ebook;
+        ebook.kind = Format::Kind::Ebook;
+        ebook.filePath = root + QStringLiteral("/verwandlung.epub");
+        ebook.progress = 0.25;
+        ebook.lastOpened = QDateTime(QDate(2026, 11, 10), QTime(21, 5));
+        work.formats = { ebook };
+        {
+            SqliteBackend backend(root);
+            QVERIFY(backend.open());
+            QVERIFY(backend.saveWork(work));
+        }
+        {
+            // Back to how phase 9 left the database.
+            QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), QStringLiteral("v4"));
+            db.setDatabaseName(root + QStringLiteral("/calibly.db"));
+            QVERIFY(db.open());
+            QSqlQuery query(db);
+            QVERIFY2(query.exec(QStringLiteral("ALTER TABLE formats DROP COLUMN reading_position")),
+                     qPrintable(query.lastError().text()));
+            QVERIFY(query.exec(QStringLiteral("PRAGMA user_version = 4")));
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(QStringLiteral("v4"));
+
+        SqliteBackend backend(root);
+        QString error;
+        QVERIFY2(backend.open(&error), qPrintable(error));
+        QList<Work> works = backend.loadWorks();
+        QCOMPARE(works.size(), 1);
+        QCOMPARE(works.first().formats.at(0).progress, 0.25);
+        QCOMPARE(works.first().formats.at(0).lastOpened, ebook.lastOpened);
+        QVERIFY(works.first().formats.at(0).readingPosition.isEmpty());
+
+        // The new column is stored.
+        works.first().formats[0].readingPosition = QStringLiteral("{\"chapter\":2,\"offset\":140}");
+        QVERIFY(backend.saveWork(works.first()));
+        QCOMPARE(backend.loadWorks().first().formats.at(0).readingPosition,
+                 QStringLiteral("{\"chapter\":2,\"offset\":140}"));
     }
 
     // A library of phase 4 (schema 1, publisher per work) is updated on open.

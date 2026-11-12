@@ -171,13 +171,6 @@ QTextDocument *BookLayout::document(int chapter)
     font.setPixelSize(m_style.fontPixelSize);
     font.setStyleStrategy(QFont::PreferAntialias);
     document->setDefaultFont(font);
-    document->setDocumentMargin(0);
-    QTextFrameFormat frame = document->rootFrame()->frameFormat();
-    frame.setLeftMargin(m_style.margin);
-    frame.setRightMargin(m_style.margin);
-    frame.setTopMargin(m_style.verticalMargin);
-    frame.setBottomMargin(m_style.verticalMargin);
-    document->rootFrame()->setFrameFormat(frame);
     document->setPageSize(m_pageSize);
 
     const QString text = m_book->chapterText(chapter);
@@ -198,6 +191,14 @@ QTextDocument *BookLayout::document(int chapter)
         break;
     }
     }
+    // After the text: setHtml() and friends reset the root frame.
+    document->setDocumentMargin(0);
+    QTextFrameFormat frame = document->rootFrame()->frameFormat();
+    frame.setLeftMargin(m_style.margin);
+    frame.setRightMargin(m_style.margin);
+    frame.setTopMargin(m_style.verticalMargin);
+    frame.setBottomMargin(m_style.verticalMargin);
+    document->rootFrame()->setFrameFormat(frame);
     applyStyle(document.get(), m_style);
 
     if (m_cache.size() >= kCachedChapters)

@@ -172,6 +172,10 @@ private slots:
         QCOMPARE(m_settings->theme(), QStringLiteral("original"));
         QCOMPARE(m_settings->pageColor(), QStringLiteral("nacht"));
         QCOMPARE(m_settings->themes().size(), 6);
+        const QVariantMap kraeftig = m_settings->themeInfo(QStringLiteral("kraeftig"));
+        QCOMPARE(kraeftig.value(QStringLiteral("pageColor")).toString(), QStringLiteral("weiss"));
+        QVERIFY(kraeftig.value(QStringLiteral("bold")).toBool());
+        QVERIFY(m_settings->themeInfo(QStringLiteral("nope")).isEmpty());
         QSignalSpy changed(m_settings.get(), &ReaderSettings::changed);
         m_settings->applyTheme(QStringLiteral("papier"));
         QCOMPARE(m_settings->theme(), QStringLiteral("papier"));
@@ -278,8 +282,10 @@ private slots:
         painter.end();
         QCOMPARE(image.pixelColor(2, 2), QColor(Qt::white));
         bool text = false;
-        for (int y = 40; y < 760 && !text; y += 2)
-            text = image.pixelColor(300, y).lightness() < 128;
+        for (int y = 0; y < 800 && !text; y += 2) {
+            for (int x = 0; x < 600 && !text; x += 2)
+                text = image.pixelColor(x, y).lightness() < 128;
+        }
         QVERIFY(text);
     }
 

@@ -165,6 +165,41 @@ QtObject {
         ["#3a4f9c", "#141e4d"], ["#7a6a50", "#352b1b"], ["#4d7e8f", "#173743"]
     ]
 
+    // Reader (phase 10). Page, text and link colors of the page colors of
+    // ReaderSettings.pageColor; images keep their own colors.
+    readonly property var readerPageColors: ({
+        "weiss": { "page": "#fbfaf7", "text": "#1f1f22", "link": "#2c5fb8" },
+        "sepia": { "page": "#f4ecd8", "text": "#3b2f22", "link": "#8a4a12" },
+        "grau": { "page": "#3a3b40", "text": "#e3e3e6", "link": "#9cc2ff" },
+        "nacht": { "page": "#121316", "text": "#d9d9de", "link": "#6ea8ff" }
+    })
+    readonly property color readerBar: "#f00f1013"      // bars over the page in fullscreen
+    readonly property color readerHint: "#eb2a2b32"     // hint when entering fullscreen
+    readonly property int readerBarHeight: 48
+    readonly property int readerBottomBarHeight: 56
+    readonly property int readerProgressHeight: 2       // fine progress line in fullscreen
+    readonly property int readerHintHeight: 32
+    readonly property int readerInfoWidth: 170          // "Seite 3 von 96 · 3 %" in the bottom bar
+    readonly property int readerChapterWidth: 140       // chapter in the bottom bar
+    readonly property int readerNarrowWidth: 900        // narrower windows hide the contents at first
+    readonly property int contentsWidth: 240
+    readonly property int contentsRowHeight: 32
+    readonly property int textSettingsWidth: 360
+    readonly property int textSettingsLabelWidth: 118
+    readonly property int fontStepButtonWidth: 52
+    readonly property int fontStepDotSize: 7
+    readonly property int themeSwatchHeight: 74
+    readonly property int pageColorSwatchHeight: 44
+    readonly property int themeSwatchFontSize: 24
+    readonly property int fontStepLargeSize: 22
+    readonly property int toggleWidth: 40
+    readonly property int toggleHeight: 22
+    readonly property int toggleKnobSize: 16
+    readonly property color toggleOff: "#4a4b55"
+    readonly property color toggleKnob: "#ffffff"
+    readonly property int readerBarHideDelay: 3000      // bars over the page hide after this
+    readonly property int readerHintDuration: 2000
+
     // Motion
     readonly property int durationFast: 120
     readonly property int durationDrawer: 220

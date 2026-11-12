@@ -246,6 +246,26 @@ ViewBase {
                         iconName: "x"
                         round: false
                     }
+                    IconButton {
+                        text: qsTr("Inhalt ausblenden")
+                        iconName: "list"
+                        round: false
+                        checked: true
+                    }
+                    ToggleSwitch {
+                        text: qsTr("Aus")
+                    }
+                    ToggleSwitch {
+                        text: qsTr("An")
+                        checked: true
+                    }
+                    ToggleSwitch {
+                        text: qsTr("Deaktiviert")
+                        enabled: false
+                    }
+                }
+                Caption {
+                    text: qsTr("Icon-Knopf eingeschaltet, Schalter aus, an und deaktiviert")
                 }
             }
 
@@ -466,6 +486,7 @@ ViewBase {
                         durationSeconds: 0
                         progress: 0.31
                         available: true
+                        readsInApp: true
                     }
                     FormatCard {
                         width: Theme.formatCardWidth
@@ -500,7 +521,7 @@ ViewBase {
                     }
                 }
                 Caption {
-                    text: qsTr("Format-Karten: angefangen, Öffnen fehlgeschlagen, Datei fehlt, fertig")
+                    text: qsTr("Format-Karten: angefangen (liest in calibly), Öffnen fehlgeschlagen, Datei fehlt, fertig")
                 }
 
                 Row {
@@ -858,6 +879,7 @@ ViewBase {
                     hasEbook: true
                     hasAudiobook: true
                     ebookFinished: true
+                    readsInApp: true
                 }
                 WorkMenu {
                     id: bulkMenuSample
@@ -913,6 +935,15 @@ ViewBase {
                         pages: 210
                     }
                     ContinueCard {
+                        title: "Die Verwandlung"
+                        kind: "ebook"
+                        coverUrl: "qrc:/mock/covers/die-verwandlung.jpg"
+                        coverIsSquare: false
+                        progress: 0.42
+                        lastOpened: new Date()
+                        chapterTitle: "II"
+                    }
+                    ContinueCard {
                         title: "Der Mann ohne Eigenschaften"
                         kind: "ebook"
                         coverUrl: ""
@@ -934,7 +965,192 @@ ViewBase {
                     }
                 }
                 Caption {
-                    text: qsTr("Weitermachen-Karten: Hörbuch mit Kapitel, E-Book mit Seite, E-Book ohne Fortschritt, Datei fehlt")
+                    text: qsTr("Weitermachen-Karten: Hörbuch mit Kapitel, E-Book mit Seite (PDF), E-Book mit Kapitel (EPUB), E-Book ohne Fortschritt, Datei fehlt")
+                }
+            }
+
+            Section {
+                id: readerSection
+
+                // State of the sample text settings and zoom.
+                property int fontSizeStep: 2
+                property string theme: "papier"
+                property string pageColor: "sepia"
+                property string fontFamily: "Cambria"
+                property bool bold: false
+                property real lineHeight: 1.6
+                property real letterSpacing: 0
+                property real wordSpacing: 0
+                property int margin: 56
+                property bool justify: true
+                property bool twoPages: false
+                property int zoomMode: 0
+                property real zoom: 0.53
+                readonly property var contents: [
+                    { title: "Titelseite", level: 0, page: 0 },
+                    { title: "I", level: 0, page: 2 },
+                    { title: "Gregors Zimmer", level: 1, page: 5 },
+                    { title: "II", level: 0, page: 35 },
+                    { title: "III", level: 0, page: -1 }
+                ]
+
+                heading: qsTr("Reader")
+                width: page.width
+
+                ReaderBar {
+                    width: page.width
+                    title: "Die Verwandlung"
+                    author: "Franz Kafka"
+                    chapterTitle: "I"
+                    contentsShown: true
+                }
+                Caption {
+                    text: qsTr("Leiste im Fenster: Inhalt eingeblendet")
+                }
+                ReaderBar {
+                    width: page.width
+                    title: "Die Verwandlung"
+                    author: "Franz Kafka"
+                    chapterTitle: "I"
+                    fullscreen: true
+                    settingsOpen: true
+                }
+                Caption {
+                    text: qsTr("Leiste im Vollbild: Texteinstellungen offen")
+                }
+                ReaderBar {
+                    width: page.width
+                    backText: qsTr("Weitermachen")
+                    title: "Testseiten"
+                    author: "Testautor"
+                    pdf: true
+                }
+                Caption {
+                    text: qsTr("Leiste eines PDFs (Lupe statt „Aa“), geöffnet aus „Weitermachen“")
+                }
+
+                Row {
+                    spacing: Theme.spacingXxl
+
+                    Column {
+                        spacing: Theme.spacingS
+
+                        TableOfContents {
+                            height: Theme.popupMaxHeight
+                            entries: readerSection.contents
+                            currentIndex: 2
+                        }
+                        Caption {
+                            text: qsTr("Inhalt: Unterkapitel aktuell, letzte Seite noch nicht gezählt")
+                        }
+                        TableOfContents {
+                            height: Theme.popupMaxHeight / 2
+                        }
+                        Caption {
+                            text: qsTr("Inhalt: Buch ohne Inhaltsverzeichnis")
+                        }
+                    }
+
+                    Column {
+                        spacing: Theme.spacingS
+
+                        TextSettings {
+                            fontSizeStep: readerSection.fontSizeStep
+                            theme: readerSection.theme
+                            themes: [
+                                { id: "original", fontFamily: "", bold: false, pageColor: "nacht" },
+                                { id: "ruhig", fontFamily: "Palatino Linotype", bold: false, pageColor: "grau" },
+                                { id: "papier", fontFamily: "Cambria", bold: false, pageColor: "sepia" },
+                                { id: "kraeftig", fontFamily: "Segoe UI", bold: true, pageColor: "weiss" },
+                                { id: "sanft", fontFamily: "Constantia", bold: false, pageColor: "sepia" },
+                                { id: "fokus", fontFamily: "Georgia", bold: false, pageColor: "nacht" }
+                            ]
+                            pageColor: readerSection.pageColor
+                            fontFamily: readerSection.fontFamily
+                            fontFamilies: ["Georgia", "Palatino Linotype", "Cambria", "Constantia", "Segoe UI", "Verdana"]
+                            bold: readerSection.bold
+                            lineHeight: readerSection.lineHeight
+                            letterSpacing: readerSection.letterSpacing
+                            wordSpacing: readerSection.wordSpacing
+                            margin: readerSection.margin
+                            justify: readerSection.justify
+                            twoPages: readerSection.twoPages
+
+                            onSmallerRequested: readerSection.fontSizeStep = Math.max(0, readerSection.fontSizeStep - 1)
+                            onLargerRequested: readerSection.fontSizeStep = Math.min(6, readerSection.fontSizeStep + 1)
+                            onThemePicked: function(id) {
+                                readerSection.theme = id
+                            }
+                            onPageColorPicked: function(id) {
+                                readerSection.pageColor = id
+                                readerSection.theme = ""
+                            }
+                            onFontFamilyPicked: function(family) {
+                                readerSection.fontFamily = family
+                                readerSection.theme = ""
+                            }
+                            onBoldToggled: function(on) {
+                                readerSection.bold = on
+                                readerSection.theme = ""
+                            }
+                            onJustifyToggled: function(on) {
+                                readerSection.justify = on
+                            }
+                            onTwoPagesToggled: function(on) {
+                                readerSection.twoPages = on
+                            }
+                            onLineHeightMoved: function(value) {
+                                readerSection.lineHeight = value
+                            }
+                            onLetterSpacingMoved: function(value) {
+                                readerSection.letterSpacing = value
+                            }
+                            onWordSpacingMoved: function(value) {
+                                readerSection.wordSpacing = value
+                            }
+                            onMarginMoved: function(value) {
+                                readerSection.margin = value
+                            }
+                            onResetRequested: {
+                                readerSection.fontSizeStep = 2
+                                readerSection.theme = "original"
+                                readerSection.pageColor = "nacht"
+                                readerSection.fontFamily = ""
+                            }
+                        }
+                        Caption {
+                            text: qsTr("Texteinstellungen (zum Ausprobieren)")
+                        }
+                    }
+
+                    Column {
+                        spacing: Theme.spacingS
+
+                        TextSettings {
+                            pdf: true
+                            zoomMode: readerSection.zoomMode
+                            zoom: readerSection.zoom
+                            onFitPageRequested: {
+                                readerSection.zoomMode = 0
+                                readerSection.zoom = 0.53
+                            }
+                            onFitWidthRequested: {
+                                readerSection.zoomMode = 1
+                                readerSection.zoom = 0.9
+                            }
+                            onZoomInRequested: {
+                                readerSection.zoomMode = 2
+                                readerSection.zoom = readerSection.zoom * 1.25
+                            }
+                            onZoomOutRequested: {
+                                readerSection.zoomMode = 2
+                                readerSection.zoom = readerSection.zoom / 1.25
+                            }
+                        }
+                        Caption {
+                            text: qsTr("Ansicht eines PDFs: Zoom")
+                        }
+                    }
                 }
             }
 

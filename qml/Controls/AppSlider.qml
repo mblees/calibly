@@ -8,6 +8,7 @@ import Calibly.Theme
 // Properties:
 //   from, to, value, stepSize  range and value (inherited)
 //   leftIconName, rightIconName  optional icons, keys of Icons.paths
+//   trackColor   color of the track, e.g. on a raised panel
 // Signals:
 //   moved() (inherited)
 T.Slider {
@@ -15,6 +16,7 @@ T.Slider {
 
     property string leftIconName
     property string rightIconName
+    property color trackColor: Theme.surfaceRaised
 
     readonly property int iconSpace: Theme.iconSize + Theme.spacingS
 
@@ -48,7 +50,7 @@ T.Slider {
         width: control.availableWidth
         height: Theme.progressHeight + Theme.borderWidth
         radius: height / 2
-        color: Theme.surfaceRaised
+        color: control.trackColor
 
         Rectangle {
             width: control.visualPosition * parent.width

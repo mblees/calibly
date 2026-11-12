@@ -13,6 +13,8 @@ import Calibly.Controls
 // Properties:
 //   stack              the cover is a series stack
 //   hasEbook, hasAudiobook   the formats the title has
+//   readsInApp         the ebook opens in calibly's reader: the menu also
+//                      offers "Mit Standardprogramm öffnen"
 //   ebookFinished, audiobookFinished   read / listened to the end
 //   fileMissing        a file is missing: reading / listening is disabled
 //   selected           the title is selected
@@ -25,6 +27,7 @@ import Calibly.Controls
 // Signals:
 //   openRequested()    the details of the title, or the series of a stack
 //   readRequested(), listenRequested()
+//   openExternallyRequested()   the ebook in the default application
 //   editRequested()    metadata of the title, or of the selection (bulk)
 //   finishedToggled(string kind)   "ebook" or "audiobook"
 //   selectToggled()    select the title / take it out of the selection
@@ -37,6 +40,7 @@ AppMenu {
     property bool stack: false
     property bool hasEbook: false
     property bool hasAudiobook: false
+    property bool readsInApp: false
     property bool ebookFinished: false
     property bool audiobookFinished: false
     property bool fileMissing: false
@@ -52,6 +56,7 @@ AppMenu {
 
     signal openRequested()
     signal readRequested()
+    signal openExternallyRequested()
     signal listenRequested()
     signal editRequested()
     signal finishedToggled(string kind)
@@ -81,6 +86,13 @@ AppMenu {
         iconName: "book"
         text: qsTr("Lesen")
         onTriggered: root.readRequested()
+    }
+    AppMenuItem {
+        visible: root.single && root.hasEbook && root.readsInApp
+        enabled: !root.fileMissing
+        iconName: "externalLink"
+        text: qsTr("Mit Standardprogramm öffnen")
+        onTriggered: root.openExternallyRequested()
     }
     AppMenuItem {
         visible: root.single && root.hasAudiobook

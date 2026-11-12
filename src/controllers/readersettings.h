@@ -4,6 +4,7 @@
 #include <QQmlEngine>
 #include <QStringList>
 #include <QVariantList>
+#include <QVariantMap>
 
 #include "booklayout.h"
 
@@ -16,6 +17,8 @@
 //   ReaderSettings.theme             id of the chosen theme, "" = changed by hand
 //   ReaderSettings.themes            ids: original, ruhig, papier, kraeftig, sanft, fokus
 //   ReaderSettings.applyTheme(id)    sets the values below (not the font size)
+//   ReaderSettings.themeInfo(id)     { fontFamily ("" = the book's), bold, pageColor }
+//                                    of a theme, for its button
 //   ReaderSettings.pageColor         "weiss", "sepia", "grau" or "nacht"
 //   ReaderSettings.fontFamily        "" = the book's own fonts ("Original")
 //   ReaderSettings.fontFamilies      the fonts to choose from (those installed)
@@ -81,6 +84,7 @@ public:
     Q_INVOKABLE void smaller() { setFontSizeStep(m_fontSizeStep - 1); }
     Q_INVOKABLE void larger() { setFontSizeStep(m_fontSizeStep + 1); }
     Q_INVOKABLE void applyTheme(const QString &id);
+    Q_INVOKABLE QVariantMap themeInfo(const QString &id) const;
     Q_INVOKABLE void reset();
 
     // The settings as the layout uses them; the colors are not part of it.

@@ -71,15 +71,32 @@ Window {
         }
     }
 
-    // Library and player bar. Keys that no control used go to the player:
-    // Space plays / pauses, ← / → skip 30 seconds.
+    // Back to the library when the reader closes, so its keys work again.
+    Connections {
+        target: ReaderController
+
+        function onOpenChanged() {
+            if (!ReaderController.isOpen)
+                main.forceActiveFocus()
+        }
+    }
+
+    // Library and player bar. Keys that no control used go to the reader
+    // while a book is open, otherwise to the player: Space plays / pauses,
+    // ← / → skip 30 seconds.
     ColumnLayout {
+        id: main
+
         anchors.fill: parent
         spacing: 0
         visible: !root.galleryMode
         focus: true
 
         Keys.onPressed: function(event) {
+            if (ReaderController.isOpen) {
+                reader.handleKey(event)
+                return
+            }
             if (!PlayerController.hasWork)
                 return
             if (event.key === Qt.Key_Space)
@@ -98,40 +115,59 @@ Window {
             Layout.fillHeight: true
             spacing: 0
 
+            // Hidden while the reader is in fullscreen.
             SidebarNav {
                 id: sidebar
 
                 Layout.fillHeight: true
+                visible: !reader.fullscreen
                 model: navigation
 
+                // Another view closes the book.
                 onActivated: function(index) {
+                    ReaderController.close()
                     sidebar.currentIndex = index
                 }
             }
 
-            Loader {
-                id: content
-
-                readonly property var entry: navigation.get(sidebar.currentIndex)
-
+            // The view of the sidebar entry; the reader lies over it while a
+            // book is open, so the view keeps its place.
+            Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                sourceComponent: Qt.createComponent("Calibly.Views", content.entry.view)
 
-                // Bindings (not plain assignments), so the title follows a language change.
-                onLoaded: {
-                    const view = content.item as ViewBase
-                    if (view) {
-                        view.title = Qt.binding(() => content.entry.title)
-                        view.iconName = Qt.binding(() => content.entry.iconName)
+                Loader {
+                    id: content
+
+                    readonly property var entry: navigation.get(sidebar.currentIndex)
+
+                    anchors.fill: parent
+                    visible: !ReaderController.isOpen
+                    sourceComponent: Qt.createComponent("Calibly.Views", content.entry.view)
+
+                    // Bindings (not plain assignments), so the title follows a language change.
+                    onLoaded: {
+                        const view = content.item as ViewBase
+                        if (view) {
+                            view.title = Qt.binding(() => content.entry.title)
+                            view.iconName = Qt.binding(() => content.entry.iconName)
+                        }
                     }
+                }
+
+                ReaderView {
+                    id: reader
+
+                    anchors.fill: parent
+                    backText: content.entry.title
                 }
             }
         }
 
         PlayerBar {
             Layout.fillWidth: true
-            Layout.preferredHeight: implicitHeight
+            Layout.preferredHeight: reader.fullscreen ? 0 : implicitHeight
+            visible: PlayerController.hasWork && !reader.fullscreen
         }
     }
 

@@ -62,13 +62,14 @@ ViewBase {
     }
 
     // Continues reading / listening where the user stopped: audiobooks play
-    // in calibly, ebooks open in the default application. A missing file
-    // shows as "DATEI FEHLT" on the cover.
+    // in calibly, EPUB, PDF and text books open in the reader, other ebooks
+    // in the default application. A missing file shows as "DATEI FEHLT" on
+    // the cover.
     function continueWith(workId: string, kind: string) {
         if (kind === "audiobook")
             PlayerController.play(workId)
         else
-            LibraryController.openFormat(workId, kind)
+            ReaderController.read(workId)
     }
 
     function resetFilters() {
@@ -498,6 +499,7 @@ ViewBase {
                     workMenu.coverIsSquare = cell.coverIsSquare
                     workMenu.stack = cell.stack
                     workMenu.hasEbook = cell.hasEbook
+                    workMenu.readsInApp = cell.hasEbook && ReaderController.canRead(cell.workId)
                     workMenu.hasAudiobook = cell.hasAudiobook
                     workMenu.ebookFinished = cell.readProgress >= 1
                     workMenu.audiobookFinished = cell.listenProgress >= 1
@@ -565,6 +567,7 @@ ViewBase {
                 detail.openFor(workMenu.workId, workMenu.coverUrl, workMenu.coverIsSquare)
         }
         onReadRequested: root.continueWith(workMenu.workId, "ebook")
+        onOpenExternallyRequested: LibraryController.openFormat(workMenu.workId, "ebook")
         onListenRequested: root.continueWith(workMenu.workId, "audiobook")
         onEditRequested: {
             if (workMenu.bulk)

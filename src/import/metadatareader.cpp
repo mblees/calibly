@@ -18,10 +18,16 @@ QStringList audiobookSuffixes()
              QStringLiteral("ogg"), QStringLiteral("opus"), QStringLiteral("flac") };
 }
 
-bool isSupportedFile(const QString &path)
+QStringList textSuffixes()
+{
+    return { QStringLiteral("txt"), QStringLiteral("md"), QStringLiteral("markdown") };
+}
+
+bool isSupportedFile(const QString &path, bool picked)
 {
     const QString suffix = QFileInfo(path).suffix().toLower();
-    return ebookSuffixes().contains(suffix) || audiobookSuffixes().contains(suffix);
+    return ebookSuffixes().contains(suffix) || audiobookSuffixes().contains(suffix)
+           || (picked && textSuffixes().contains(suffix));
 }
 
 FileMetadata readMetadata(const QString &path)
@@ -45,7 +51,7 @@ FileMetadata readMetadata(const QString &path)
         readPdf(metadata.sourcePath, metadata);
     else if (metadata.kind == Format::Kind::Audiobook)
         readAudio(metadata.sourcePath, metadata);
-    // MOBI / AZW3: no reader yet, the file name is used.
+    // MOBI / AZW3, text and Markdown: the file name is used.
 
     // Titles that carry the file naming scheme ("DCC 01 - Dungeon Crawler
     // Carl") are cleaned up; the number becomes the series number.

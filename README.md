@@ -9,7 +9,7 @@ One library for ebooks and audiobooks - calibre's library management combined wi
 - Classical calibre interface which also accepts audiobooks.
 - Modify the metadata of audiobooks and ebooks the same way you can modify ebooks in calibre.
 - Integrated player for audiobooks similar to Audibly.
-- Integrated reader for ebooks similar to calibre.
+- Integrated reader for ebooks (EPUB, PDF, text and Markdown) with text settings like Apple Books.
 - Importing ebooks and audiobooks by pulling the files in the interface.
 
 ## UI Mockup
@@ -21,7 +21,7 @@ Prototype of the planned cover gallery interface (not implemented yet): main lib
 The UI will be built with Qt Quick, in small phases that each end with a runnable app. The [UI Development Plan](docs/UI-Development-Plan.md) describes the concept, the modular architecture and the phases.
 
 ## Build
-Requirements: Qt 6.12 with **MinGW 64-bit** and **Qt Multimedia** (Additional Libraries), plus **CMake** and **Ninja** from the Qt Online Installer (under "Build Tools"). Optional: **Qt PDF** (Extensions) for PDF covers. TagLib is downloaded and built automatically on the first configure (needs internet once). The presets expect Qt in `C:\Qt`; if it is installed elsewhere, change `QT_ROOT` in `CMakePresets.json`.
+Requirements: Qt 6.12 with **MinGW 64-bit** and **Qt Multimedia** (Additional Libraries), plus **CMake** and **Ninja** from the Qt Online Installer (under "Build Tools"). Optional: **Qt PDF** (Extensions) for PDF covers and reading PDFs in calibly. TagLib is downloaded and built automatically on the first configure (needs internet once). The presets expect Qt in `C:\Qt`; if it is installed elsewhere, change `QT_ROOT` in `CMakePresets.json`.
 
 Run the commands in the project folder. If `cmake` is not on your `PATH`, use `C:\Qt\Tools\CMake_64\bin\cmake.exe`.
 
@@ -53,7 +53,9 @@ Command line options of `calibly.exe`:
 
 Audiobooks play in calibly: "Continue listening" in the detail view starts the player bar at the bottom, which opens the fullscreen player. Space plays / pauses, ← / → skip 30 seconds. The position is saved, and the last audiobook is ready again after a restart.
 
-The row "Continue" at the top of the library shows the titles that were opened last and are not finished; the round button continues directly, and so do "Read" / "Listen" when hovering a cover. "Continue" in the sidebar lists all started titles in the same order. Covers carry a label: "NEW" until a title is opened for the first time, "FINISHED" (audiobooks listened to the end; ebooks are marked with "Mark as finished" in the detail view, because they open in another application) and "FILE MISSING" when a file is no longer in the library folder.
+Ebooks are read in calibly: "Read" opens EPUB, PDF, plain text and Markdown files in the reader inside the window (other formats such as MOBI open in the default application, as does "Open with default app" in the detail view and the context menu). Turn pages with ← / →, PgUp / PgDn, Space, the mouse wheel or a click on the left or right third of the page; Home / End jump to the start / end and the slider below the page anywhere in the book. The contents are on the right, "Aa" opens the text settings (size, themes, page color, font, spacing, margins, justified text; for PDFs the zoom), Ctrl + / Ctrl − change the text size. The fullscreen button or F11 show only the page; moving the mouse shows the bars, Esc leaves fullscreen and a second Esc closes the book. The place is saved, "Continue" shows the chapter or page, and the last page marks the ebook as finished. Text and Markdown files are imported only when you pick or drop the file itself, not from a dropped folder.
+
+The row "Continue" at the top of the library shows the titles that were opened last and are not finished; the round button continues directly, and so do "Read" / "Listen" when hovering a cover. "Continue" in the sidebar lists all started titles in the same order. Covers carry a label: "NEW" until a title is opened for the first time, "FINISHED" (audiobooks listened to the end; ebooks read to their last page, or marked with "Mark as finished" in the detail view) and "FILE MISSING" when a file is no longer in the library folder.
 
 Several titles are selected with the circle at the bottom left of a cover, with Ctrl + click or with Ctrl + A; Esc ends the selection. The bar at the bottom then edits their metadata one after the other, joins them into one title ("Merge into one work", e.g. an ebook and its audiobook; several audiobook files become one audiobook) or removes them – removing moves their files in the library folder to the recycle bin. Merging cannot be undone. A right click on a cover opens a menu with the same actions for that title (or for the selection, if the title is part of it).
 

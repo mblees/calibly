@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "audiotimeline.h"
+#include "readingposition.h"
 
 ContinueModel::ContinueModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -190,9 +191,17 @@ QList<ContinueModel::Entry> ContinueModel::entries() const
                 entry.chapterTitle = timeline.chapters().at(chapter).title;
             }
         } else {
+            // Read in calibly: the stored place; a PDF knows its page, an
+            // EPUB the chapter (its pages depend on the text settings).
+            const ReadingPosition position = ReadingPosition::fromString(format.readingPosition);
             entry.pages = format.pages;
-            if (format.pages > 0 && format.progress > 0.0)
+            if (position.page >= 0) {
+                entry.page = position.page + 1;
+            } else if (position.chapter >= 0) {
+                entry.chapterTitle = position.label;
+            } else if (format.pages > 0 && format.progress > 0.0) {
                 entry.page = std::max(1, int(std::lround(format.pages * format.progress)));
+            }
         }
         result.append(entry);
     }

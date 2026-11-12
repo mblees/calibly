@@ -98,6 +98,7 @@ Item {
             required remainingSeconds
             required page
             required pages
+            required chapterTitle
             required hasOtherFormat
             required available
             required lastOpened

@@ -2,6 +2,7 @@
 #include <QTest>
 
 #include "continuemodel.h"
+#include "readingposition.h"
 #include "workfiltermodel.h"
 #include "workmodel.h"
 #include "workstate.h"
@@ -211,6 +212,25 @@ private slots:
         QCOMPARE(index.data(ContinueModel::ChapterTitleRole).toString(), QStringLiteral("Zwei"));
         QCOMPARE(index.data(ContinueModel::RemainingSecondsRole).toInt(), 150);
         QVERIFY(!index.data(ContinueModel::AvailableRole).toBool());
+    }
+
+    // Ebooks read in calibly: a PDF shows its stored page, an EPUB the
+    // chapter where the user stopped.
+    void readingPositions()
+    {
+        Format pdf = ebook(0.4, QStringLiteral("2026-11-10T08:14:00"), 210);
+        pdf.filePath = QStringLiteral("book.pdf");
+        pdf.readingPosition = ReadingPosition::onPage(87).toString();
+        Format epub = ebook(0.42, QStringLiteral("2026-11-11T08:14:00"), 300);
+        epub.readingPosition = ReadingPosition::inChapter(3, 1200, QStringLiteral("Kapitel 4")).toString();
+        m_works.setWorks({ makeWork(QStringLiteral("PDF"), { pdf }), makeWork(QStringLiteral("EPUB"), { epub }) });
+        const QModelIndex epubIndex = m_model.index(0);
+        QCOMPARE(epubIndex.data(ContinueModel::ChapterTitleRole).toString(), QStringLiteral("Kapitel 4"));
+        QCOMPARE(epubIndex.data(ContinueModel::PageRole).toInt(), 0);
+        const QModelIndex pdfIndex = m_model.index(1);
+        QCOMPARE(pdfIndex.data(ContinueModel::PageRole).toInt(), 88);
+        QCOMPARE(pdfIndex.data(ContinueModel::PagesRole).toInt(), 210);
+        QVERIFY(pdfIndex.data(ContinueModel::ChapterTitleRole).toString().isEmpty());
     }
 
     void formatFilterAndLimit()

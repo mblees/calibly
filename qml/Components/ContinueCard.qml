@@ -17,6 +17,8 @@ import Calibly.Controls
 //   chapterNumber     audiobooks: current chapter, 1-based; 0 = unknown
 //   remainingSeconds  audiobooks: time left, 0 = unknown
 //   page, pages       ebooks: current page of pages, 0 = unknown
+//   chapterTitle      ebooks: the chapter where the user stopped, shown as
+//                     "Kapitel 4 · 42 %" instead of the page; "" = none
 //   hasOtherFormat    adds "auch als E-Book" / "auch als Hörbuch"
 //   available         the file exists; otherwise the button is disabled
 // Signals:
@@ -35,6 +37,7 @@ Rectangle {
     property int remainingSeconds: 0
     property int page: 0
     property int pages: 0
+    property string chapterTitle
     property bool hasOtherFormat: false
     property bool available: true
 
@@ -54,7 +57,7 @@ Rectangle {
                          : qsTr("%1 Min.").arg(minutes)
     }
 
-    // "Kap. 42 · noch 10 Std. 27 Min." / "Seite 88 von 210"
+    // "Kap. 42 · noch 10 Std. 27 Min." / "Kapitel 4 · 42 %" / "Seite 88 von 210"
     function positionText(): string {
         if (root.isAudiobook) {
             const parts = []
@@ -64,6 +67,8 @@ Rectangle {
                 parts.push(qsTr("noch %1").arg(root.durationText(root.remainingSeconds)))
             return parts.length > 0 ? parts.join(" · ") : qsTr("Hörbuch")
         }
+        if (root.chapterTitle !== "")
+            return qsTr("%1 · %2 %").arg(root.chapterTitle).arg(Math.round(root.progress * 100))
         if (root.page > 0 && root.pages > 0)
             return qsTr("Seite %1 von %2").arg(root.page).arg(root.pages)
         return root.pages > 0 ? qsTr("%Ln Seiten", "", root.pages) : qsTr("E-Book")

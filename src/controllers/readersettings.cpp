@@ -225,6 +225,17 @@ void ReaderSettings::applyTheme(const QString &id)
     emit changed();
 }
 
+QVariantMap ReaderSettings::themeInfo(const QString &id) const
+{
+    const auto it = std::find_if(kThemes.cbegin(), kThemes.cend(),
+                                 [&id](const Theme &theme) { return id == QLatin1String(theme.id); });
+    if (it == kThemes.cend())
+        return {};
+    return { { QStringLiteral("fontFamily"), QString::fromLatin1(it->family) },
+             { QStringLiteral("bold"), it->bold },
+             { QStringLiteral("pageColor"), QString::fromLatin1(it->pageColor) } };
+}
+
 void ReaderSettings::reset()
 {
     const bool wasApplying = m_applying;

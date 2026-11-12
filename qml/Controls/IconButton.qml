@@ -10,6 +10,7 @@ import Calibly.Theme
 //   iconSize   icon edge length in pixels
 //   iconColor  icon color when not hovered
 //   round      round (default) or rounded-square background
+//   checked    shown as switched on, e.g. while its panel is open (inherited)
 // Signals:
 //   clicked() (inherited)
 T.AbstractButton {
@@ -31,14 +32,15 @@ T.AbstractButton {
             anchors.centerIn: parent
             name: control.iconName
             size: control.iconSize
-            color: control.hovered ? Theme.textPrimary : control.iconColor
+            color: control.hovered || control.checked ? Theme.textPrimary : control.iconColor
         }
     }
 
     background: Rectangle {
         radius: control.round ? width / 2 : Theme.radiusM
         color: control.down ? Theme.surfaceRaised
-                            : control.hovered ? Theme.surface : "transparent"
+                            : control.checked ? Theme.surfaceSelected
+                                              : control.hovered ? Theme.surface : "transparent"
         border.width: control.visualFocus ? Theme.focusWidth : 0
         border.color: Theme.textPrimary
 

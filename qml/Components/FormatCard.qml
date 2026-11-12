@@ -14,8 +14,11 @@ import Calibly.Controls
 //   progress         0.0 – 1.0
 //   available        the file exists; otherwise the button is disabled
 //   openFailed       show that the system could not open the file
+//   readsInApp       the ebook opens in calibly's reader: the card also
+//                    offers "Mit Standardprogramm öffnen"
 // Signals:
 //   openRequested()     the user wants to read / listen
+//   openExternallyRequested()   the file in the default application
 //   finishedToggled()   the link "Als fertig markieren" was clicked
 Rectangle {
     id: root
@@ -28,8 +31,10 @@ Rectangle {
     required property real progress
     required property bool available
     property bool openFailed: false
+    property bool readsInApp: false
 
     signal openRequested()
+    signal openExternallyRequested()
     signal finishedToggled()
 
     readonly property bool finished: root.progress >= 1
@@ -154,6 +159,14 @@ Rectangle {
             wrapMode: Text.Wrap
             color: Theme.textMuted
             font.pixelSize: Theme.fontSmall
+        }
+
+        LinkButton {
+            visible: root.readsInApp && !root.isAudiobook
+            enabled: root.available
+            iconName: "externalLink"
+            text: qsTr("Mit Standardprogramm öffnen")
+            onClicked: root.openExternallyRequested()
         }
 
         LinkButton {

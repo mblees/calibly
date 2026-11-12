@@ -35,9 +35,11 @@
 //   progress           0.0 – 1.0
 //   lastOpened         when that format was opened
 //   chapterNumber      audiobooks: current chapter, 1-based; 0 = no chapters
-//   chapterTitle       its title, "" = untitled
+//   chapterTitle       its title, "" = untitled; ebooks read in calibly: the
+//                      chapter where the user stopped (EPUB, text)
 //   remainingSeconds   audiobooks: time left at normal speed, 0 = unknown
-//   page, pages        ebooks: current page (0 = unknown) of pages (0 = unknown)
+//   page, pages        ebooks: current page (0 = unknown; a PDF read in calibly:
+//                      the stored page) of pages (0 = unknown)
 //   hasOtherFormat     the work also has the other format
 //   available          the file of the format was found
 class ContinueModel : public QAbstractListModel

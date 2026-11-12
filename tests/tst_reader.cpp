@@ -1,3 +1,4 @@
+#include <QAbstractTextDocumentLayout>
 #include <QBuffer>
 #include <QFile>
 #include <QImage>
@@ -6,6 +7,8 @@
 #include <QTest>
 #include <QTextBlock>
 #include <QTextDocument>
+#include <QTextFrame>
+#include <QTextLayout>
 
 #include <private/qzipwriter_p.h>
 
@@ -255,6 +258,20 @@ private slots:
             QCOMPARE(layout.pageOf(1, offset), page); // round trip
         }
         QCOMPARE(layout.pageOf(1, layout.chapterLength(1)), pages - 1);
+
+        // The margins of the settings, on every page: the text starts below
+        // the top margin and keeps off the left edge.
+        QTextDocument *text = layout.document(1);
+        QCOMPARE(text->rootFrame()->frameFormat().leftMargin(), qreal(style.margin));
+        const QTextBlock first = text->findBlock(0);
+        const QRectF firstRect = text->documentLayout()->blockBoundingRect(first);
+        QVERIFY2(firstRect.left() >= style.margin, qPrintable(QString::number(firstRect.left())));
+        QVERIFY2(firstRect.top() + first.layout()->lineAt(0).y() >= style.verticalMargin - 1,
+                 qPrintable(QString::number(firstRect.top())));
+        const QTextBlock onSecond = text->findBlock(layout.offsetOfPage(1, 1));
+        const QTextLine line = onSecond.layout()->lineForTextPosition(layout.offsetOfPage(1, 1) - onSecond.position());
+        const double yOnPage = text->documentLayout()->blockBoundingRect(onSecond).top() + line.y() - 800;
+        QVERIFY2(yOnPage >= style.verticalMargin - 1, qPrintable(QString::number(yOnPage)));
 
         // The book's CSS: indent kept, color and size replaced by the settings.
         QTextDocument *chapter = layout.document(1);

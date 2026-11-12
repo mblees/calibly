@@ -10,6 +10,7 @@ import Calibly.Theme
 //   from, to   range
 //   value      shown position; bind it to the playing position
 //   large      thicker bar with a handle that is always visible
+//   color      color of the passed part (accent; blue for reading)
 //   dragValue  position under the mouse while dragging (read-only)
 //   pressed    the user is dragging (read-only)
 // Signals:
@@ -21,6 +22,7 @@ Item {
     property real to: 1
     property real value: 0
     property bool large: false
+    property color color: Theme.accent
     readonly property real dragValue: slider.value
     readonly property bool pressed: slider.pressed
 
@@ -70,7 +72,7 @@ Item {
                 width: slider.visualPosition * parent.width
                 height: parent.height
                 radius: parent.radius
-                color: Theme.accent
+                color: root.color
             }
         }
 

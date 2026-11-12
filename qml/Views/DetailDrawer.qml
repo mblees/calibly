@@ -225,14 +225,25 @@ SideDrawer {
                             durationSeconds: modelData.durationSeconds
                             progress: modelData.progress
                             available: modelData.available
+                            readsInApp: card.kind === "ebook" && ReaderController.canRead(root.workId)
 
                             onFinishedToggled: LibraryController.setFinished(root.workId, card.kind, !card.finished)
 
-                            // Audiobooks play in calibly, ebooks open in the default application.
+                            // Audiobooks play in calibly, EPUB, PDF and text books open in
+                            // the reader (the drawer closes), other ebooks in the default
+                            // application.
                             onOpenRequested: {
-                                card.openFailed = card.kind === "audiobook"
-                                                  ? !PlayerController.play(root.workId)
-                                                  : !LibraryController.openFormat(root.workId, card.kind)
+                                if (card.kind === "audiobook") {
+                                    card.openFailed = !PlayerController.play(root.workId)
+                                } else if (card.readsInApp) {
+                                    root.close()
+                                    ReaderController.open(root.workId)
+                                } else {
+                                    card.openFailed = !LibraryController.openFormat(root.workId, card.kind)
+                                }
+                            }
+                            onOpenExternallyRequested: {
+                                card.openFailed = !LibraryController.openFormat(root.workId, card.kind)
                             }
                         }
                     }

@@ -46,7 +46,7 @@ QString LibraryController::libraryRoot() const
 QStringList LibraryController::fileNameFilters() const
 {
     QStringList patterns;
-    for (const QString &suffix : ebookSuffixes() + audiobookSuffixes())
+    for (const QString &suffix : ebookSuffixes() + textSuffixes() + audiobookSuffixes())
         patterns.append(QStringLiteral("*.") + suffix);
     return patterns;
 }

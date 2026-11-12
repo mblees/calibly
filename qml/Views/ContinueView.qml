@@ -17,12 +17,13 @@ ViewBase {
     id: root
 
     // Continues reading / listening where the user stopped: audiobooks play
-    // in calibly, ebooks open in the default application.
+    // in calibly, EPUB, PDF and text books open in the reader, other ebooks
+    // in the default application.
     function continueWith(workId: string, kind: string) {
         if (kind === "audiobook")
             PlayerController.play(workId)
         else
-            LibraryController.openFormat(workId, kind)
+            ReaderController.read(workId)
     }
 
     ContinueModel {
@@ -90,6 +91,7 @@ ViewBase {
             required remainingSeconds
             required page
             required pages
+            required chapterTitle
             required hasOtherFormat
             required available
             required lastOpened
