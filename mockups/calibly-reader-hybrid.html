@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>calibly E-Book-Reader – Fenster und Vollbild</title>
+<style>
+:root{--bg:#16171b;--side:#1b1c21;--card:#212228;--card2:#2a2b32;--line:#2c2d34;--tx:#ececef;--tx2:#b8b8c0;--mut:#8f8f99;--or:#ff8a3d;--orD:#1a0d03;--bl:#6ea8ff;--gr:#5fcf80}
+*{box-sizing:border-box}
+body{width:2400px;margin:0;background:#e7e3dc;font-family:"Segoe UI",system-ui,sans-serif;color:#1d1d1f;padding:40px}
+button{font:inherit}
+.head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px}
+.head h1{margin:0;font-size:44px;font-weight:700;letter-spacing:-.5px}.head h1 span{color:#c2571a}
+.head p{margin:6px 0 0;font-size:18px;color:#5b5750}
+.head .legend{display:flex;gap:26px;font-size:15px;color:#5b5750}
+.head .legend i{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:7px;vertical-align:-2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+.full{grid-column:1/3}
+.card{background:#fbfaf8;border-radius:18px;padding:22px 20px 20px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.card h2{margin:0;font-size:24px;font-weight:650;display:flex;align-items:center;gap:12px}
+.card h2 .n{min-width:36px;height:36px;padding:0 10px;border-radius:18px;background:#c2571a;color:#fff;display:grid;place-items:center;font-size:17px}
+.card .desc{font-size:15px;color:#5b5750;margin:6px 0 16px 50px;line-height:1.45}
+.notes{display:flex;gap:14px;margin-top:14px}
+.notes>div{flex:1;background:#f2eee7;border-radius:10px;padding:10px 13px;font-size:13.5px;line-height:1.45;color:#46423b}
+.notes b{display:block;color:#1d1d1f;margin-bottom:2px}
+.notes em,.mk{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#c2571a;color:#fff;font-size:11px;font-weight:700;margin-right:6px}
+
+/* app window, drawn at 1200 x 720 and shown at 90 % */
+.frame{border-radius:10px;overflow:hidden;border:1px solid #0b0b0d;width:1080px;margin:0 auto}
+.win{width:1200px;height:720px;zoom:.9;background:var(--bg);color:var(--tx);display:flex;flex-direction:column;position:relative;font-size:13px}
+.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.mk{position:absolute;z-index:5;width:24px;height:24px;font-size:12px;margin:0;box-shadow:0 0 0 3px rgba(194,87,26,.25)}
+
+.side{width:200px;flex:none;padding:18px 10px;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.logo{padding:0 8px 14px;font-size:20px;font-weight:700}.logo span{color:var(--or)}
+.nav{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border-radius:8px;color:var(--tx2)}
+.nav.on{background:#2b2c33;color:var(--tx)}.nav.on .i{color:var(--or)}
+.nav .c{margin-left:auto;color:var(--mut);font-size:12px}
+
+.rbar{height:48px;flex:none;display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--line)}
+.rbar .ttl{font-size:14px;font-weight:600}.rbar .sub{color:var(--mut)}
+.ib{width:36px;height:36px;display:grid;place-items:center;border:none;border-radius:8px;background:transparent;color:var(--tx2)}
+.ib.on{background:#2b2c33;color:var(--tx)}
+.ib.aa{font-family:Georgia,serif;font-size:16px}
+.back{display:flex;align-items:center;gap:6px;height:34px;padding:0 10px;border:none;border-radius:8px;background:transparent;color:var(--tx2);font-size:13px}
+
+.page{font-family:Georgia,serif;text-align:justify;hyphens:auto;overflow:hidden}
+.page p{margin:0 0 .75em}.page p+p{text-indent:1.4em}
+
+.toc{width:240px;flex:none;padding:16px 12px;background:var(--side);border-left:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.toc .h{padding:0 8px 8px;font-size:11px;font-weight:600;letter-spacing:1px;color:var(--mut)}
+.toc .r{display:flex;justify-content:space-between;align-items:center;height:32px;padding:0 10px;border-radius:6px;color:var(--tx2)}
+.toc .r span+span{color:var(--mut)}
+.toc .r.on{background:rgba(110,168,255,.16);color:var(--tx);font-weight:600}.toc .r.on span+span{color:var(--bl)}
+
+.player{height:64px;flex:none;display:flex;align-items:center;gap:14px;padding:0 16px;background:#0f1013;border-top:1px solid var(--line)}
+.pcov{width:42px;height:42px;border-radius:4px;background:linear-gradient(#9b3d2a,#4a160c)}
+.pbtn{width:38px;height:38px;border-radius:19px;border:none;background:#fff;color:#111;display:grid;place-items:center}
+.track{flex:1;height:4px;border-radius:2px;background:#3a3b42}.track div{height:4px;border-radius:2px}
+
+.slider{flex:1;height:5px;border-radius:3px;background:#3a3b42;position:relative}
+.slider .f{width:3%;height:5px;border-radius:3px;background:var(--bl)}
+.slider .k{position:absolute;left:3%;top:-5px;width:14px;height:14px;margin-left:-7px;border-radius:7px;background:var(--tx)}
+
+/* text settings panel (also used live in card 4) */
+.ts{width:360px;background:var(--card2);color:var(--tx);border:1px solid #34353c;border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.45);padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;font-size:13px}
+.ts .top{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:700}
+.ts .lbl{font-size:11px;font-weight:600;letter-spacing:1px;color:var(--mut);text-transform:uppercase}
+.size{display:flex;align-items:center;gap:10px}
+.size button{width:52px;height:38px;border:1px solid #34353c;border-radius:10px;background:var(--card);color:var(--tx);font-family:Georgia,serif;cursor:pointer}
+.size .s{font-size:13px}.size .l{font-size:22px}
+.size .dots{flex:1;display:flex;justify-content:center;gap:7px}
+.size .dots i{width:7px;height:7px;border-radius:4px;background:#4a4b55}.size .dots i.on{background:var(--tx)}
+.themes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.themes button{height:74px;border-radius:10px;border:1px solid #34353c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
+.themes button.on{outline:2px solid var(--or);outline-offset:1px}
+.themes .a{font-size:24px;line-height:1.1}.themes .t{font-family:"Segoe UI",system-ui,sans-serif;font-size:12px}
+.colors{display:flex;gap:10px}
+.colors button{flex:1;height:44px;border-radius:10px;border:1px solid #34353c;font-size:12px;cursor:pointer}
+.colors button.on{outline:2px solid var(--or);outline-offset:1px}
+.custom{border-top:1px solid #34353c;padding-top:10px;display:flex;flex-direction:column;gap:9px}
+.custom .row{display:flex;align-items:center;gap:10px;min-height:28px}
+.custom .row>span:first-child{width:118px;color:var(--tx2)}
+.custom select{flex:1;height:30px;border-radius:8px;border:1px solid #34353c;background:var(--card);color:var(--tx);padding:0 8px;font:inherit}
+.custom input[type=range]{flex:1;accent-color:var(--or)}
+.sw{margin-left:auto;width:40px;height:22px;border-radius:11px;background:#4a4b55;position:relative;border:none;cursor:pointer;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:8px;background:#fff;transition:left .12s}
+.sw.on{background:var(--or)}.sw.on::after{left:21px}
+.tag{font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:6px;background:#3a3b42;color:var(--tx2)}
+.reset{align-self:flex-start;border:none;background:transparent;color:var(--tx2);padding:0;font-size:13px;cursor:pointer;text-decoration:underline}
+
+/* card 4: live preview */
+.live{display:flex;gap:28px;align-items:flex-start;padding:4px 10px 0}
+.pv{flex:1;height:560px;border-radius:12px;border:1px solid #d8d2c8;overflow:hidden;transition:background .15s,color .15s}
+.pv .page{height:100%}
+table.map{width:100%;border-collapse:collapse;font-size:13.5px;line-height:1.45;margin-top:18px}
+table.map th{text-align:left;font-weight:650;padding:8px 10px;background:#f2eee7;color:#1d1d1f}
+table.map td{padding:8px 10px;border-top:1px solid #e6e0d6;color:#46423b;vertical-align:top}
+table.map code{font-family:Consolas,monospace;font-size:12.5px;color:#7a3a10}
+
+/* card 5: flow */
+.flow{display:flex;align-items:center;gap:18px;justify-content:center;padding:18px 0 6px}
+.st{background:#fff;border:1px solid #ddd6cb;border-radius:12px;padding:14px 18px;min-width:250px;font-size:14px;line-height:1.45;color:#46423b}
+.st b{display:block;font-size:16px;color:#1d1d1f;margin-bottom:4px}
+.arr{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;color:#5b5750;text-align:center}
+.arr .line{width:150px;height:2px;background:#c2571a;position:relative}
+.arr .line::after{content:"";position:absolute;right:-1px;top:-5px;border:6px solid transparent;border-left:8px solid #c2571a}
+.arr .line.back::after{right:auto;left:-1px;border-left-color:transparent;border-right:8px solid #c2571a}
+</style>
+</head>
+<body>
+
+<div class="head">
+  <div>
+    <h1>calibly – <span>E-Book-Reader</span>, Fenster und Vollbild</h1>
+    <p>Hybrid aus Variante 5 (im Bibliotheksfenster, Standard) und Variante 4 (Fokus im Vollbild) · Texteinstellungen nach dem Vorbild von Apple Books · Option A: Qt-Textdarstellung · Entwurf, noch kein Programm</p>
+  </div>
+  <div class="legend"><span><i style="background:#6ea8ff"></i>Blau = Lesen / E-Book</span><span><i style="background:#ff8a3d"></i>Orange = Hören / Akzent</span><span><i style="background:#5fcf80"></i>Grün = fertig</span></div>
+</div>
+
+<div class="grid">
+
+<!-- 1: standard, inside the library window -->
+<section class="card">
+  <h2><span class="n">1</span>Lesen im Bibliotheksfenster (Standard)</h2>
+  <p class="desc">So öffnet sich jedes Buch: als Ansicht im Hauptfenster. Seitenleiste und Player-Leiste bleiben, rechts das Inhaltsverzeichnis.</p>
+  <div class="frame"><div class="win">
+    <span class="mk" style="right:22px;top:52px">1</span>
+    <span class="mk" style="right:132px;top:52px">2</span>
+    <span class="mk" style="right:220px;top:120px">3</span>
+    <span class="mk" style="left:226px;bottom:74px">4</span>
+    <div style="flex:1;display:flex;min-height:0">
+      <nav class="side" aria-label="Navigation">
+        <div class="logo">cali<span>bly</span></div>
+        <div class="nav on"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3z M14 3h7v7h-7z M14 14h7v7h-7z M3 14h7v7H3z"/></svg>Bibliothek<span class="c">27</span></div>
+        <div class="nav"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12a10 10 0 1 0 20 0a10 10 0 1 0-20 0 M12 6v6l4 2"/></svg>Weitermachen<span class="c">11</span></div>
+        <div class="nav"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5"/></svg>Serien<span class="c">1</span></div>
+        <div class="nav"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M8 7a4 4 0 1 0 8 0a4 4 0 1 0-8 0"/></svg>Autoren</div>
+        <div class="nav"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z M19 10v2a7 7 0 0 1-14 0v-2 M12 19v4 M8 23h8"/></svg>Sprecher</div>
+      </nav>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+        <div class="rbar">
+          <button class="back"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Bibliothek</button>
+          <span class="ttl">Die Verwandlung</span><span class="sub">Franz Kafka · Kapitel I</span>
+          <span style="flex:1"></span>
+          <span style="color:var(--tx2);margin-right:8px">Seite 3 von 96 · 3 %</span>
+          <button class="ib on" aria-label="Inhaltsverzeichnis"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01"/></svg></button>
+          <button class="ib aa" aria-label="Texteinstellungen">Aa</button>
+          <button class="ib" aria-label="Vollbild" style="outline:2px solid var(--or);outline-offset:-2px"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7"/></svg></button>
+        </div>
+        <div style="flex:1;min-height:0;display:flex">
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#16171b">
+            <button class="ib" aria-label="Vorige Seite" style="color:var(--mut)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <div class="page" style="width:500px;height:520px;font-size:16px;line-height:1.6;color:#d9d9de">
+              <p>Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren Ungeziefer verwandelt. Er lag auf seinem panzerartig harten Rücken und sah, wenn er den Kopf ein wenig hob, seinen gewölbten, braunen, von bogenförmigen Versteifungen geteilten Bauch, auf dessen Höhe sich die Bettdecke, zum gänzlichen Niedergleiten bereit, kaum noch erhalten konnte. Seine vielen, im Vergleich zu seinem sonstigen Umfang kläglich dünnen Beine flimmerten ihm hilflos vor den Augen.</p>
+              <p>»Was ist mit mir geschehen?«, dachte er. Es war kein Traum. Sein Zimmer, ein richtiges, nur etwas zu kleines Menschenzimmer, lag ruhig zwischen den vier wohlbekannten Wänden. Über dem Tisch, auf dem eine auseinandergepackte Musterkollektion von Tuchwaren ausgebreitet war – Samsa war Reisender –, hing das Bild, das er vor kurzem aus einer illustrierten Zeitschrift ausgeschnitten und in einem hübschen, vergoldeten Rahmen untergebracht hatte.</p>
+              <p>Gregors Blick richtete sich dann zum Fenster …</p>
+            </div>
+            <button class="ib" aria-label="Nächste Seite" style="color:var(--mut)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>
+          </div>
+          <aside class="toc" aria-label="Inhalt">
+            <div class="h">INHALT</div>
+            <div class="r"><span>Titelseite</span><span>1</span></div>
+            <div class="r on"><span>I</span><span>3</span></div>
+            <div class="r"><span>II</span><span>36</span></div>
+            <div class="r"><span>III</span><span>68</span></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+    <div class="player">
+      <div class="pcov" aria-hidden="true"></div>
+      <div style="width:180px;display:flex;flex-direction:column;line-height:1.3"><b style="font-size:13px">Dracula</b><span style="font-size:12px;color:var(--mut)">Kap. 9 · Bram Stoker</span></div>
+      <button class="pbtn" aria-label="Pause"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6z M14 4h4v16h-4z"/></svg></button>
+      <div class="track"><div style="width:41%;background:var(--or)"></div></div>
+      <span style="font-size:12px;color:var(--tx2)">−8:41</span>
+    </div>
+  </div></div>
+  <div class="notes">
+    <div><b><em>1</em>Vollbild-Knopf</b>Wechselt in den Fokus-Modus (Karte 2) und schaltet das Fenster auf Vollbild. Auch mit F11.</div>
+    <div><b><em>2</em>Texteinstellungen „Aa“</b>Öffnet das Feld aus Karte 3 und 4, in beiden Modi gleich.</div>
+    <div><b><em>3</em>Inhaltsverzeichnis</b>Fest rechts, mit dem Knopf links von „Aa“ ein- und ausblendbar (schmale Fenster: aus). PDFs zeigen ihre Gliederung.</div>
+    <div><b><em>4</em>Player bleibt</b>Ein Hörbuch spielt weiter und ist steuerbar. Leertaste und ← → blättern, solange der Reader angezeigt wird.</div>
+  </div>
+</section>
+
+<!-- 2: fullscreen focus, while reading -->
+<section class="card">
+  <h2><span class="n">2</span>Vollbild: Fokus beim Lesen</h2>
+  <p class="desc">Nach dem Vollbild-Knopf: nur der Text. Seitenleiste, Player-Leiste und Inhaltsverzeichnis sind weg, unten bleibt eine feine Fortschrittslinie.</p>
+  <div class="frame"><div class="win" style="background:#121316">
+    <span class="mk" style="left:50%;top:26px;margin-left:-180px">1</span>
+    <span class="mk" style="right:52px;bottom:16px">2</span>
+    <div style="position:absolute;left:50%;top:22px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;height:32px;padding:0 14px;border-radius:16px;background:rgba(42,43,50,.92);color:var(--tx2);font-size:12px">Leisten erscheinen bei Mausbewegung · Esc verlässt das Vollbild</div>
+    <div class="page" style="position:absolute;left:50%;top:84px;bottom:44px;width:640px;margin-left:-320px;font-size:19px;line-height:1.7;color:#d9d9de">
+      <p>Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren Ungeziefer verwandelt. Er lag auf seinem panzerartig harten Rücken und sah, wenn er den Kopf ein wenig hob, seinen gewölbten, braunen, von bogenförmigen Versteifungen geteilten Bauch, auf dessen Höhe sich die Bettdecke, zum gänzlichen Niedergleiten bereit, kaum noch erhalten konnte. Seine vielen, im Vergleich zu seinem sonstigen Umfang kläglich dünnen Beine flimmerten ihm hilflos vor den Augen.</p>
+      <p>»Was ist mit mir geschehen?«, dachte er. Es war kein Traum. Sein Zimmer, ein richtiges, nur etwas zu kleines Menschenzimmer, lag ruhig zwischen den vier wohlbekannten Wänden. Über dem Tisch, auf dem eine auseinandergepackte Musterkollektion von Tuchwaren ausgebreitet war – Samsa war Reisender –, hing das Bild, das er vor kurzem aus einer illustrierten Zeitschrift ausgeschnitten und in einem hübschen, vergoldeten Rahmen untergebracht hatte.</p>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:2px;background:#2a2b32"><div style="width:3%;height:2px;background:var(--bl)"></div></div>
+    <span style="position:absolute;right:20px;bottom:12px;font-size:12px;color:var(--mut)">3 %</span>
+  </div></div>
+  <div class="notes">
+    <div><b><em>1</em>Hinweis beim Eintritt</b>Erscheint für zwei Sekunden, damit klar ist, wie man die Leisten wiederfindet und zurückkommt.</div>
+    <div><b><em>2</em>Fortschritt</b>Feine Linie und Prozent; die Seitenzahl steht in der unteren Leiste (Karte 3).</div>
+    <div><b>Blättern</b>Wie im Fenster: Tasten, Mausrad, Klick auf den linken oder rechten Seitenrand. Ein Klick in die Mitte zeigt die Leisten.</div>
+    <div><b>Hörbuch</b>Spielt weiter, die Player-Leiste ist nur ausgeblendet; zurück im Fenster ist sie wieder da.</div>
+  </div>
+</section>
+
+<!-- 3: fullscreen with bars and text settings -->
+<section class="card">
+  <h2><span class="n">3</span>Vollbild: Leisten und Texteinstellungen</h2>
+  <p class="desc">Bei Mausbewegung oder Tipp in die Mitte erscheinen die Leisten über der Seite. Hier ist „Aa“ geöffnet, Thema „Papier“ mit Seitenfarbe Sepia.</p>
+  <div class="frame"><div class="win" style="background:#f4ecd8">
+    <span class="mk" style="right:20px;top:58px">1</span>
+    <div class="page" style="position:absolute;left:50%;top:84px;bottom:84px;width:640px;margin-left:-420px;font-family:Cambria,Georgia,serif;font-size:19px;line-height:1.7;color:#3b2f22">
+      <p>Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren Ungeziefer verwandelt. Er lag auf seinem panzerartig harten Rücken und sah, wenn er den Kopf ein wenig hob, seinen gewölbten, braunen, von bogenförmigen Versteifungen geteilten Bauch, auf dessen Höhe sich die Bettdecke, zum gänzlichen Niedergleiten bereit, kaum noch erhalten konnte. Seine vielen, im Vergleich zu seinem sonstigen Umfang kläglich dünnen Beine flimmerten ihm hilflos vor den Augen.</p>
+      <p>»Was ist mit mir geschehen?«, dachte er. Es war kein Traum. Sein Zimmer, ein richtiges, nur etwas zu kleines Menschenzimmer, lag ruhig zwischen den vier wohlbekannten Wänden.</p>
+    </div>
+    <div style="position:absolute;left:0;right:0;top:0;height:52px;display:flex;align-items:center;gap:8px;padding:0 14px;background:rgba(15,16,19,.94);border-bottom:1px solid var(--line)">
+      <button class="back"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Bibliothek</button>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;line-height:1.3"><span class="ttl" style="font-size:14px;font-weight:600">Die Verwandlung</span><span style="font-size:12px;color:var(--mut)">Franz Kafka · Kapitel I</span></div>
+      <button class="ib" aria-label="Inhaltsverzeichnis"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01"/></svg></button>
+      <button class="ib aa on" aria-label="Texteinstellungen">Aa</button>
+      <button class="ib" aria-label="Vollbild beenden"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14h6v6 M20 10h-6V4 M14 10l7-7 M3 21l7-7"/></svg></button>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:64px;display:flex;align-items:center;gap:16px;padding:0 24px;background:rgba(15,16,19,.94);border-top:1px solid var(--line)">
+      <span style="width:100px;color:var(--tx2)">Kapitel I</span>
+      <div class="slider"><div class="f"></div><div class="k"></div></div>
+      <span style="width:160px;text-align:right;color:var(--tx2)">Seite 3 von 96 · 3 %</span>
+    </div>
+
+    <!-- the open text settings, anchored below "Aa" -->
+    <div class="ts" style="position:absolute;right:56px;top:58px">
+      <div class="top">Texteinstellungen<button class="ib" aria-label="Schließen" style="width:28px;height:28px"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18 M6 6l12 12"/></svg></button></div>
+      <div class="size"><button class="s" aria-label="Schrift kleiner">A</button><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div><button class="l" aria-label="Schrift größer">A</button></div>
+      <div class="lbl">Themen</div>
+      <div class="themes">
+        <button style="background:#fbfaf7;color:#1f1f22"><span class="a" style="font-family:Georgia,serif">Aa</span><span class="t">Original</span></button>
+        <button style="background:#3a3b40;color:#e3e3e6"><span class="a" style="font-family:'Palatino Linotype',serif">Aa</span><span class="t">Ruhig</span></button>
+        <button class="on" style="background:#f4ecd8;color:#3b2f22"><span class="a" style="font-family:Cambria,serif">Aa</span><span class="t">Papier</span></button>
+        <button style="background:#fbfaf7;color:#1f1f22"><span class="a" style="font-family:'Segoe UI',sans-serif;font-weight:700">Aa</span><span class="t">Kräftig</span></button>
+        <button style="background:#efe6d2;color:#4a3d2e"><span class="a" style="font-family:Constantia,serif">Aa</span><span class="t">Sanft</span></button>
+        <button style="background:#121316;color:#d9d9de"><span class="a" style="font-family:Georgia,serif">Aa</span><span class="t">Fokus</span></button>
+      </div>
+      <div class="lbl">Seitenfarbe</div>
+      <div class="colors">
+        <button style="background:#fbfaf7;color:#1f1f22">Weiß</button>
+        <button class="on" style="background:#f4ecd8;color:#3b2f22">Sepia</button>
+        <button style="background:#3a3b40;color:#e3e3e6">Grau</button>
+        <button style="background:#121316;color:#d9d9de">Nacht</button>
+      </div>
+      <div class="custom">
+        <div class="lbl">Anpassen</div>
+        <div class="row"><span>Schrift</span><select aria-label="Schrift"><option>Cambria</option></select></div>
+        <div class="row"><span>Fett</span><button class="sw" aria-label="Fett"></button></div>
+        <div class="row"><span>Zeilenabstand</span><input type="range" min="0" max="10" value="5" aria-label="Zeilenabstand"></div>
+        <div class="row"><span>Ränder</span><input type="range" min="0" max="10" value="5" aria-label="Ränder"></div>
+        <div class="row"><span>Blocksatz</span><button class="sw on" aria-label="Blocksatz"></button></div>
+        <div class="row" style="color:var(--mut)">… weitere wie in Karte 4</div>
+      </div>
+    </div>
+  </div></div>
+  <div class="notes">
+    <div><b><em>1</em>Vollbild beenden</b>Knopf, F11 oder Esc: zurück ins Bibliotheksfenster (Karte 1), an derselben Stelle. Ein zweites Esc führt zur Bibliothek.</div>
+    <div><b>Leisten</b>Liegen über der Seite, damit sich beim Ein- und Ausblenden nichts verschiebt; nach 3 Sekunden ohne Bewegung verschwinden sie.</div>
+    <div><b>Texteinstellungen</b>Schweben am „Aa“-Knopf; jede Änderung ist sofort auf der Seite zu sehen. Ein Klick daneben schließt sie.</div>
+  </div>
+</section>
+
+<!-- 4: text settings in detail, live -->
+<section class="card">
+  <h2><span class="n">4</span>Texteinstellungen im Detail (zum Ausprobieren)</h2>
+  <p class="desc">Nach dem Vorbild von Apple Books: Schriftgröße, Themen, Seitenfarbe und unter „Anpassen“ Schrift, Fett, Abstände, Ränder und Blocksatz. Die Werte gelten für alle EPUBs und bleiben gespeichert.</p>
+  <div class="live">
+    <div class="ts" id="ts">
+      <div class="top">Texteinstellungen</div>
+      <div class="size"><button class="s" data-size="-1" aria-label="Schrift kleiner">A</button><div class="dots" id="dots"></div><button class="l" data-size="1" aria-label="Schrift größer">A</button></div>
+      <div class="lbl">Themen</div>
+      <div class="themes" id="themes">
+        <button data-theme="original" style="background:#fbfaf7;color:#1f1f22"><span class="a" style="font-family:Georgia,serif">Aa</span><span class="t">Original</span></button>
+        <button data-theme="ruhig" style="background:#3a3b40;color:#e3e3e6"><span class="a" style="font-family:'Palatino Linotype',serif">Aa</span><span class="t">Ruhig</span></button>
+        <button data-theme="papier" style="background:#f4ecd8;color:#3b2f22"><span class="a" style="font-family:Cambria,serif">Aa</span><span class="t">Papier</span></button>
+        <button data-theme="kraeftig" style="background:#fbfaf7;color:#1f1f22"><span class="a" style="font-family:'Segoe UI',sans-serif;font-weight:700">Aa</span><span class="t">Kräftig</span></button>
+        <button data-theme="sanft" style="background:#efe6d2;color:#4a3d2e"><span class="a" style="font-family:Constantia,serif">Aa</span><span class="t">Sanft</span></button>
+        <button data-theme="fokus" style="background:#121316;color:#d9d9de"><span class="a" style="font-family:Georgia,serif">Aa</span><span class="t">Fokus</span></button>
+      </div>
+      <div class="lbl">Seitenfarbe</div>
+      <div class="colors" id="colors">
+        <button data-color="weiss" style="background:#fbfaf7;color:#1f1f22">Weiß</button>
+        <button data-color="sepia" style="background:#f4ecd8;color:#3b2f22">Sepia</button>
+        <button data-color="grau" style="background:#3a3b40;color:#e3e3e6">Grau</button>
+        <button data-color="nacht" style="background:#121316;color:#d9d9de">Nacht</button>
+      </div>
+      <div class="custom">
+        <div class="lbl">Anpassen</div>
+        <div class="row"><span>Schrift</span><select id="font" aria-label="Schrift">
+          <option value="Georgia, serif">Original (Schrift des Buchs)</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="'Palatino Linotype', Palatino, serif">Palatino Linotype</option>
+          <option value="Cambria, serif">Cambria</option>
+          <option value="Constantia, serif">Constantia</option>
+          <option value="'Segoe UI', sans-serif">Segoe UI</option>
+          <option value="Verdana, sans-serif">Verdana</option>
+        </select></div>
+        <div class="row"><span>Fett</span><button class="sw" id="bold" aria-label="Fett"></button></div>
+        <div class="row"><span>Zeilenabstand</span><input type="range" id="line" min="1.2" max="2.2" step="0.1" value="1.6" aria-label="Zeilenabstand"></div>
+        <div class="row"><span>Zeichenabstand</span><input type="range" id="letter" min="0" max="0.12" step="0.02" value="0" aria-label="Zeichenabstand"></div>
+        <div class="row"><span>Wortabstand</span><input type="range" id="word" min="0" max="0.5" step="0.1" value="0" aria-label="Wortabstand"></div>
+        <div class="row"><span>Ränder</span><input type="range" id="margin" min="24" max="120" step="8" value="56" aria-label="Ränder"></div>
+        <div class="row"><span>Blocksatz</span><button class="sw on" id="justify" aria-label="Blocksatz"></button></div>
+        <div class="row"><span>Doppelseite</span><span class="tag">IM VOLLBILD</span><button class="sw" aria-label="Doppelseite im Vollbild"></button></div>
+        <div class="row"><span>Scrollansicht</span><span class="tag">OPTIONAL</span><button class="sw" aria-label="Scrollansicht"></button></div>
+        <button class="reset" id="reset">Zurücksetzen</button>
+      </div>
+    </div>
+    <div class="pv" id="pv">
+      <div class="page" id="pvpage">
+        <p>Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren Ungeziefer verwandelt. Er lag auf seinem panzerartig harten Rücken und sah, wenn er den Kopf ein wenig hob, seinen gewölbten, braunen, von bogenförmigen Versteifungen geteilten Bauch, auf dessen Höhe sich die Bettdecke, zum gänzlichen Niedergleiten bereit, kaum noch erhalten konnte. Seine vielen, im Vergleich zu seinem sonstigen Umfang kläglich dünnen Beine flimmerten ihm hilflos vor den Augen.</p>
+        <p>»Was ist mit mir geschehen?«, dachte er. Es war kein Traum. Sein Zimmer, ein richtiges, nur etwas zu kleines Menschenzimmer, lag ruhig zwischen den vier wohlbekannten Wänden. Über dem Tisch, auf dem eine auseinandergepackte Musterkollektion von Tuchwaren ausgebreitet war – Samsa war Reisender –, hing das Bild, das er vor kurzem aus einer illustrierten Zeitschrift ausgeschnitten und in einem hübschen, vergoldeten Rahmen untergebracht hatte.</p>
+        <p>Gregors Blick richtete sich dann zum Fenster, und das trübe Wetter – man hörte Regentropfen auf das Fensterblech aufschlagen – machte ihn ganz melancholisch.</p>
+      </div>
+    </div>
+  </div>
+  <table class="map">
+    <tr><th style="width:150px">Einstellung</th><th>Wirkung</th><th style="width:330px">Umsetzung mit Option A</th></tr>
+    <tr><td>Schriftgröße</td><td>7 Stufen (A klein / A groß)</td><td>Punktgröße der Dokumentschrift, Seiten neu umbrechen</td></tr>
+    <tr><td>Themen</td><td>Fertige Kombinationen aus Schrift, Stärke, Abständen und Seitenfarbe; setzt die Werte darunter</td><td>nur Voreinstellungen, keine eigene Technik</td></tr>
+    <tr><td>Seitenfarbe</td><td>Weiß, Sepia, Grau, Nacht</td><td>Hintergrund und Textfarbe der Seite (Bilder bleiben)</td></tr>
+    <tr><td>Schrift</td><td>„Original“ = Schrift aus dem Buch, sonst Schriften, die Windows mitbringt</td><td><code>QFontDatabase::addApplicationFontFromData</code> für Buchschriften, sonst <code>QTextDocument::setDefaultFont</code></td></tr>
+    <tr><td>Fett</td><td>kräftigerer Text</td><td><code>QFont::setWeight</code></td></tr>
+    <tr><td>Zeilen-, Zeichen-, Wortabstand</td><td>luftigerer Text</td><td><code>QTextBlockFormat::setLineHeight</code>, <code>QFont::setLetterSpacing</code>, <code>setWordSpacing</code></td></tr>
+    <tr><td>Ränder, Blocksatz</td><td>Breite der Textspalte, ausgerichteter Rand</td><td>Seitenränder beim Umbruch, <code>Qt::AlignJustify</code> für Fließtext</td></tr>
+    <tr><td>Doppelseite</td><td>Zwei Seiten nebeneinander, nur im Vollbild und wenn breit genug</td><td>Variante 2: zwei Seiten-Elemente; etwas Zusatzaufwand</td></tr>
+    <tr><td>Scrollansicht</td><td>Text scrollen statt blättern</td><td>Variante 3: zweiter Darstellungsweg – optional, später</td></tr>
+  </table>
+</section>
+
+<!-- 5: flow between the modes -->
+<section class="card full">
+  <h2><span class="n">5</span>Bedienung: Wege zwischen Bibliothek, Fenster und Vollbild</h2>
+  <p class="desc">Jedes „Lesen“ öffnet das Fenster-Layout. Das Vollbild ist ein Umschalter darin; der Reader merkt sich nur die Stelle im Buch und die Texteinstellungen, nicht den Modus.</p>
+  <div class="flow">
+    <div class="st"><b>Bibliothek</b>Cover, Detailansicht, Weitermachen, Kontextmenü</div>
+    <div class="arr"><div class="line"></div>„Lesen“ / „Weiterlesen“<div class="line back"></div>„‹ Bibliothek“ oder Esc</div>
+    <div class="st"><b>Reader im Fenster (Karte 1)</b>Seitenleiste, Player, Inhaltsverzeichnis sichtbar</div>
+    <div class="arr"><div class="line"></div>Vollbild-Knopf oder F11<div class="line back"></div>Knopf, F11 oder Esc</div>
+    <div class="st"><b>Vollbild-Fokus (Karten 2 und 3)</b>Nur der Text; Leisten bei Bewegung</div>
+  </div>
+  <div class="notes">
+    <div><b>Tasten in beiden Modi</b>← → Bild↑ Bild↓ Leertaste blättern · Pos1 / Ende · Strg + / Strg − Schriftgröße · F11 Vollbild · Esc zurück</div>
+    <div><b>Wechsel ohne Sprung</b>Fenster und Vollbild sind verschieden groß: die Seiten werden neu umbrochen, die Textstelle oben auf der Seite bleibt dieselbe.</div>
+    <div><b>PDF</b>Gleiche Modi und Leisten; statt der Texteinstellungen gibt es Zoom (ganze Seite, Breite, + / −).</div>
+    <div><b>Andere Formate</b>MOBI, AZW3 und PDFs ohne Qt PDF öffnen weiter im Standardprogramm.</div>
+  </div>
+</section>
+
+</div>
+
+<script>
+// Card 4: the text settings act on the preview.
+(function () {
+  var colors = {
+    weiss: ['#fbfaf7', '#1f1f22'], sepia: ['#f4ecd8', '#3b2f22'],
+    grau: ['#3a3b40', '#e3e3e6'], nacht: ['#121316', '#d9d9de']
+  };
+  var themes = {
+    original: { font: 0, bold: false, line: 1.6, letter: 0, word: 0, margin: 56, color: 'weiss' },
+    ruhig: { font: 2, bold: false, line: 1.7, letter: 0, word: 0, margin: 64, color: 'grau' },
+    papier: { font: 3, bold: false, line: 1.6, letter: 0, word: 0, margin: 56, color: 'sepia' },
+    kraeftig: { font: 5, bold: true, line: 1.5, letter: 0.02, word: 0.1, margin: 48, color: 'weiss' },
+    sanft: { font: 4, bold: false, line: 1.8, letter: 0.02, word: 0.1, margin: 72, color: 'sepia' },
+    fokus: { font: 1, bold: false, line: 1.7, letter: 0, word: 0, margin: 104, color: 'nacht' }
+  };
+  var sizes = [14, 16, 18, 20, 22, 26, 30];
+  var state = { size: 2, theme: 'original', color: 'weiss', bold: false, justify: true };
+  var $ = function (id) { return document.getElementById(id); };
+  var page = $('pvpage'), pv = $('pv');
+
+  function apply() {
+    var c = colors[state.color];
+    pv.style.background = c[0];
+    page.style.color = c[1];
+    page.style.fontFamily = $('font').value;
+    page.style.fontWeight = state.bold ? '700' : '400';
+    page.style.fontSize = sizes[state.size] + 'px';
+    page.style.lineHeight = $('line').value;
+    page.style.letterSpacing = $('letter').value + 'em';
+    page.style.wordSpacing = $('word').value + 'em';
+    page.style.padding = '40px ' + $('margin').value + 'px';
+    page.style.textAlign = state.justify ? 'justify' : 'left';
+    $('bold').classList.toggle('on', state.bold);
+    $('justify').classList.toggle('on', state.justify);
+    document.querySelectorAll('#themes button').forEach(function (b) { b.classList.toggle('on', b.dataset.theme === state.theme); });
+    document.querySelectorAll('#colors button').forEach(function (b) { b.classList.toggle('on', b.dataset.color === state.color); });
+    $('dots').innerHTML = sizes.map(function (_, i) { return '<i' + (i <= state.size ? ' class="on"' : '') + '></i>'; }).join('');
+  }
+  function useTheme(name) {
+    var t = themes[name];
+    state.theme = name; state.bold = t.bold; state.color = t.color;
+    $('font').selectedIndex = t.font;
+    $('line').value = t.line; $('letter').value = t.letter; $('word').value = t.word; $('margin').value = t.margin;
+    apply();
+  }
+  document.querySelectorAll('[data-size]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      state.size = Math.max(0, Math.min(sizes.length - 1, state.size + Number(b.dataset.size))); apply();
+    });
+  });
+  document.querySelectorAll('#themes button').forEach(function (b) { b.addEventListener('click', function () { useTheme(b.dataset.theme); }); });
+  document.querySelectorAll('#colors button').forEach(function (b) { b.addEventListener('click', function () { state.color = b.dataset.color; apply(); }); });
+  ['font', 'line', 'letter', 'word', 'margin'].forEach(function (id) { $(id).addEventListener('input', apply); });
+  $('bold').addEventListener('click', function () { state.bold = !state.bold; apply(); });
+  $('justify').addEventListener('click', function () { state.justify = !state.justify; apply(); });
+  $('reset').addEventListener('click', function () { state.size = 2; state.justify = true; useTheme('original'); });
+  document.querySelectorAll('.ts .sw:not(#bold):not(#justify)').forEach(function (b) { b.addEventListener('click', function () { b.classList.toggle('on'); }); });
+  useTheme('original');
+})();
+</script>
+</body>
+</html>

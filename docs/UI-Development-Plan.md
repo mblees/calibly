@@ -1,6 +1,6 @@
 # calibly – UI Development Plan
 
-Status: 2026-11-11 · Based on: [Mockup "Cover Gallery, Version 2"](../mockups/calibly-cover-galerie-v2.png) · Implementation with Qt Quick
+Status: 2026-11-12 · Based on: [Mockup "Cover Gallery, Version 2"](../mockups/calibly-cover-galerie-v2.png) · Implementation with Qt Quick
 
 ---
 
@@ -32,8 +32,9 @@ calibly is a **personal tool**, not a commercial product. It manages ebooks and 
 | B | **Detail** | Slides in from the right when a cover is clicked. One card per format with progress and "Continue reading" / "Continue listening". Tabs: Overview, Chapters, Notes, Files. |
 | C | **Player (fullscreen)** | Large cover, progress bar relative to the **current chapter**, overall progress shown small below it. Playback speed, sleep timer, chapter list. |
 | D | **Drag & drop** | Drop onto empty space = new work. Drop onto a cover = add the format to that work. Import progress at the bottom right. |
-| E | **Edit metadata** | One form for all formats. Shared fields (🔗) apply to all formats, format-specific ones (narrator, ISBN, …) are separate. Online suggestions with before/after. |
+| E | **Edit metadata** | One form for all formats. Shared fields (🔗) apply to all formats, format-specific ones (narrator, ISBN, …) are separate. |
 | F | **Cover states** | Binding list: ebook only, audiobook only, both, read x %, read + listened, finished, series, new, selected, file missing. |
+| G | **Reader** | Mockup [`calibly-reader-hybrid.html`](../mockups/calibly-reader-hybrid.html). Opens from every "Read" / "Continue reading" as a view **inside the library window**: sidebar and player bar stay, one page of the book in the middle, the contents on the right. A fullscreen button switches to **focus**: the window goes fullscreen and shows only the text; the bars appear when the mouse moves. Text settings ("Aa") like Apple Books in both. |
 
 ### Interaction principles
 1. **Clicking a cover** opens the detail view. **Hovering over a cover** shows "Read" / "Listen" to continue directly.
@@ -45,6 +46,8 @@ calibly is a **personal tool**, not a commercial product. It manages ebooks and 
 
 ### Deliberately excluded
 Devices / "Send to device", collections, smart lists, additional filters (status, language), history, the suggestion to sync positions, bookmarks, queue and "Follow along in text" in the player.
+**Online metadata suggestions** (searching book databases on the internet): metadata comes from the files and is edited by hand.
+In the reader: highlights, notes, bookmarks, dictionary, read-aloud, editing books and DRM-protected files.
 The architecture should not prevent these later. But they will not be built.
 
 ---
@@ -72,8 +75,8 @@ Further dependencies are only added in the phase that needs them:
 | Qt-internal ZIP reader (`QZipReader`, Qt Core private) | 4 | Read EPUB files without an extra ZIP library |
 | Qt PDF (optional, Qt Maintenance Tool → Extensions) | 4 | Cover (first page), title, author and page count of PDFs; without it PDFs get placeholders |
 | Qt Multimedia | 6 | Audio playback |
-| Qt Network | 10 | Online metadata |
-| Ebook rendering | separate plan | Integrated reader |
+| Qt PDF Quick (`QtQuick.Pdf`, part of Qt PDF) | 10 | PDF pages, contents and links in the reader. Qt PDF stays optional: without it PDFs keep opening in the system's default application |
+| EPUB rendering: Qt's own text engine (`QTextDocument`, part of Qt GUI) | 10 | EPUB pages in the reader; no new dependency (option A, see phase 10) |
 
 > **Assumption: C++ rather than Python.** Qt Quick with C++ has the best support for porting to Linux, Android and iOS later. PySide6 would work for Windows and Linux, but is weaker on mobile.
 
@@ -207,7 +210,12 @@ View F from the mockup becomes a real developer view `ComponentGallery.qml` (sta
 | `ConfirmDialog` (question before merging / removing) | Controls | A | 9 |
 | `AppMenu`, `AppMenuItem`, `AppMenuSeparator` (menu at the pointer) | Controls | A | 9 |
 | `WorkMenu` (context menu of a cover) | Components | A | 9 |
-| `SuggestionList` | Components | E | 10 |
+| `ReaderBar` (back, title and chapter, page, contents, "Aa", fullscreen) | Components | G | 10 |
+| `BookPage` (one EPUB page; C++ item drawn with `QTextDocument`) | Components | G | 10 |
+| `TableOfContents` (chapters of the book with their pages, current one marked) | Components | G | 10 |
+| `TextSettings` (font size, themes, page color, "Anpassen"; zoom for PDF) | Components | G | 10 |
+| `ToggleSwitch` (on / off in the text settings) | Controls | G | 10 |
+| `SeekBar` (reused as the position slider), `AppSlider` (spacing and margins) | Controls | G | 2 / 6 / 10 |
 
 ---
 
@@ -227,7 +235,7 @@ Every phase ends with a **runnable app**. A phase only starts once the previous 
 | 7 | Drag & drop with import queue | – |
 | 8 | "Continue" and cover states | – |
 | 9 | Multi-selection, merging works, series | – |
-| 10 | Online metadata suggestions | Qt Network |
+| 10 | Ebook reader (EPUB and PDF) | Qt PDF Quick; EPUB rendering as decided |
 
 ### Phase 0 – Skeleton
 - CMake project, folder and module structure as described above.
@@ -265,7 +273,7 @@ Every phase ends with a **runnable app**. A phase only starts once the previous 
 ### Phase 5 – Edit metadata
 - `MetadataEditor` dialog with `MetadataForm`. Shared fields (🔗) and format-specific fields.
 - Tabs General, Audiobook, Ebook. Navigation to the previous and next title.
-- No online suggestions yet.
+- No online suggestions (dropped, see "Deliberately excluded").
 - **Done when:** changes are saved and immediately visible in the gallery and the detail view.
 
 **Implemented as:** `WorkEditor` (C++, `Calibly.Controllers`) holds an editable copy of one work, knows whether it was changed and saves through `LibraryController::saveWork()`, which updates the backend and the `WorkModel` – so the gallery and the detail view follow at once. The dialog `MetadataEditor` (opened with ✎ in the detail view) shows `MetadataForm` with the tabs General, Audiobook and Ebook (only the formats the work has). Shared fields: title, authors, series and volume, language, year, tags, rating, description. Format fields: narrators, publisher and ISBN of the audiobook; publisher and ISBN of the ebook. Publisher and ISBN are therefore stored per format (database schema 2; older libraries are updated on open), and the ISBN is read from EPUB identifiers on import. ‹ / › (Ctrl+PgUp / Ctrl+PgDown) step through the titles of the current gallery selection and keep the changes made so far, like calibre; Ctrl+S saves and closes; Esc, ✕ and "Cancel" drop unsaved changes. Changing the cover is not part of this phase.
@@ -311,12 +319,68 @@ Before works are merged or removed the controller emits `worksAboutToChange`, so
 *Context menu:* a right click on a cover opens `WorkMenu` (built on the neutral `AppMenu`). For a title: Details, Lesen / Hören, Metadaten bearbeiten, "Als fertig markieren" per format, Auswählen, Entfernen (after the question, with the name of the title). If the title is one of several selected ones, the menu is about the selection and offers what the bar offers. For a series stack it opens the series. Every entry is also reachable elsewhere (detail view, bar), as interaction principle 2 asks.
 *Series:* with `groupSeries` the shown works of one series (two or more; names are compared without case and accents) are one row, a stack: the first volume stands for it, `seriesCount` / `seriesFirst` / `seriesLast` describe it ("Band 1–4", "4 Bände · Serie"), it has the formats that any volume has, and it sorts by the name of the series or by its most recently opened volume. A search or format selection that leaves one volume shows that volume. Stacks cannot be selected and are not a drop target. A click sets `seriesFilter`: the volumes in the order of their numbers, with "‹ Bibliothek" (or Esc) leading back. "Gruppieren: Keine / Serien" next to the sorting switches the stacks off and on (kept between starts, on by default). The sidebar entry "Serien" opens `SeriesView`: the library view with `seriesOnly`, where every series is a stack, also one with a single volume; the entry shows the number of series. Authors and narrators are still placeholders.
 
-### Phase 10 – Online suggestions
-- `SuggestionList` in the metadata dialog with before/after and per-field adoption.
-- Each source is its own plugin behind an interface (`MetadataSource`).
+### Phase 10 – Ebook reader
+calibly reads ebooks itself instead of handing them to the system's default application. **Only EPUB and PDF** at first; further formats only if the chosen EPUB rendering brings them almost for free (see 10.4). MOBI / AZW3 and every other format keep opening in the default application, as do PDFs when calibly is built without Qt PDF.
+
+**Where the reader opens.** Every "Lesen" / "Weiterlesen" for an EPUB or PDF: the hover action on a cover, the `FormatCard` in the detail view, the `ContinueCard` and the context menu. The detail view and the context menu also get "Mit Standardprogramm öffnen", so the old way stays available.
+
+**Layout: window and fullscreen** (decided, mockup [`calibly-reader-hybrid.html`](../mockups/calibly-reader-hybrid.html)). A hybrid of two of the five layouts that were compared:
+- **In the window (default, every book opens like this):** the reader is a view in the content area of the main window, like the library. The sidebar and the player bar stay; an audiobook keeps playing and can be controlled. The bar at the top holds "‹ Bibliothek", title and chapter, the page, and the buttons for the contents, "Aa" and fullscreen. The contents (`TableOfContents`) are a column on the right that can be hidden (hidden by default in narrow windows).
+- **Fullscreen (focus):** the fullscreen button or F11 puts the window into fullscreen and hides sidebar, player bar and contents: only the page and a fine progress line remain. Moving the mouse or clicking the middle of the page shows the bars on top of the page (nothing moves); they hide again after 3 seconds. A hint "Leisten erscheinen bei Mausbewegung · Esc verlässt das Vollbild" shows for 2 seconds when entering. The button, F11 or Esc return to the window at the same place; the next Esc leads back to the library.
+- The mode is not remembered: a book always opens in the window. Switching changes the page size, so the pages are laid out again and the place at the top of the page stays.
+- While the reader is shown, Space and ← / → turn pages instead of controlling the player.
+
+**Reading.**
+- One page at a time. Turning pages with ← / →, PgUp / PgDn, Space, the mouse wheel and a click on the left or right third of the page (works for touch later); Home / End jump to the start / end. The slider at the bottom jumps anywhere in the book.
+- Contents (`TableOfContents`) from the EPUB's navigation document (EPUB 3 nav, EPUB 2 NCX) or the PDF's outline (`PdfBookmarkModel`); the current chapter is marked.
+- **Text settings for EPUB ("Aa", `TextSettings`), modelled on Apple Books.** A panel at the "Aa" button, the same in window and fullscreen; every change shows on the page at once. They apply to all EPUBs and are kept between starts (`QSettings`):
+  - Font size in 7 steps (small "A" / large "A", also Ctrl + / Ctrl −).
+  - Themes: ready combinations of font, weight, spacing and page color – Original, Ruhig, Papier, Kräftig, Sanft, Fokus. A theme only sets the values below.
+  - Page color: Weiß, Sepia, Grau, Nacht (values from the theme file; images keep their colors).
+  - "Anpassen": font ("Original" = the fonts embedded in the book, loaded with `QFontDatabase::addApplicationFontFromData`; otherwise fonts that come with Windows: Georgia, Palatino Linotype, Cambria, Constantia, Segoe UI, Verdana), bold (`QFont::setWeight`), line spacing (`QTextBlockFormat::setLineHeight`), character and word spacing (`QFont::setLetterSpacing` / `setWordSpacing`), margins (page margins of the layout), justified text (`Qt::AlignJustify` for body text), and "Zurücksetzen".
+  - Two-page spread (variant 2 of the comparison): an extra switch, used only in fullscreen and when the window is wide enough.
+  - Scrolling instead of pages (variant 3) would be a second way of drawing the book: not in phase 10.
+- PDF: instead of the text settings the panel shows zoom "fit page" / "fit width" and +/−. The pages of a PDF are never reflowed.
+- Links inside the book (contents pages, footnotes) jump within it; links to the internet open in the browser.
+
+**Position and progress.**
+- PDF: the page. EPUB: the chapter (spine item) and the character offset within it, so the place survives a different window size or font size, which changes the page count.
+- New field `Format::readingPosition` (database schema 5). The progress (0–1) follows from it: PDF page / pages; EPUB characters before the position / characters of the book. It is stored when turning pages (delayed), when leaving the reader and on quit, like the player's position.
+- Opening a book counts as opened (`markOpened()`): the title moves to the front of "Weitermachen", now with real progress. Reaching the last page marks the format as finished (FERTIG on the cover); "Als fertig markieren" stays for books that end before the last page.
+- "Weitermachen" shows "Seite 88 von 210" for PDFs, "Kapitel 4 · 42 %" for EPUBs (their page count depends on the settings).
+
+**Errors.** A missing file shows "Datei fehlt" (and the cover state); a damaged or DRM-protected file shows a message with "Mit Standardprogramm öffnen" instead of a page.
+
+**EPUB rendering – the options that were considered:**
+
+| Option | For | Against |
+|---|---|---|
+| **A: Qt's own text engine** (`QTextDocument`, a C++ item draws the pages) | No new dependency; works with MinGW and later on Android / iOS; full control over font, colors and page breaks; reading the EPUB reuses `QZipReader` and `QXmlStreamReader` from the import | Understands only a subset of HTML / CSS: novels look clean, layout-heavy books (textbooks, comics, fixed-layout EPUB) look plain; pagination is our own code |
+| **B: MuPDF** (C library that renders EPUB, PDF, MOBI, FB2, CBZ, XPS to pages) | Much better CSS; one engine for all formats, more formats come almost for free | AGPL license (calibly would have to be AGPL if it is ever passed on); own build system, integrating it into the CMake / MinGW build is extra work |
+| **C: Qt WebEngine** (Chromium) | Complete HTML / CSS, what most EPUB readers use | Not available with MinGW: the whole project would have to move to MSVC; large; not on Android / iOS |
+
+**Decided: A** (2026-11-12). calibly is a personal tool and mostly reads novels; A keeps the rule "only what is needed" and the MinGW build. If the layout turns out to be too plain in practice, B can replace the EPUB part later without changing the reader view.
+Five layouts were compared (one page in fullscreen, two-page spread, continuous scrolling, focus with hiding bars, inside the library window); the reader combines the last two, see "Layout" above.
+
+**Structure.**
+- New C++ module `src/reader` (no UI): `EpubBook` reads container, package (OPF), spine and navigation and delivers chapters and images from the ZIP; the paginator turns a chapter into pages for a page size and font settings and maps between pages and positions.
+- `ReaderController` (C++, `Calibly.Controllers`): opens a format, knows document type, page, page count, chapter and contents, turns pages, stores the position through `LibraryController::saveWork()` and tells the player to leave the keys alone.
+- `ReaderSettings` (C++): the text settings, the themes as presets, stored in `QSettings`; the paginator lays the book out with them.
+- QML: `ReaderView` (view G, a view in `Main.qml` like `LibraryView`; its fullscreen mode hides the sidebar and the player bar and calls `showFullScreen()` on the window) with `ReaderBar`, `BookPage` (EPUB) or the page view of `QtQuick.Pdf` (PDF), `TableOfContents`, `TextSettings` and `SeekBar`.
+
+**Steps** (each ends with a runnable app):
+1. **10.1 Reader view and PDF:** `ReaderView` in the window with the contents column, `ReaderController`, PDF pages with `QtQuick.Pdf`, turning pages, slider, contents, zoom, position and progress stored (schema 5), opened from every "Lesen" for PDFs.
+2. **10.2 EPUB:** `EpubBook`, pages, contents, links, position as chapter + offset.
+3. **10.3 Fullscreen, text settings and details:** the fullscreen focus mode with the hiding bars, `TextSettings` with themes and "Anpassen" (`ReaderSettings`), keys, click zones, "Mit Standardprogramm öffnen", error states, finished at the last page, "Weitermachen" texts. The two-page spread at the end of the step, if the rest is done.
+4. **10.4 Further formats, only if almost free:** with option A plain text (TXT) and Markdown (`QTextDocument` reads both; the import needs the two suffixes and takes title and author from the file name); with option B MOBI without DRM, FB2 and CBZ. Anything that needs more work is left for later.
+
+**Tests:** `EpubBook` with small EPUBs written in the test (as `tst_import` already does): spine order, EPUB 2 and 3 contents, images, links, broken files. Position ↔ progress and position ↔ page for different page sizes and font sizes. PDFs written with `QPdfWriter`. `ReaderController` with a fake library: position stored and restored, finished at the end, `lastOpened`.
+
+- **Done when:** an EPUB and a PDF open in calibly from the cover, the detail view and "Weitermachen", open at the same place after a restart (EPUB also after changing the window or font size), their progress shows on the cover and in "Weitermachen", and reaching the last page marks them as finished.
 
 ### Afterwards (separate plans)
-- **Integrated ebook reader.** This is the largest single building block and requires a decision on rendering. Until then, "Read" opens the system's default application.
+- Further ebook formats, if not covered by 10.4 (e.g. MOBI / AZW3), and search in the book.
+- The views "Autoren" and "Sprecher" of the sidebar (still placeholders).
 - Light theme, Linux build, adaptation for Android and iOS.
 
 ---
@@ -334,4 +398,7 @@ Before works are merged or removed the controller emits `worksAboutToChange`, so
 | ~~Copy files into a library folder or leave them in place?~~ | **Decided:** copied into the library folder (`Documents\calibly-Bibliothek`, structure `<Author>/<Title>/`), like calibre | done |
 | ~~Library for tags and chapters~~ | **Decided:** TagLib for audio, Qt's ZIP reader for EPUB, Qt PDF for PDFs | done |
 | ~~UI language: German only or also English?~~ | **Decided:** German source texts, English translation, switchable at runtime (see "Translations") | done |
-| Rendering for the ebook reader | separate plan | after phase 10 |
+| ~~Rendering of EPUB in the reader~~ | **Decided:** option A, Qt's own text engine (`QTextDocument`), see phase 10 | done |
+| ~~Layout of the reader~~ | **Decided:** inside the library window by default, fullscreen focus with a button; text settings like Apple Books (mockup `calibly-reader-hybrid.html`) | done |
+| Formats beyond EPUB and PDF in the reader | Only what the chosen rendering brings almost for free (step 10.4); MOBI / AZW3 keep opening in the default application | Phase 10, step 10.4 |
+| ~~Online metadata suggestions~~ | **Decided:** not built (see "Deliberately excluded") | done |
