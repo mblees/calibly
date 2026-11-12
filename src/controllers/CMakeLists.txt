@@ -17,10 +17,22 @@ qt_add_qml_module(calibly_controllers
         workeditor.cpp
         playercontroller.h
         playercontroller.cpp
+        readersettings.h
+        readersettings.cpp
+        readercontroller.h
+        readercontroller.cpp
+        bookpage.h
+        bookpage.cpp
 )
 
 target_include_directories(calibly_controllers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 # Qt GUI for QDesktopServices (open files with the default application),
 # Qt Multimedia for the audiobook player.
-target_link_libraries(calibly_controllers PUBLIC Qt6::Qml Qt6::Gui Qt6::Multimedia calibly_models calibly_backend
-    calibly_import calibly_core)
+target_link_libraries(calibly_controllers PUBLIC Qt6::Qml Qt6::Gui Qt6::Quick Qt6::Multimedia calibly_models
+    calibly_backend calibly_import calibly_reader calibly_core)
+
+# Qt PDF draws PDFs in the reader; without it PDFs open in the default application.
+if(TARGET Qt6::Pdf)
+    target_link_libraries(calibly_controllers PUBLIC Qt6::Pdf)
+    target_compile_definitions(calibly_controllers PRIVATE CALIBLY_HAS_QTPDF)
+endif()

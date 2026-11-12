@@ -21,7 +21,8 @@ namespace {
 // 2: publisher per format instead of per work, ISBN per format (phase 5)
 // 3: chapters and listening position per format (phase 6)
 // 4: last opened per format, for "Continue" (phase 8)
-constexpr int kSchemaVersion = 4;
+// 5: reading position per format, for the ebook reader (phase 10)
+constexpr int kSchemaVersion = 5;
 
 QString toJson(const QStringList &list)
 {
@@ -154,6 +155,10 @@ bool SqliteBackend::open(QString *error)
         // Older works get it from the work's last_opened, see Work::inheritLastOpened().
         statements += { QStringLiteral("ALTER TABLE formats ADD COLUMN last_opened TEXT") };
     }
+    if (version < 5) {
+        // JSON, see ReadingPosition.
+        statements += { QStringLiteral("ALTER TABLE formats ADD COLUMN reading_position TEXT") };
+    }
     if (statements.isEmpty())
         return true;
 
@@ -243,7 +248,8 @@ QList<Work> SqliteBackend::loadWorks()
     }
 
     query.prepare(QStringLiteral("SELECT work_id, kind, file_path, progress, cover_path, cover_square, file_size,"
-                                 " pages, duration, publisher, isbn, chapters, position_ms, last_opened FROM formats"
+                                 " pages, duration, publisher, isbn, chapters, position_ms, last_opened,"
+                                 " reading_position FROM formats"
                                  " ORDER BY work_id, position"));
     if (!exec(query, nullptr))
         return works;
@@ -266,6 +272,7 @@ QList<Work> SqliteBackend::loadWorks()
         format.chapters = chaptersFromJson(query.value(11).toString());
         format.positionMs = query.value(12).toLongLong();
         format.lastOpened = QDateTime::fromString(query.value(13).toString(), Qt::ISODate);
+        format.readingPosition = query.value(14).toString();
         format.fileMissing = fileMissing(format);
         works[index].formats.append(format);
     }
@@ -331,14 +338,14 @@ bool SqliteBackend::saveWork(const Work &work)
         const Format &format = work.formats.at(position);
         query.prepare(QStringLiteral("INSERT INTO formats (work_id, position, kind, file_path, progress, cover_path,"
                                      " cover_square, file_size, pages, duration, publisher, isbn, chapters, position_ms,"
-                                     " last_opened)"
-                                     " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+                                     " last_opened, reading_position)"
+                                     " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
         const QVariantList formatValues = {
             work.id, position,
             format.kind == Format::Kind::Audiobook ? QStringLiteral("audiobook") : QStringLiteral("ebook"),
             relative(format.filePath), format.progress, relative(format.coverPath), format.coverIsSquare,
             format.fileSize, format.pages, format.durationSeconds, format.publisher, format.isbn,
-            chaptersToJson(format.chapters), format.positionMs, toText(format.lastOpened) };
+            chaptersToJson(format.chapters), format.positionMs, toText(format.lastOpened), format.readingPosition };
         for (const QVariant &value : formatValues)
             query.addBindValue(value);
         ok = exec(query, nullptr);

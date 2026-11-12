@@ -13,7 +13,8 @@
 //   works    one row per work (lists such as authors are stored as JSON)
 //   formats  one row per file, linked to its work, with the metadata that
 //            differs per format (publisher, ISBN), the chapters (JSON), the
-//            listening position and when the format was last opened
+//            listening position, the reading position (ebooks) and when
+//            the format was last opened
 // Whether the files still exist is checked when the library is loaded
 // (Format::fileMissing).
 // The schema version is kept in PRAGMA user_version; open() updates older

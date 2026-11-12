@@ -135,6 +135,7 @@ QList<Work> MockBackend::readJson() const
                                          qint64(chapterObject.value(QStringLiteral("duration")).toDouble() * 1000) });
             }
             format.positionMs = qint64(format.progress * format.durationSeconds * 1000);
+            format.readingPosition = formatObject.value(QStringLiteral("readingPosition")).toString();
             format.lastOpened = QDateTime::fromString(formatObject.value(QStringLiteral("lastOpened")).toString(),
                                                       Qt::ISODate);
             // The sample files do not exist; "missing" shows the state on purpose.

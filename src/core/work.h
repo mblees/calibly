@@ -55,6 +55,10 @@ struct Format
     QList<Chapter> chapters;
     qint64 positionMs = 0;
 
+    // Ebooks: where the reader stopped, see ReadingPosition; "" = never read
+    // in calibly.
+    QString readingPosition;
+
     // When this format was last read / listened to; invalid = never.
     QDateTime lastOpened;
     // The file (or one file of an audiobook of several files) was not found.

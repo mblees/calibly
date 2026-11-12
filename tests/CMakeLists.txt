@@ -44,3 +44,12 @@ add_test(NAME tst_workmerge COMMAND tst_workmerge)
 qt_add_executable(tst_librarycontroller tst_librarycontroller.cpp)
 target_link_libraries(tst_librarycontroller PRIVATE Qt6::Test calibly_models calibly_controllers)
 add_test(NAME tst_librarycontroller COMMAND tst_librarycontroller)
+
+qt_add_executable(tst_reader tst_reader.cpp)
+# QZipWriter (Qt-internal) writes the test EPUBs.
+target_link_libraries(tst_reader PRIVATE Qt6::Test Qt6::CorePrivate calibly_reader)
+add_test(NAME tst_reader COMMAND tst_reader)
+
+qt_add_executable(tst_readercontroller tst_readercontroller.cpp)
+target_link_libraries(tst_readercontroller PRIVATE Qt6::Test Qt6::CorePrivate calibly_models calibly_controllers)
+add_test(NAME tst_readercontroller COMMAND tst_readercontroller)

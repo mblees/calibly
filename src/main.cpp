@@ -11,6 +11,8 @@
 #include "librarycontroller.h"
 #include "mockbackend.h"
 #include "playercontroller.h"
+#include "readercontroller.h"
+#include "readersettings.h"
 #include "sqlitebackend.h"
 
 #include <QFileInfo>
@@ -104,6 +106,8 @@ int main(int argc, char *argv[])
     auto *importController = new ImportController(*libraryController, &engine, &engine);
     // Created after the library: it loads the last audiobook from it.
     new PlayerController(*libraryController, &engine, &engine);
+    auto *readerSettings = new ReaderSettings(&engine, &engine);
+    new ReaderController(*libraryController, *readerSettings, &engine, &engine);
 
     engine.setInitialProperties({
         { QStringLiteral("galleryMode"), parser.isSet(galleryOption) },
