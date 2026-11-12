@@ -132,7 +132,8 @@ int ContinueModel::formatToContinue(const Work &work) const
             continue;
         if (m_formatFilter == WorkFilterModel::Audiobook && format.kind != Format::Kind::Audiobook)
             continue;
-        if (!format.lastOpened.isValid() || format.finished())
+        const bool started = format.lastOpened.isValid() || format.progress > 0.0;
+        if (!started || format.finished())
             continue;
         if (best < 0) {
             best = i;

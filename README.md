@@ -53,7 +53,7 @@ Command line options of `calibly.exe`:
 
 Audiobooks play in calibly: "Continue listening" in the detail view starts the player bar at the bottom, which opens the fullscreen player. Space plays / pauses, ← / → skip 30 seconds. The position is saved, and the last audiobook is ready again after a restart.
 
-The row "Continue" at the top of the library shows the titles that were opened last and are not finished; the round button continues directly, and so do "Read" / "Listen" when hovering a cover. Covers carry a label: "NEW" until a title is opened for the first time, "FINISHED" (audiobooks listened to the end; ebooks are marked with "Mark as finished" in the detail view, because they open in another application) and "FILE MISSING" when a file is no longer in the library folder.
+The row "Continue" at the top of the library shows the titles that were opened last and are not finished; the round button continues directly, and so do "Read" / "Listen" when hovering a cover. "Continue" in the sidebar lists all started titles in the same order. Covers carry a label: "NEW" until a title is opened for the first time, "FINISHED" (audiobooks listened to the end; ebooks are marked with "Mark as finished" in the detail view, because they open in another application) and "FILE MISSING" when a file is no longer in the library folder.
 
 Metadata is edited with ✎ in the detail view of a title. Fields marked with 🔗 apply to all formats of the title, the others only to the audiobook or the ebook. Ctrl+S saves, Ctrl+PgUp / Ctrl+PgDown go to the previous / next title.
 

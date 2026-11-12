@@ -12,6 +12,7 @@ qt_add_qml_module(calibly_views
         PlayerView.qml
         PlayerBar.qml
         ContinueRow.qml
+        ContinueView.qml
         ComponentGallery.qml
 )
 

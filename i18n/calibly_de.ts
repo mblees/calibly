@@ -13,6 +13,17 @@
     </message>
 </context>
 <context>
+    <name>ContinueView</name>
+    <message numerus="yes">
+        <location filename="../qml/Views/ContinueView.qml" line="52"/>
+        <source>%Ln Titel</source>
+        <translation>
+            <numerusform>%Ln Titel</numerusform>
+            <numerusform>%Ln Titel</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>FormatCard</name>
     <message numerus="yes">
         <location filename="../qml/Components/FormatCard.qml" line="67"/>

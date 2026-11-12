@@ -238,6 +238,21 @@ private slots:
         QCOMPARE(rows(m_model), QStringList{ QStringLiteral("Moby Dick/audiobook") });
     }
 
+    // Started is also what has progress but no date (e.g. sample data); it
+    // comes after everything with a date. Finished titles never show up,
+    // however recently they were opened.
+    void startedWithoutDate()
+    {
+        m_works.setWorks({
+            makeWork(QStringLiteral("Dracula"), { audiobook(0.3, QString(), 3600) }),
+            makeWork(QStringLiteral("Faust"), { ebook(0.0, QStringLiteral("2026-11-01T10:00:00")) }),
+            makeWork(QStringLiteral("Effi Briest"), { ebook(1.0, QStringLiteral("2026-11-12T10:00:00")),
+                                                      audiobook(1.0, QStringLiteral("2026-11-12T11:00:00")) }),
+            makeWork(QStringLiteral("Woyzeck"), { ebook(), audiobook() }),
+        });
+        QCOMPARE(rows(m_model), (QStringList{ QStringLiteral("Faust/ebook"), QStringLiteral("Dracula/audiobook") }));
+    }
+
     // The model follows the library: progress changes keep the rows (views
     // keep their place), finishing or opening a title changes them.
     void followsSource()

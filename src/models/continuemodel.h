@@ -10,10 +10,12 @@
 #include "workfiltermodel.h"
 #include "workmodel.h"
 
-// The titles to continue with ("Weitermachen" in the library): one row per
-// work with a format that was opened and is not finished, most recently
+// The titles to continue with (the row "Weitermachen" in the library and
+// the view of the same name): one row per work with a format that was
+// started – opened, or with progress – and is not finished, most recently
 // opened first. A row stands for one format of the work: the unfinished one
 // that was opened last (the audiobook if both were opened at the same time).
+// A work whose started formats are all finished is not listed.
 // It follows every change of the source model.
 //
 // In QML (import Calibly.Models):

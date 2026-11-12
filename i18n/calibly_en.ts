@@ -594,6 +594,27 @@
     </message>
 </context>
 <context>
+    <name>ContinueView</name>
+    <message numerus="yes">
+        <location filename="../qml/Views/ContinueView.qml" line="52"/>
+        <source>%Ln Titel</source>
+        <translation>
+            <numerusform>%Ln title</numerusform>
+            <numerusform>%Ln titles</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ContinueView.qml" line="131"/>
+        <source>Noch nichts angefangen.</source>
+        <translation>Nothing started yet.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ContinueView.qml" line="138"/>
+        <source>Titel, die du liest oder hörst, stehen hier, bis sie fertig sind.</source>
+        <translation>Titles you are reading or listening to stay here until they are finished.</translation>
+    </message>
+</context>
+<context>
     <name>CoverTile</name>
     <message>
         <location filename="../qml/Components/CoverTile.qml" line="139"/>
@@ -1075,32 +1096,32 @@
 <context>
     <name>Main</name>
     <message>
-        <location filename="../qml/Main.qml" line="20"/>
+        <location filename="../qml/Main.qml" line="21"/>
         <source>calibly – Komponenten-Galerie</source>
         <translation>calibly – Component Gallery</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="28"/>
+        <location filename="../qml/Main.qml" line="29"/>
         <source>Bibliothek</source>
         <translation>Library</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="29"/>
+        <location filename="../qml/Main.qml" line="30"/>
         <source>Weitermachen</source>
         <translation>Continue</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="30"/>
+        <location filename="../qml/Main.qml" line="31"/>
         <source>Serien</source>
         <translation>Series</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="31"/>
+        <location filename="../qml/Main.qml" line="32"/>
         <source>Autoren</source>
         <translation>Authors</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="32"/>
+        <location filename="../qml/Main.qml" line="33"/>
         <source>Sprecher</source>
         <translation>Narrators</translation>
     </message>

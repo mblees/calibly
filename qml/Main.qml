@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Calibly.Controllers
+import Calibly.Models
 import Calibly.Theme
 import Calibly.Components
 import Calibly.Views
@@ -26,18 +27,28 @@ Window {
         id: navigation
 
         ListElement { title: qsTr("Bibliothek"); iconName: "library"; count: 0; view: "LibraryView" }
-        ListElement { title: qsTr("Weitermachen"); iconName: "clock"; count: 0; view: "PlaceholderView" }
+        ListElement { title: qsTr("Weitermachen"); iconName: "clock"; count: 0; view: "ContinueView" }
         ListElement { title: qsTr("Serien"); iconName: "layers"; count: 0; view: "PlaceholderView" }
         ListElement { title: qsTr("Autoren"); iconName: "user"; count: 0; view: "PlaceholderView" }
         ListElement { title: qsTr("Sprecher"); iconName: "mic"; count: 0; view: "PlaceholderView" }
     }
 
-    // The library entry shows the number of works.
+    // The library entry shows the number of works, "Weitermachen" the
+    // number of titles that were started and are not finished.
     function updateCounts() {
         navigation.setProperty(0, "count", LibraryController.works.count)
+        navigation.setProperty(1, "count", continueWorks.count)
     }
 
     Component.onCompleted: root.updateCounts()
+
+    ContinueModel {
+        id: continueWorks
+
+        sourceModel: LibraryController.works
+
+        onCountChanged: root.updateCounts()
+    }
 
     Connections {
         target: LibraryController.works
