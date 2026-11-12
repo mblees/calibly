@@ -15,6 +15,7 @@ qt_add_qml_module(calibly_views
         ContinueView.qml
         SeriesView.qml
         ReaderView.qml
+        SettingsView.qml
         ComponentGallery.qml
 )
 

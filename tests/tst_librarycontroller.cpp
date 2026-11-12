@@ -11,6 +11,7 @@
 
 #include "librarybackend.h"
 #include "librarycontroller.h"
+#include "librarylock.h"
 #include "playercontroller.h"
 
 namespace {
@@ -237,6 +238,98 @@ private slots:
 
         // Other works do not disturb the player.
         QVERIFY(!player.load(QStringLiteral("faust"))); // no audiobook
+    }
+
+    // Opening a library: a new one, an existing one, the errors, switching.
+    void openLibrary()
+    {
+        m_library.reset();
+        QTemporaryDir dir;
+        const QString first = dir.filePath(QStringLiteral("Erste"));
+        const QString second = dir.filePath(QStringLiteral("Zweite"));
+        LibraryController library(nullptr);
+        QCOMPARE(library.libraryRoot(), QString());
+        QVERIFY(!library.canImport());
+
+        // A library that is not there is not created unless asked for.
+        QSignalSpy changed(&library, &LibraryController::libraryChanged);
+        QCOMPARE(library.openLibrary(first, false), LibraryController::NotFound);
+        QCOMPARE(library.libraryError(), LibraryController::NotFound);
+        QCOMPARE(library.libraryPath(), QDir::cleanPath(first));
+        QVERIFY(!QFileInfo::exists(first));
+        QVERIFY(changed.count() > 0);
+
+        // A new one, then something in it.
+        QCOMPARE(library.openLibrary(first, true), LibraryController::NoError);
+        QCOMPARE(library.libraryError(), LibraryController::NoError);
+        QVERIFY(library.canImport());
+        Work work;
+        work.id = QStringLiteral("w1");
+        work.title = QStringLiteral("Dracula");
+        QVERIFY(library.saveWork(work));
+        QVERIFY(QFileInfo::exists(first + QStringLiteral("/calibly.lock")));
+
+        // Switching: the other library's works replace these; who uses a
+        // work is told first.
+        QSignalSpy aboutToChange(&library, &LibraryController::worksAboutToChange);
+        QCOMPARE(library.openLibrary(second, true), LibraryController::NoError);
+        QCOMPARE(aboutToChange.count(), 1);
+        QCOMPARE(library.works()->count(), 0);
+        QCOMPARE(library.libraryRoot(), QDir::cleanPath(second));
+        QVERIFY(!QFileInfo::exists(first + QStringLiteral("/calibly.lock"))); // the old one is free again
+
+        // A library that cannot be opened leaves the open one as it is.
+        QCOMPARE(library.openLibrary(dir.filePath(QStringLiteral("gibt-es-nicht")), false), LibraryController::NotFound);
+        QCOMPARE(library.libraryError(), LibraryController::NoError);
+        QCOMPARE(library.libraryRoot(), QDir::cleanPath(second));
+
+        // Back to the first one, with its work.
+        QCOMPARE(library.openLibraryUrl(QUrl::fromLocalFile(first), false), LibraryController::NoError);
+        QCOMPARE(library.works()->count(), 1);
+    }
+
+    // A library is used by one calibly at a time; a second start asks the
+    // first one to come to the front.
+    void libraryInUse()
+    {
+        m_library.reset();
+        QTemporaryDir dir;
+        const QString path = dir.filePath(QStringLiteral("Bibliothek"));
+        QVERIFY(QDir().mkpath(path));
+        LibraryLock other(path);
+        QCOMPARE(other.acquire(), LibraryLock::Acquired);
+
+        {
+            LibraryController library(nullptr);
+            QCOMPARE(library.openLibrary(path, true), LibraryController::InUse);
+            QCOMPARE(library.libraryError(), LibraryController::InUse);
+        }
+
+        QSignalSpy activation(&other, &LibraryLock::activationRequested);
+        QVERIFY(LibraryLock::activateOwner(path));
+        QVERIFY(activation.count() > 0 || activation.wait(2000));
+
+        // Still held while the first one runs.
+        LibraryLock second(path);
+        QCOMPARE(second.acquire(), LibraryLock::HeldElsewhere);
+    }
+
+    // The folder of an opened library is remembered for the next start.
+    void remembersLibrary()
+    {
+        m_library.reset();
+        QTemporaryDir dir;
+        QSettings().remove(QStringLiteral("library/path"));
+        {
+            LibraryController library(nullptr);
+            QCOMPARE(library.openLibrary(dir.path(), true), LibraryController::NoError);
+            QVERIFY(!QSettings().contains(QStringLiteral("library/path"))); // off by default
+        }
+        LibraryController library(nullptr);
+        library.setRememberLibrary(true);
+        QCOMPARE(library.openLibrary(dir.path(), true), LibraryController::NoError);
+        QCOMPARE(QSettings().value(QStringLiteral("library/path")).toString(), QDir::cleanPath(dir.path()));
+        QSettings().remove(QStringLiteral("library/path"));
     }
 
 private:

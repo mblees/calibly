@@ -1,0 +1,104 @@
+calibly @CALIBLY_VERSION@ – Third-party software
+==================================================
+
+calibly itself is proprietary software (see LICENSE.txt). It uses the
+open-source software listed below. The full license texts are in the folder
+"licenses" next to calibly.exe, or further down in this file.
+
+Source code
+-----------
+The libraries under the GNU LGPL (Qt and FFmpeg) are separate DLL files in
+the program folder; you may replace them with your own compatible builds.
+Their source code is available from the links below. In addition, for at
+least three years after each calibly release, the author will provide the
+exact source code of these libraries in the version shipped with that
+release on request (open an issue at
+https://github.com/mblees/calibly/issues).
+
+
+1. Qt 6.12.0
+------------
+The Qt Toolkit. Copyright (C) The Qt Company Ltd. and other contributors.
+License: GNU Lesser General Public License version 3 (licenses/LGPL-3.0.txt,
+which refers to licenses/GPL-3.0.txt).
+Source: https://download.qt.io/official_releases/qt/6.12/6.12.0/
+        https://code.qt.io
+Parts of Qt in calibly (libraries and plugins):
+@QT_MODULES@.
+Components that Qt has built into these parts are listed in section 7.
+
+
+2. FFmpeg
+---------
+Plays the audiobooks, used through Qt Multimedia
+(avcodec, avformat, avutil, swresample, swscale DLLs).
+Copyright (c) 2000-2023 the FFmpeg developers.
+License: GNU Lesser General Public License version 2.1 or later
+(licenses/LGPL-2.1.txt); details in section 7 ("FFmpeg").
+Source: https://ffmpeg.org/releases/ (the version is given in section 7)
+
+
+3. TagLib 2.3.2
+---------------
+Reads tags, chapters and covers of audio files. Linked into calibly.exe
+without changes.
+Copyright (C) Scott Wheeler and the TagLib authors
+(https://github.com/taglib/taglib/blob/v2.3.2/AUTHORS).
+License: TagLib is available under the GNU LGPL 2.1 or the Mozilla Public
+License 1.1; calibly uses it under the Mozilla Public License 1.1
+(licenses/MPL-1.1.txt).
+Source: https://github.com/taglib/taglib/releases/tag/v2.3.2
+
+
+4. UTF8-CPP 4.2.0 (part of TagLib)
+----------------------------------
+Copyright 2006 Nemanja Trifunovic.
+License: Boost Software License 1.0 (licenses/BSL-1.0.txt).
+Source: https://github.com/nemtrif/utfcpp
+
+
+5. MinGW-w64 and GCC runtime libraries
+--------------------------------------
+libgcc_s_seh-1.dll and libstdc++-6.dll: Copyright (C) Free Software
+Foundation, Inc. License: GNU General Public License version 3 with the GCC
+Runtime Library Exception 3.1 (licenses/GPL-3.0.txt,
+licenses/GCC-exception-3.1.txt).
+libwinpthread-1.dll: Copyright (c) 2011 mingw-w64 project. License: MIT-style
+(licenses/winpthreads.txt).
+MinGW-w64 runtime (linked into calibly.exe): licenses/mingw-w64-runtime.txt.
+Source: https://gcc.gnu.org, https://www.mingw-w64.org
+
+
+6. Feather Icons
+----------------
+Icon shapes of the user interface. https://feathericons.com
+
+The MIT License (MIT)
+
+Copyright (c) 2013-2017 Cole Bemis
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+7. Components built into Qt
+---------------------------
+Taken from Qt's software bill of materials for the parts of Qt listed in
+section 1, with the license texts from Qt's documentation.
+
+@QT_COMPONENTS@

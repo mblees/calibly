@@ -53,3 +53,11 @@ add_test(NAME tst_reader COMMAND tst_reader)
 qt_add_executable(tst_readercontroller tst_readercontroller.cpp)
 target_link_libraries(tst_readercontroller PRIVATE Qt6::Test Qt6::CorePrivate calibly_models calibly_controllers)
 add_test(NAME tst_readercontroller COMMAND tst_readercontroller)
+
+qt_add_executable(tst_logfile tst_logfile.cpp)
+target_link_libraries(tst_logfile PRIVATE Qt6::Test calibly_core)
+add_test(NAME tst_logfile COMMAND tst_logfile)
+
+qt_add_executable(tst_appsettings tst_appsettings.cpp)
+target_link_libraries(tst_appsettings PRIVATE Qt6::Test calibly_controllers)
+add_test(NAME tst_appsettings COMMAND tst_appsettings)

@@ -388,6 +388,7 @@ Five layouts were compared (one page in fullscreen, two-page spread, continuous 
 *Deviations:* PDFs are drawn with `QPdfDocument::render()` in C++ (the same `BookPage` as EPUBs) instead of the page view of `QtQuick.Pdf` – one drawing path, the same click zones and two-page logic, and no QML module that has to be deployed; links inside PDFs are not followed. The page and percent stand in the bar below the page in both modes (the mockup has them in the top bar in the window), so the slider is always next to them. The text settings show no "Scrollansicht" switch (scrolling is not part of phase 10).
 
 ### Afterwards (separate plans)
+- The way to a public release (0.1 Beta, then 1.0): [Release Plan](Release-Plan.md).
 - Further ebook formats, if not covered by 10.4 (e.g. MOBI / AZW3), and search in the book.
 - The views "Autoren" and "Sprecher" of the sidebar (still placeholders).
 - Light theme, Linux build, adaptation for Android and iOS.

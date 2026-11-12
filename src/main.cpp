@@ -8,16 +8,29 @@
 
 #include "importcontroller.h"
 #include "languagemanager.h"
+#include "appinfo.h"
 #include "librarycontroller.h"
+#include "librarylock.h"
+#include "logfile.h"
 #include "mockbackend.h"
 #include "playercontroller.h"
 #include "readercontroller.h"
 #include "readersettings.h"
 #include "sqlitebackend.h"
+#include "updatechecker.h"
 
 #include <QFileInfo>
 #include <QSettings>
 #include <memory>
+
+// Development options (--mock, --gallery, --screenshot, --size) and the
+// sample library exist only in builds with CALIBLY_DEV_TOOLS (CMake option,
+// off in the release preset).
+#ifdef CALIBLY_DEV_TOOLS
+constexpr bool kDevTools = true;
+#else
+constexpr bool kDevTools = false;
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -25,6 +38,9 @@ int main(int argc, char *argv[])
     QGuiApplication::setOrganizationName(QStringLiteral("calibly"));
     QGuiApplication::setApplicationName(QStringLiteral("calibly"));
     QGuiApplication::setApplicationVersion(QStringLiteral(CALIBLY_VERSION));
+    // Messages also go to %LOCALAPPDATA%\calibly\logs, for bug reports.
+    LogFile::install();
+    qInfo("calibly %s started", CALIBLY_VERSION);
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("One library for ebooks and audiobooks."));
@@ -56,43 +72,32 @@ int main(int argc, char *argv[])
         QStringLiteral("folder"));
     const QCommandLineOption importOption(
         QStringLiteral("import"),
-        QStringLiteral("Import this file or folder into the library after start; can be given several times (development)."),
+        QStringLiteral("Import this file or folder into the library after start; can be given several times."),
         QStringLiteral("path"));
     parser.addOption(libraryOption);
     parser.addOption(importOption);
-    parser.addOption(mockOption);
-    parser.addOption(galleryOption);
-    parser.addOption(screenshotOption);
     parser.addOption(languageOption);
-    parser.addOption(sizeOption);
+    if (kDevTools) {
+        parser.addOption(mockOption);
+        parser.addOption(galleryOption);
+        parser.addOption(screenshotOption);
+        parser.addOption(sizeOption);
+    }
     parser.process(app);
+    // Not defined without the development tools: isSet() would warn.
+    const auto devOptionSet = [&parser](const QCommandLineOption &option) {
+        return kDevTools && parser.isSet(option);
+    };
 
     // Our controls are built on QtQuick.Templates. "Basic" keeps the few
     // standard controls we use (e.g. ScrollBar) identical on every platform.
     QQuickStyle::setStyle(QStringLiteral("Basic"));
 
-    // The real library (SQLite in the library folder), or sample data with --mock.
-    // Created before the engine, so it outlives everything that uses it.
-    std::unique_ptr<LibraryBackend> backend;
-    if (parser.isSet(mockOption)) {
-        backend = std::make_unique<MockBackend>(parser.value(mockOption));
-    } else {
-        QSettings settings;
-        const QString root = parser.isSet(libraryOption)
-                                 ? parser.value(libraryOption)
-                                 : settings.value(QStringLiteral("library/path"), SqliteBackend::defaultLibraryRoot()).toString();
-        auto library = std::make_unique<SqliteBackend>(root);
-        QString error;
-        if (library->open(&error)) {
-            if (!parser.isSet(libraryOption))
-                settings.setValue(QStringLiteral("library/path"), root);
-            backend = std::move(library);
-        } else {
-            qWarning("Cannot open the library in %s: %s. Showing sample data instead.",
-                     qPrintable(root), qPrintable(error));
-            backend = std::make_unique<MockBackend>();
-        }
-    }
+    // Sample data with --mock. Created before the engine, so it outlives
+    // everything that uses it.
+    std::unique_ptr<LibraryBackend> mockBackend;
+    if (devOptionSet(mockOption))
+        mockBackend = std::make_unique<MockBackend>(parser.value(mockOption));
 
     QQmlApplicationEngine engine;
 
@@ -102,15 +107,38 @@ int main(int argc, char *argv[])
     // already translated.
     auto *languageManager = new LanguageManager(&engine, &engine);
     languageManager->start(parser.value(languageOption));
-    auto *libraryController = new LibraryController(*backend, &engine, &engine);
+    auto *libraryController = mockBackend ? new LibraryController(*mockBackend, &engine, &engine)
+                                          : new LibraryController(&engine, &engine);
+    if (!mockBackend) {
+        // The real library: the one given with --library, the last used one,
+        // or a new one in Documents. A library that was used before is not
+        // created again if it is gone; the window then says what happened.
+        QSettings settings;
+        const bool given = parser.isSet(libraryOption);
+        const bool known = settings.contains(QStringLiteral("library/path"));
+        const QString root = given ? parser.value(libraryOption)
+                                   : settings.value(QStringLiteral("library/path"), SqliteBackend::defaultLibraryRoot()).toString();
+        libraryController->setRememberLibrary(!given);
+        if (libraryController->openLibrary(root, given || !known) == LibraryController::InUse) {
+            // calibly already runs with this library: show that window instead.
+            if (LibraryLock::activateOwner(root))
+                return EXIT_SUCCESS;
+        }
+    }
     auto *importController = new ImportController(*libraryController, &engine, &engine);
     // Created after the library: it loads the last audiobook from it.
     new PlayerController(*libraryController, &engine, &engine);
     auto *readerSettings = new ReaderSettings(&engine, &engine);
     new ReaderController(*libraryController, *readerSettings, &engine, &engine);
+    new AppInfo(&engine, &engine);
+    // Looks for a newer version once a day (not with sample data, which is
+    // only used during development).
+    auto *updateChecker = new UpdateChecker(QStringLiteral(CALIBLY_VERSION), &engine, &engine);
+    if (!mockBackend)
+        QTimer::singleShot(3000, updateChecker, &UpdateChecker::checkIfDue);
 
     engine.setInitialProperties({
-        { QStringLiteral("galleryMode"), parser.isSet(galleryOption) },
+        { QStringLiteral("galleryMode"), devOptionSet(galleryOption) },
     });
 
     QObject::connect(
@@ -130,13 +158,13 @@ int main(int argc, char *argv[])
         importController->importFiles(urls);
     }
 
-    if (parser.isSet(sizeOption)) {
+    if (devOptionSet(sizeOption)) {
         const QStringList parts = parser.value(sizeOption).split(u'x');
         if (parts.size() == 2)
             window->resize(parts.at(0).toInt(), parts.at(1).toInt());
     }
 
-    if (parser.isSet(screenshotOption)) {
+    if (devOptionSet(screenshotOption)) {
         const QString file = parser.value(screenshotOption);
         // Give the scene a moment to render its first frames.
         QTimer::singleShot(1500, window, [window, file] {

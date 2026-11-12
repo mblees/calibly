@@ -126,6 +126,7 @@
     </message>
     <message>
         <location filename="../qml/Views/ComponentGallery.qml" line="241"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1288"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
@@ -553,43 +554,63 @@
     </message>
     <message>
         <location filename="../qml/Views/ComponentGallery.qml" line="1158"/>
+        <source>Bibliothek nicht verfügbar</source>
+        <translation>Library not available</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1190"/>
+        <source>Statt der Bibliothek: nicht gefunden, nicht anlegbar, beschädigt, neuere Version, Umstellung fehlgeschlagen, schon geöffnet</source>
+        <translation>Instead of the library: not found, cannot be created, damaged, newer version, update failed, already open</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1195"/>
+        <source>Neue Version</source>
+        <translation>New version</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1202"/>
+        <source>Hinweis auf eine neue Version (unten links über der Bibliothek)</source>
+        <translation>Hint about a new version (bottom left over the library)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1207"/>
         <source>Import (Drag &amp; Drop)</source>
         <translation>Import (drag &amp; drop)</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1168"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1217"/>
         <source>Hinweis beim Ziehen: über freier Fläche</source>
         <translation>Hint while dragging: over free space</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1175"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1224"/>
         <source>Hinweis beim Ziehen: über einem Cover</source>
         <translation>Hint while dragging: over a cover</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1200"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1249"/>
         <source>Import-Warteschlange: fertig, ergänzt, läuft, prüfen, liest, wartet, übersprungen, Fehler</source>
         <translation>Import queue: done, added, running, review, reading, waiting, skipped, error</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1209"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1258"/>
         <source>Spinner</source>
         <translation>Spinner</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1216"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1265"/>
         <source>Seitenleiste</source>
         <translation>Sidebar</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1232"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1281"/>
         <source>Bibliothek</source>
         <translation>Library</translation>
     </message>
     <message>
         <location filename="../qml/Views/ComponentGallery.qml" line="909"/>
         <location filename="../qml/Views/ComponentGallery.qml" line="1023"/>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1233"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1282"/>
         <source>Weitermachen</source>
         <translation>Continue</translation>
     </message>
@@ -644,17 +665,17 @@
         <translation>View of a PDF: zoom</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1234"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1283"/>
         <source>Serien</source>
         <translation>Series</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1235"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1284"/>
         <source>Autoren</source>
         <translation>Authors</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1236"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1285"/>
         <source>Sprecher</source>
         <translation>Narrators</translation>
     </message>
@@ -1157,6 +1178,84 @@
     </message>
 </context>
 <context>
+    <name>LibraryProblem</name>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="44"/>
+        <source>Die Bibliothek kann nicht angelegt werden</source>
+        <translation>The library cannot be created</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="46"/>
+        <source>Die Bibliothek ist beschädigt</source>
+        <translation>The library is damaged</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="48"/>
+        <source>Die Bibliothek ist für eine neuere calibly-Version</source>
+        <translation>The library is for a newer version of calibly</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="50"/>
+        <source>Die Bibliothek kann nicht aktualisiert werden</source>
+        <translation>The library cannot be updated</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="52"/>
+        <source>Die Bibliothek ist schon geöffnet</source>
+        <translation>The library is already open</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="54"/>
+        <source>Die Bibliothek wurde nicht gefunden</source>
+        <translation>The library was not found</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="60"/>
+        <source>Der Ordner kann nicht angelegt oder beschrieben werden. Ist das Laufwerk schreibgeschützt?</source>
+        <translation>The folder cannot be created or written to. Is the drive write-protected?</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="62"/>
+        <source>Die Datenbank calibly.db in diesem Ordner lässt sich nicht lesen. calibly verändert sie nicht. Sicherungen früherer Versionen liegen, falls vorhanden, als „calibly.db.v….bak“ im selben Ordner.</source>
+        <translation>The database calibly.db in this folder cannot be read. calibly does not change it. Backups of earlier versions, if there are any, are in the same folder as “calibly.db.v….bak”.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="64"/>
+        <source>Sie wurde mit einer neueren Version von calibly bearbeitet. Bitte installiere die neueste Version.</source>
+        <translation>It was edited with a newer version of calibly. Please install the latest version.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="66"/>
+        <source>Diese Version von calibly muss die Bibliothek umstellen, das ist fehlgeschlagen. Die Bibliothek ist unverändert.</source>
+        <translation>This version of calibly has to update the library, and that failed. The library is unchanged.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="68"/>
+        <source>Ein anderes calibly-Fenster arbeitet gerade mit dieser Bibliothek. Schließe es, um sie hier zu öffnen.</source>
+        <translation>Another calibly window is working with this library. Close it to open the library here.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="70"/>
+        <source>In diesem Ordner liegt keine calibly-Bibliothek (mehr). Liegt sie auf einem Laufwerk, das gerade nicht angeschlossen ist?</source>
+        <translation>There is no calibly library in this folder (any more). Is it on a drive that is not connected right now?</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="125"/>
+        <source>Erneut versuchen</source>
+        <translation>Try again</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="130"/>
+        <source>Andere Bibliothek öffnen …</source>
+        <translation>Open another library …</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/LibraryProblem.qml" line="135"/>
+        <source>Neue Bibliothek anlegen …</source>
+        <translation>Create a new library …</translation>
+    </message>
+</context>
+<context>
     <name>LibraryView</name>
     <message>
         <location filename="../qml/Views/LibraryView.qml" line="203"/>
@@ -1414,17 +1513,24 @@
         <translation>Reset filters</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="690"/>
+        <location filename="../qml/Views/LibraryView.qml" line="674"/>
+        <source>Oder Dateien und ganze Ordner in dieses Fenster ziehen. Sie werden in die Bibliothek kopiert:
+%1</source>
+        <translation>Or drag files and whole folders into this window. They are copied into the library:
+%1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/LibraryView.qml" line="702"/>
         <source>Als Hörbuch zu „%1“ hinzufügen</source>
         <translation>Add as audiobook to “%1”</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="692"/>
+        <location filename="../qml/Views/LibraryView.qml" line="704"/>
         <source>Als E-Book zu „%1“ hinzufügen</source>
         <translation>Add as ebook to “%1”</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="693"/>
+        <location filename="../qml/Views/LibraryView.qml" line="705"/>
         <source>Zu „%1“ hinzufügen</source>
         <translation>Add to “%1”</translation>
     </message>
@@ -1432,34 +1538,39 @@
 <context>
     <name>Main</name>
     <message>
-        <location filename="../qml/Main.qml" line="21"/>
+        <location filename="../qml/Main.qml" line="22"/>
         <source>calibly – Komponenten-Galerie</source>
         <translation>calibly – Component Gallery</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="29"/>
+        <location filename="../qml/Main.qml" line="30"/>
         <source>Bibliothek</source>
         <translation>Library</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="30"/>
+        <location filename="../qml/Main.qml" line="31"/>
         <source>Weitermachen</source>
         <translation>Continue</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="31"/>
+        <location filename="../qml/Main.qml" line="32"/>
         <source>Serien</source>
         <translation>Series</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="32"/>
-        <source>Autoren</source>
-        <translation>Authors</translation>
+        <location filename="../qml/Main.qml" line="41"/>
+        <source>Einstellungen</source>
+        <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="33"/>
-        <source>Sprecher</source>
-        <translation>Narrators</translation>
+        <location filename="../qml/Main.qml" line="234"/>
+        <source>Ordner für die neue Bibliothek</source>
+        <translation>Folder for the new library</translation>
+    </message>
+    <message>
+        <location filename="../qml/Main.qml" line="234"/>
+        <source>Bibliothek öffnen</source>
+        <translation>Open library</translation>
     </message>
 </context>
 <context>
@@ -2006,6 +2117,174 @@
     </message>
 </context>
 <context>
+    <name>SettingsView</name>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="22"/>
+        <source>In diesem Ordner liegt keine calibly-Bibliothek. Mit „Neue Bibliothek anlegen …“ entsteht dort eine.</source>
+        <translation>There is no calibly library in this folder. “Create a new library …” makes one there.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="24"/>
+        <source>Der Ordner kann nicht angelegt oder beschrieben werden.</source>
+        <translation>The folder cannot be created or written to.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="26"/>
+        <source>Die Bibliothek in diesem Ordner ist beschädigt.</source>
+        <translation>The library in this folder is damaged.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="28"/>
+        <source>Die Bibliothek in diesem Ordner ist für eine neuere calibly-Version.</source>
+        <translation>The library in this folder is for a newer version of calibly.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="30"/>
+        <source>Die Bibliothek in diesem Ordner kann nicht umgestellt werden.</source>
+        <translation>The library in this folder cannot be updated.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="32"/>
+        <source>Ein anderes calibly-Fenster arbeitet gerade mit dieser Bibliothek.</source>
+        <translation>Another calibly window is working with this library.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="74"/>
+        <source>Ordner für die neue Bibliothek</source>
+        <translation>Folder for the new library</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="74"/>
+        <source>Bibliothek öffnen</source>
+        <translation>Open library</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="106"/>
+        <source>Bibliothek</source>
+        <translation>Library</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="112"/>
+        <source>Beispieldaten (keine Bibliothek)</source>
+        <translation>Sample data (no library)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="123"/>
+        <source>Im Explorer öffnen</source>
+        <translation>Show in Explorer</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="127"/>
+        <source>Andere Bibliothek öffnen …</source>
+        <translation>Open another library …</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="135"/>
+        <source>Neue Bibliothek anlegen …</source>
+        <translation>Create a new library …</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="151"/>
+        <source>Die Bibliothek ist ein Ordner mit den Dateien und der Datenbank calibly.db. Eine andere zu öffnen verschiebt keine Dateien; die bisherige bleibt, wo sie ist, und lässt sich jederzeit wieder öffnen.</source>
+        <translation>The library is a folder with the files and the database calibly.db. Opening another one moves no files; the current one stays where it is and can be opened again at any time.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="157"/>
+        <source>Sprache</source>
+        <translation>Language</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="161"/>
+        <source>Wie das System</source>
+        <translation>Like the system</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="181"/>
+        <source>Neue Versionen</source>
+        <translation>New versions</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="190"/>
+        <source>Beim Start nach neuen Versionen suchen</source>
+        <translation>Look for new versions at start</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="207"/>
+        <source>Jetzt suchen</source>
+        <translation>Check now</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="219"/>
+        <source>Suche …</source>
+        <translation>Checking …</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="221"/>
+        <source>calibly %1 ist aktuell.</source>
+        <translation>calibly %1 is up to date.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="223"/>
+        <source>calibly %1 ist verfügbar.</source>
+        <translation>calibly %1 is available.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="225"/>
+        <source>Die Suche hat nicht geklappt. Besteht eine Internetverbindung?</source>
+        <translation>The check did not work. Is there an internet connection?</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="228"/>
+        <source>Zuletzt gesucht: %1</source>
+        <translation>Last checked: %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="238"/>
+        <source>Herunterladen</source>
+        <translation>Download</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="244"/>
+        <source>calibly fragt dazu bei GitHub nach der neuesten Version, höchstens einmal am Tag. Dabei werden keine persönlichen Daten gesendet. Neue Versionen werden nicht von selbst installiert.</source>
+        <translation>calibly asks GitHub for the latest version, at most once a day. No personal data is sent. New versions are never installed by themselves.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="250"/>
+        <source>Über calibly</source>
+        <translation>About calibly</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="253"/>
+        <source>calibly %1</source>
+        <translation>calibly %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="258"/>
+        <source>Eine Bibliothek für E-Books und Hörbücher. calibly verwendet Open-Source-Software, unter anderem Qt, FFmpeg und TagLib; die Hinweise dazu nennen alle mit ihren Lizenzen.</source>
+        <translation>One library for ebooks and audiobooks. calibly uses open-source software, among it Qt, FFmpeg and TagLib; the notices list all of it with its licenses.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="267"/>
+        <source>Lizenzbedingungen</source>
+        <translation>License terms</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="274"/>
+        <source>Hinweise zu Software Dritter</source>
+        <translation>Third-party notices</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="281"/>
+        <source>Log-Dateien (für Fehlerberichte)</source>
+        <translation>Log files (for bug reports)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="287"/>
+        <source>Download-Seite</source>
+        <translation>Download page</translation>
+    </message>
+</context>
+<context>
     <name>TableOfContents</name>
     <message>
         <location filename="../qml/Components/TableOfContents.qml" line="39"/>
@@ -2164,7 +2443,7 @@
     <message>
         <location filename="../qml/Components/TextSettings.qml" line="484"/>
         <source>Original (Schrift des Buchs)</source>
-        <translation>Original (the book's font)</translation>
+        <translation>Original (the book&apos;s font)</translation>
     </message>
     <message>
         <location filename="../qml/Components/TextSettings.qml" line="494"/>
@@ -2221,6 +2500,29 @@
         <location filename="../qml/Components/TextSettings.qml" line="575"/>
         <source>Zurücksetzen</source>
         <translation>Reset</translation>
+    </message>
+</context>
+<context>
+    <name>UpdateHint</name>
+    <message>
+        <location filename="../qml/Components/UpdateHint.qml" line="53"/>
+        <source>calibly %1 ist verfügbar</source>
+        <translation>calibly %1 is available</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/UpdateHint.qml" line="61"/>
+        <source>Die neue Version wird über die alte installiert; die Bibliothek bleibt erhalten.</source>
+        <translation>The new version is installed over the old one; the library stays as it is.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/UpdateHint.qml" line="70"/>
+        <source>Herunterladen</source>
+        <translation>Download</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/UpdateHint.qml" line="75"/>
+        <source>Ignorieren</source>
+        <translation>Ignore</translation>
     </message>
 </context>
 <context>

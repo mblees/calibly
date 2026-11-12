@@ -205,6 +205,9 @@ private slots:
         QCOMPARE(metadata.pages, 2);
         QVERIFY(!metadata.cover.isNull());
         QVERIFY(metadata.cover.height() > metadata.cover.width()); // portrait page
+        // Outside the red area the page has no background of its own: white.
+        QCOMPARE(metadata.cover.pixelColor(metadata.cover.width() - 2, metadata.cover.height() - 2),
+                 QColor(Qt::white));
         QCOMPARE(metadata.seriesIndex, 7);                        // from the file name
     }
 
@@ -806,6 +809,111 @@ private slots:
         QVERIFY(backend.saveWork(works.first()));
         QCOMPARE(backend.loadWorks().first().formats.at(0).readingPosition,
                  QStringLiteral("{\"chapter\":2,\"offset\":140}"));
+
+        // The library was copied before the update, as it was.
+        const QStringList backups = QDir(root).entryList({ QStringLiteral("calibly.db.v4-*.bak") }, QDir::Files);
+        QCOMPARE(backups.size(), 1);
+        QSqlDatabase old = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), QStringLiteral("backup"));
+        old.setDatabaseName(QDir(root).filePath(backups.first()));
+        QVERIFY(old.open());
+        {
+            QSqlQuery query(old);
+            QVERIFY(query.exec(QStringLiteral("PRAGMA user_version")) && query.next());
+            QCOMPARE(query.value(0).toInt(), 4);
+        }
+        old.close();
+        old = QSqlDatabase();
+        QSqlDatabase::removeDatabase(QStringLiteral("backup"));
+    }
+
+    // Only the newest three backups are kept.
+    void sqliteKeepsThreeBackups()
+    {
+        QTemporaryDir dir;
+        const QString root = dir.path();
+        {
+            SqliteBackend backend(root);
+            QVERIFY(backend.open());
+        }
+        for (int i = 0; i < 4; ++i) {
+            const QString old = QStringLiteral("calibly.db.v3-2026010%1-120000.bak").arg(i + 1);
+            QVERIFY(QFile::copy(SqliteBackend::databasePath(root), QDir(root).filePath(old)));
+            QFile file(QDir(root).filePath(old));
+            QVERIFY(file.open(QIODevice::ReadWrite));
+            file.setFileTime(QDateTime(QDate(2026, 1, i + 1), QTime(12, 0)), QFileDevice::FileModificationTime);
+        }
+        {
+            QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), QStringLiteral("v4b"));
+            db.setDatabaseName(SqliteBackend::databasePath(root));
+            QVERIFY(db.open());
+            QSqlQuery query(db);
+            QVERIFY(query.exec(QStringLiteral("ALTER TABLE formats DROP COLUMN reading_position")));
+            QVERIFY(query.exec(QStringLiteral("PRAGMA user_version = 4")));
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(QStringLiteral("v4b"));
+        SqliteBackend backend(root);
+        QVERIFY(backend.open());
+        const QStringList backups = QDir(root).entryList({ QStringLiteral("calibly.db.v*.bak") }, QDir::Files, QDir::Time);
+        QCOMPARE(backups.size(), 3);
+        QVERIFY(backups.first().startsWith(QLatin1String("calibly.db.v4-"))); // the new one
+        QVERIFY(backups.contains(QStringLiteral("calibly.db.v3-20260104-120000.bak")));
+        QVERIFY(!backups.contains(QStringLiteral("calibly.db.v3-20260101-120000.bak")));
+    }
+
+    // A missing, damaged or newer library is reported and left as it is.
+    void sqliteOpenErrors()
+    {
+        QTemporaryDir dir;
+
+        // Missing: only created when asked for.
+        const QString missing = dir.filePath(QStringLiteral("gone"));
+        {
+            SqliteBackend backend(missing);
+            QVERIFY(!backend.open(nullptr, false));
+            QCOMPARE(backend.openError(), SqliteBackend::OpenError::NotFound);
+            QVERIFY(!QFileInfo::exists(missing));
+        }
+
+        // Damaged: not a database; the file stays unchanged.
+        const QString damaged = dir.filePath(QStringLiteral("damaged"));
+        QVERIFY(QDir().mkpath(damaged));
+        const QByteArray garbage(4096, 'x');
+        {
+            QFile file(SqliteBackend::databasePath(damaged));
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            file.write(garbage);
+        }
+        {
+            SqliteBackend backend(damaged);
+            QString error;
+            QVERIFY(!backend.open(&error));
+            QCOMPARE(backend.openError(), SqliteBackend::OpenError::Damaged);
+            QVERIFY(!error.isEmpty());
+        }
+        QFile file(SqliteBackend::databasePath(damaged));
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        QCOMPARE(file.readAll(), garbage);
+        file.close();
+
+        // Newer: written by a later calibly.
+        const QString newer = dir.filePath(QStringLiteral("newer"));
+        {
+            SqliteBackend backend(newer);
+            QVERIFY(backend.open());
+        }
+        {
+            QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), QStringLiteral("newer"));
+            db.setDatabaseName(SqliteBackend::databasePath(newer));
+            QVERIFY(db.open());
+            QSqlQuery query(db);
+            QVERIFY(query.exec(QStringLiteral("PRAGMA user_version = 99")));
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(QStringLiteral("newer"));
+        SqliteBackend backend(newer);
+        QVERIFY(!backend.open());
+        QCOMPARE(backend.openError(), SqliteBackend::OpenError::NewerVersion);
     }
 
     // A library of phase 4 (schema 1, publisher per work) is updated on open.

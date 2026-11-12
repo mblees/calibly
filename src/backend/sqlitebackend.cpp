@@ -1,6 +1,8 @@
 #include "sqlitebackend.h"
 
+#include <QDateTime>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QHash>
 #include <QJsonArray>
@@ -92,31 +94,58 @@ QString SqliteBackend::defaultLibraryRoot()
         .filePath(QStringLiteral("calibly-Bibliothek"));
 }
 
-bool SqliteBackend::open(QString *error)
+QString SqliteBackend::databasePath(const QString &libraryRoot)
 {
-    if (!QDir().mkpath(m_root)) {
-        if (error)
-            *error = QStringLiteral("cannot create library folder %1").arg(m_root);
-        return false;
-    }
+    return QDir(libraryRoot).filePath(QStringLiteral("calibly.db"));
+}
 
-    QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), m_connectionName);
-    db.setDatabaseName(QDir(m_root).filePath(QStringLiteral("calibly.db")));
-    if (!db.open()) {
-        if (error)
-            *error = db.lastError().text();
-        return false;
-    }
+bool SqliteBackend::fail(OpenError kind, const QString &text, QString *error)
+{
+    m_openError = kind;
+    if (error)
+        *error = text;
+    qWarning("SqliteBackend: %s: %s", qPrintable(m_root), qPrintable(text));
+    return false;
+}
 
+bool SqliteBackend::open(QString *error, bool create)
+{
+    m_openError = OpenError::None;
+    const QString path = databasePath(m_root);
+    const bool exists = QFileInfo::exists(path);
+    // A library that was there before and is gone (e.g. on a drive that is
+    // not connected) is not silently replaced by a new, empty one.
+    if (!exists && !create)
+        return fail(OpenError::NotFound, QStringLiteral("no library at %1").arg(path), error);
+    if (!exists && !QDir().mkpath(m_root))
+        return fail(OpenError::CannotCreate, QStringLiteral("cannot create library folder"), error);
+
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), m_connectionName);
+        db.setDatabaseName(path);
+        if (!db.open()) {
+            return fail(exists ? OpenError::Damaged : OpenError::CannotCreate, db.lastError().text(), error);
+        }
+    }
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
     QSqlQuery query(db);
-    query.exec(QStringLiteral("PRAGMA foreign_keys = ON"));
-    query.exec(QStringLiteral("PRAGMA user_version"));
-    const int version = query.next() ? query.value(0).toInt() : 0;
-    if (version > kSchemaVersion) {
-        if (error)
-            *error = QStringLiteral("library was created by a newer calibly version");
-        return false;
+
+    // A damaged file (or one that is no SQLite database) is reported and
+    // left as it is.
+    if (exists) {
+        if (!query.exec(QStringLiteral("PRAGMA quick_check")) || !query.next()
+            || query.value(0).toString() != QLatin1String("ok")) {
+            const QString text = query.lastError().isValid() ? query.lastError().text() : query.value(0).toString();
+            return fail(OpenError::Damaged, QStringLiteral("damaged database: %1").arg(text), error);
+        }
     }
+    query.exec(QStringLiteral("PRAGMA foreign_keys = ON"));
+    if (!query.exec(QStringLiteral("PRAGMA user_version")) || !query.next())
+        return fail(OpenError::Damaged, query.lastError().text(), error);
+    const int version = query.value(0).toInt();
+    query.finish();
+    if (version > kSchemaVersion)
+        return fail(OpenError::NewerVersion, QStringLiteral("library was created by a newer calibly version"), error);
     // Each step brings the database from one version to the next; a new
     // database runs through all of them.
     QStringList statements;
@@ -162,16 +191,38 @@ bool SqliteBackend::open(QString *error)
     if (statements.isEmpty())
         return true;
 
+    // An existing library is copied before its schema changes.
+    if (exists && version >= 1 && !backUp(version))
+        return fail(OpenError::CannotUpdate, QStringLiteral("cannot write the backup before the update"), error);
+
     statements.append(QStringLiteral("PRAGMA user_version = %1").arg(kSchemaVersion));
     db.transaction();
     for (const QString &statement : std::as_const(statements)) {
         query.prepare(statement);
-        if (!exec(query, error)) {
+        QString text;
+        if (!exec(query, &text)) {
             db.rollback();
-            return false;
+            return fail(exists ? OpenError::CannotUpdate : OpenError::CannotCreate, text, error);
         }
     }
-    return db.commit();
+    if (!db.commit())
+        return fail(OpenError::CannotUpdate, db.lastError().text(), error);
+    return true;
+}
+
+bool SqliteBackend::backUp(int version)
+{
+    const QDir dir(m_root);
+    const QString name = QStringLiteral("calibly.db.v%1-%2.bak")
+                             .arg(version)
+                             .arg(QDateTime::currentDateTime().toString(QStringLiteral("yyyyMMdd-HHmmss")));
+    if (!QFile::copy(databasePath(m_root), dir.filePath(name)))
+        return false;
+    // The newest ones are kept.
+    const QStringList backups = dir.entryList({ QStringLiteral("calibly.db.v*.bak") }, QDir::Files, QDir::Time);
+    for (qsizetype i = kKeptBackups; i < backups.size(); ++i)
+        QFile::remove(dir.filePath(backups.at(i)));
+    return true;
 }
 
 // [{ "title": …, "file": relative path or absent, "start": ms, "duration": ms }]

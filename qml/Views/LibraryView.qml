@@ -665,6 +665,18 @@ ViewBase {
             variant: AppButton.Primary
             onClicked: importDialog.open()
         }
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: Math.min(implicitWidth, grid.width - 2 * Theme.spacingXl)
+            visible: root.total === 0 && LibraryController.canImport
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.Wrap
+            text: qsTr("Oder Dateien und ganze Ordner in dieses Fenster ziehen. Sie werden in die Bibliothek kopiert:\n%1")
+                      .arg(LibraryController.libraryRoot)
+            color: Theme.textMuted
+            font.pixelSize: Theme.fontSmall
+            lineHeight: Theme.lineHeightText
+        }
     }
 
     // --- drag & drop (view D) -------------------------------------------------

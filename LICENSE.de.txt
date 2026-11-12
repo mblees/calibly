@@ -1,0 +1,56 @@
+﻿calibly – Lizenzbedingungen
+===========================
+
+Copyright (C) 2026 mblees. Alle Rechte vorbehalten.
+
+Diese Bedingungen gelten für die Programmdatei calibly.exe, den Installer und
+die zugehörigen Dateien ("calibly"), soweit sie nicht von Dritten stammen.
+Mit der Installation oder Nutzung von calibly erklären Sie sich mit ihnen
+einverstanden.
+
+1. Nutzungsrecht
+   Sie dürfen calibly kostenlos auf beliebig vielen eigenen Geräten
+   installieren und für eigene Zwecke nutzen. Dieses Recht ist einfach
+   (nicht ausschließlich) und nicht übertragbar.
+
+2. Was nicht erlaubt ist
+   Ohne vorherige schriftliche Zustimmung des Rechteinhabers ist es nicht
+   erlaubt,
+   - calibly oder Teile davon weiterzugeben, zu verkaufen, zu vermieten oder
+     zum Herunterladen anzubieten (ein Link auf die offizielle Download-Seite
+     ist erlaubt);
+   - calibly zu verändern, zu übersetzen, zu dekompilieren oder
+     zurückzuentwickeln, soweit das Gesetz (insbesondere §§ 69d und 69e UrhG)
+     dies nicht ausdrücklich erlaubt;
+   - Urheberrechtsvermerke, Markenzeichen oder diese Bedingungen zu entfernen.
+
+3. Software Dritter
+   calibly enthält Software Dritter, die unter eigenen Lizenzen steht
+   (siehe THIRD-PARTY-NOTICES.txt und den Ordner "licenses"). Für diese Teile
+   gelten ausschließlich deren Lizenzen; diese Bedingungen schränken die
+   dort gewährten Rechte nicht ein. Insbesondere dürfen Sie die Bibliotheken
+   unter der GNU LGPL (Qt, FFmpeg) durch eigene, kompatible Fassungen
+   ersetzen und calibly zu diesem Zweck verändern und zur Fehlersuche an
+   solchen Änderungen zurückentwickeln.
+
+4. Testversion
+   Versionen mit dem Zusatz "beta" sind Testversionen. Sie können Fehler
+   enthalten; legen Sie von wichtigen Daten eine Sicherung an.
+
+5. Gewährleistung und Haftung
+   calibly wird unentgeltlich überlassen. Der Rechteinhaber haftet nur für
+   Vorsatz und grobe Fahrlässigkeit sowie für arglistig verschwiegene Mängel.
+   Die Haftung für Schäden aus der Verletzung des Lebens, des Körpers oder
+   der Gesundheit und nach dem Produkthaftungsgesetz bleibt unberührt.
+
+6. Datenschutz
+   calibly speichert Ihre Bibliothek und Einstellungen nur auf Ihrem Gerät
+   und sendet keine persönlichen Daten. Wenn die Suche nach neuen Versionen
+   eingeschaltet ist, fragt calibly bei GitHub (GitHub, Inc.) nach der
+   neuesten Version; dabei wird wie bei jedem Abruf einer Webseite Ihre
+   IP-Adresse übertragen.
+
+7. Schlussbestimmungen
+   Es gilt das Recht der Bundesrepublik Deutschland. Sollte eine Bestimmung
+   unwirksam sein, bleiben die übrigen wirksam. Diese Bedingungen gibt es auf
+   Deutsch und Englisch; im Zweifel gilt die deutsche Fassung.

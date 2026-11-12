@@ -1155,6 +1155,55 @@ ViewBase {
             }
 
             Section {
+                heading: qsTr("Bibliothek nicht verfügbar")
+                width: page.width
+
+                Flow {
+                    width: page.width
+                    spacing: Theme.spacingL
+
+                    Repeater {
+                        model: [LibraryProblem.NotFound, LibraryProblem.CannotCreate, LibraryProblem.Damaged,
+                                LibraryProblem.NewerVersion, LibraryProblem.CannotUpdate, LibraryProblem.InUse]
+
+                        delegate: Rectangle {
+                            required property int modelData
+
+                            width: Theme.dialogWidth * 0.75
+                            height: problem.implicitHeight + 2 * Theme.spacingXl
+                            radius: Theme.radiusL
+                            color: Theme.background
+                            border.width: Theme.borderWidth
+                            border.color: Theme.border
+
+                            LibraryProblem {
+                                id: problem
+
+                                anchors.fill: parent
+                                reason: parent.modelData
+                                path: "E:/Bücher/calibly-Bibliothek"
+                            }
+                        }
+                    }
+                }
+                Caption {
+                    text: qsTr("Statt der Bibliothek: nicht gefunden, nicht anlegbar, beschädigt, neuere Version, Umstellung fehlgeschlagen, schon geöffnet")
+                }
+            }
+
+            Section {
+                heading: qsTr("Neue Version")
+                width: page.width
+
+                UpdateHint {
+                    version: "0.2.0-beta"
+                }
+                Caption {
+                    text: qsTr("Hinweis auf eine neue Version (unten links über der Bibliothek)")
+                }
+            }
+
+            Section {
                 heading: qsTr("Import (Drag & Drop)")
                 width: page.width
 
@@ -1218,7 +1267,7 @@ ViewBase {
 
                 Rectangle {
                     width: Theme.sidebarWidth
-                    height: 260
+                    height: 320
                     radius: Theme.radiusM
                     color: Theme.sidebar
                     clip: true
@@ -1234,6 +1283,9 @@ ViewBase {
                             ListElement { title: qsTr("Serien"); iconName: "layers"; count: 48 }
                             ListElement { title: qsTr("Autoren"); iconName: "user"; count: 402 }
                             ListElement { title: qsTr("Sprecher"); iconName: "mic"; count: 96 }
+                        }
+                        bottomModel: ListModel {
+                            ListElement { title: qsTr("Einstellungen"); iconName: "settings"; count: 0 }
                         }
 
                         onActivated: function(index) {

@@ -17,6 +17,8 @@ FetchContent_Declare(taglib
     GIT_SHALLOW TRUE
     GIT_SUBMODULES 3rdparty/utfcpp
     SYSTEM
+    # Linked into calibly.exe: its headers and library are not installed.
+    EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(taglib)
 

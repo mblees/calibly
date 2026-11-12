@@ -5,9 +5,12 @@
 #include <QStringList>
 #include <QUrl>
 
+#include <memory>
+
 #include "workmodel.h"
 
 class LibraryBackend;
+class LibraryLock;
 
 // Entry point of the views to the library.
 //
@@ -24,6 +27,24 @@ class LibraryBackend;
 //
 //   canImport         files can be imported (a real library, not --mock);
 //                     importing itself is done by ImportController
+//   libraryRoot       the folder of the open library, "" = none / sample data
+//
+// The library (release step 3): main() opens the last used one with
+// openLibrary(); the user can open another one or create a new one.
+//   libraryError      why no library is open: NoError (one is open),
+//                     NotFound, CannotCreate, Damaged, NewerVersion,
+//                     CannotUpdate, InUse (see SqliteBackend::OpenError)
+//   libraryPath       the folder of the open library, or of the one that
+//                     could not be opened
+//   LibraryController.openLibrary(folder, create)
+//   LibraryController.openLibraryUrl(url, create)   for a FolderDialog
+//       opens the library in the folder (create: a new one if there is
+//       none). Returns the error; on success the works of the new library
+//       replace the old ones. If one was open and the other cannot be opened,
+//       the open one stays.
+//   LibraryController.retryLibrary()   tries libraryPath again
+//   activationRequested()   calibly was started a second time with this
+//       library: the window should come to the front
 //   fileNameFilters   patterns for a file dialog, e.g. ["*.epub", "*.m4b", ...]
 //
 //   LibraryController.mergeWorks(workIds)
@@ -46,12 +67,20 @@ class LibraryController : public QObject
     QML_SINGLETON
 
     Q_PROPERTY(WorkModel *works READ works CONSTANT)
-    Q_PROPERTY(bool canImport READ canImport CONSTANT)
-    Q_PROPERTY(QString libraryRoot READ libraryRoot CONSTANT)
+    Q_PROPERTY(bool canImport READ canImport NOTIFY libraryChanged)
+    Q_PROPERTY(QString libraryRoot READ libraryRoot NOTIFY libraryChanged)
+    Q_PROPERTY(LibraryError libraryError READ libraryError NOTIFY libraryChanged)
+    Q_PROPERTY(QString libraryPath READ libraryPath NOTIFY libraryChanged)
     Q_PROPERTY(QStringList fileNameFilters READ fileNameFilters CONSTANT)
 
 public:
+    enum LibraryError { NoError, NotFound, CannotCreate, Damaged, NewerVersion, CannotUpdate, InUse };
+    Q_ENUM(LibraryError)
+
+    // With a backend that stays fixed (sample data, tests).
     explicit LibraryController(LibraryBackend &backend, QQmlEngine *engine, QObject *parent = nullptr);
+    // Without a library until openLibrary().
+    explicit LibraryController(QQmlEngine *engine, QObject *parent = nullptr);
     ~LibraryController() override;
 
     // Used by the QML engine to obtain the singleton instance created in main().
@@ -71,6 +100,15 @@ public:
     bool canImport() const;
     QString libraryRoot() const;
     QStringList fileNameFilters() const;
+    LibraryError libraryError() const { return m_libraryError; }
+    QString libraryPath() const { return m_libraryPath; }
+
+    Q_INVOKABLE LibraryController::LibraryError openLibrary(const QString &folder, bool create);
+    Q_INVOKABLE LibraryController::LibraryError openLibraryUrl(const QUrl &folder, bool create);
+    Q_INVOKABLE LibraryController::LibraryError retryLibrary();
+    // Store the folder of every opened library as the one to open next time
+    // (off with --library).
+    void setRememberLibrary(bool remember) { m_rememberLibrary = remember; }
 
     Q_INVOKABLE void reload();
     Q_INVOKABLE bool openFormat(const QString &workId, const QString &kind);
@@ -89,12 +127,19 @@ public:
 
 signals:
     void worksAboutToChange(const QStringList &workIds);
+    void libraryChanged();
+    void activationRequested();
 
 private:
     // The works with these ids, in this order; unknown ids are left out.
     QList<Work> worksById(const QStringList &workIds) const;
 
-    LibraryBackend &m_backend;
+    LibraryBackend *m_backend = nullptr;
+    std::unique_ptr<LibraryBackend> m_ownedBackend;
+    std::unique_ptr<LibraryLock> m_lock;
+    LibraryError m_libraryError = NoError;
+    QString m_libraryPath;
+    bool m_rememberLibrary = false;
     bool m_trashFiles = true;
     QQmlEngine *m_engine = nullptr;
     WorkModel m_works;

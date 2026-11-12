@@ -85,14 +85,41 @@ QString LanguageManager::pickStartLanguage(const QString &requested) const
     if (m_codes.contains(saved))
         return saved;
 
+    return systemLanguage();
+}
+
+QString LanguageManager::systemLanguage() const
+{
     const QStringList systemLanguages = QLocale::system().uiLanguages();
     for (const QString &tag : systemLanguages) {
         const QString code = QLocale::languageToCode(QLocale(tag).language());
         if (m_codes.contains(code))
             return code;
     }
-
     return kSourceLanguage;
+}
+
+bool LanguageManager::followsSystem() const
+{
+    return !QSettings().contains(kSettingsKey);
+}
+
+void LanguageManager::chooseLanguage(const QString &code)
+{
+    if (!m_codes.contains(code))
+        return;
+    QSettings().setValue(kSettingsKey, code);
+    m_engine->setUiLanguage(code);
+    emit followsSystemChanged();
+}
+
+void LanguageManager::followSystem()
+{
+    QSettings().remove(kSettingsKey);
+    m_followingSystem = true;
+    m_engine->setUiLanguage(systemLanguage());
+    m_followingSystem = false;
+    emit followsSystemChanged();
 }
 
 void LanguageManager::applyLanguage()
@@ -118,8 +145,10 @@ void LanguageManager::applyLanguage()
     QLocale::setDefault(QLocale(code));
 
     m_applied = code;
-    if (!firstStart)
+    if (!firstStart && !m_followingSystem) {
         QSettings().setValue(kSettingsKey, code);
+        emit followsSystemChanged();
+    }
 
     m_engine->retranslate();
 }

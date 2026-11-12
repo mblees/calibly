@@ -1,0 +1,35 @@
+// Windows resources of calibly.exe: the app icon and the version information
+// shown in the file properties. Filled in by CMake (configure_file).
+#include <winver.h>
+
+// Qt uses IDI_ICON1 as the icon of windows that have no icon of their own.
+IDI_ICON1 ICON "@CALIBLY_ICON_FILE@"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,0
+PRODUCTVERSION @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,0
+FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+FILEFLAGS 0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "@CALIBLY_PUBLISHER@"
+            VALUE "FileDescription", "calibly"
+            VALUE "FileVersion", "@CALIBLY_DISPLAY_VERSION@"
+            VALUE "InternalName", "calibly"
+            VALUE "LegalCopyright", "@CALIBLY_COPYRIGHT@"
+            VALUE "OriginalFilename", "calibly.exe"
+            VALUE "ProductName", "calibly"
+            VALUE "ProductVersion", "@CALIBLY_DISPLAY_VERSION@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END

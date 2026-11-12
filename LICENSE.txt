@@ -1,0 +1,50 @@
+﻿calibly – License terms
+=======================
+
+Copyright (C) 2026 mblees. All rights reserved.
+
+These terms apply to the program file calibly.exe, the installer and the
+files belonging to them ("calibly"), as far as they do not come from third
+parties. By installing or using calibly you agree to them.
+
+1. Right of use
+   You may install calibly free of charge on any number of your own devices
+   and use it for your own purposes. This right is non-exclusive and not
+   transferable.
+
+2. What is not allowed
+   Without the prior written consent of the rights holder you may not
+   - pass on, sell, rent or offer calibly or parts of it for download (a
+     link to the official download page is allowed);
+   - modify, translate, decompile or reverse engineer calibly, except where
+     the law expressly allows it;
+   - remove copyright notices, trademarks or these terms.
+
+3. Third-party software
+   calibly contains third-party software under its own licenses (see
+   THIRD-PARTY-NOTICES.txt and the folder "licenses"). Only those licenses
+   apply to these parts; these terms do not restrict the rights they grant.
+   In particular, you may replace the libraries under the GNU LGPL (Qt,
+   FFmpeg) with your own compatible versions, and modify calibly for that
+   purpose and reverse engineer it to debug such modifications.
+
+4. Test versions
+   Versions with the suffix "beta" are test versions. They may contain
+   errors; keep a backup of important data.
+
+5. Warranty and liability
+   calibly is provided free of charge. The rights holder is liable only for
+   intent and gross negligence and for defects concealed with fraudulent
+   intent. Liability for injury to life, body or health and under the German
+   Product Liability Act remains unaffected.
+
+6. Privacy
+   calibly keeps your library and settings on your device only and sends no
+   personal data. When the check for new versions is switched on, calibly
+   asks GitHub (GitHub, Inc.) for the latest version; as with every request
+   for a web page, your IP address is transmitted.
+
+7. Final provisions
+   The law of the Federal Republic of Germany applies. If a provision is
+   invalid, the others remain valid. These terms exist in German and
+   English; in case of doubt the German version applies.

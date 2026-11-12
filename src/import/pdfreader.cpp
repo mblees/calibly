@@ -1,6 +1,7 @@
 #include "pdfreader.h"
 
 #ifdef CALIBLY_HAS_QTPDF
+#include <QPainter>
 #include <QPdfDocument>
 #endif
 
@@ -32,7 +33,14 @@ void readPdf(const QString &path, FileMetadata &metadata)
         const QSizeF pageSize = document.pagePointSize(0);
         if (pageSize.width() > 0) {
             const QSize size(coverWidth, int(coverWidth * pageSize.height() / pageSize.width()));
-            metadata.cover = document.render(0, size);
+            // Most PDFs draw no page background: the rendered page is
+            // transparent there and would turn black as a JPEG cover.
+            QImage cover(size, QImage::Format_RGB32);
+            cover.fill(Qt::white);
+            QPainter painter(&cover);
+            painter.drawImage(0, 0, document.render(0, size));
+            painter.end();
+            metadata.cover = cover;
         }
     }
 #else

@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import Calibly.Controllers
 import Calibly.Models
@@ -29,8 +30,15 @@ Window {
         ListElement { title: qsTr("Bibliothek"); iconName: "library"; count: 0; view: "LibraryView" }
         ListElement { title: qsTr("Weitermachen"); iconName: "clock"; count: 0; view: "ContinueView" }
         ListElement { title: qsTr("Serien"); iconName: "layers"; count: 0; view: "SeriesView" }
-        ListElement { title: qsTr("Autoren"); iconName: "user"; count: 0; view: "PlaceholderView" }
-        ListElement { title: qsTr("Sprecher"); iconName: "mic"; count: 0; view: "PlaceholderView" }
+        // "Autoren" and "Sprecher" (iconName "user" / "mic") come back with
+        // their views before 1.0 (release plan, step 6).
+    }
+
+    // Entries at the bottom of the sidebar; their indices follow navigation's.
+    ListModel {
+        id: bottomNavigation
+
+        ListElement { title: qsTr("Einstellungen"); iconName: "settings"; count: 0; view: "SettingsView" }
     }
 
     // The library entry shows the number of works, "Weitermachen" the
@@ -71,6 +79,18 @@ Window {
         }
     }
 
+    // calibly was started a second time with this library: come to the front.
+    Connections {
+        target: LibraryController
+
+        function onActivationRequested() {
+            if (root.visibility === Window.Minimized)
+                root.showNormal()
+            root.raise()
+            root.requestActivate()
+        }
+    }
+
     // Back to the library when the reader closes, so its keys work again.
     Connections {
         target: ReaderController
@@ -89,7 +109,7 @@ Window {
 
         anchors.fill: parent
         spacing: 0
-        visible: !root.galleryMode
+        visible: !root.galleryMode && LibraryController.libraryError === LibraryController.NoError
         focus: true
 
         Keys.onPressed: function(event) {
@@ -122,6 +142,7 @@ Window {
                 Layout.fillHeight: true
                 visible: !reader.fullscreen
                 model: navigation
+                bottomModel: bottomNavigation
 
                 // Another view closes the book.
                 onActivated: function(index) {
@@ -139,7 +160,9 @@ Window {
                 Loader {
                     id: content
 
-                    readonly property var entry: navigation.get(sidebar.currentIndex)
+                    readonly property var entry: sidebar.currentIndex < navigation.count
+                                                 ? navigation.get(sidebar.currentIndex)
+                                                 : bottomNavigation.get(sidebar.currentIndex - navigation.count)
 
                     anchors.fill: parent
                     visible: !ReaderController.isOpen
@@ -169,6 +192,47 @@ Window {
             Layout.preferredHeight: reader.fullscreen ? 0 : implicitHeight
             visible: PlayerController.hasWork && !reader.fullscreen
         }
+    }
+
+    // A newer calibly can be downloaded (release step 4): a quiet hint at the
+    // bottom left of the content area (the import queue is at the right).
+    UpdateHint {
+        x: sidebar.width + Theme.spacingL
+        y: parent.height - height - Theme.spacingL - (PlayerController.hasWork ? Theme.playerBarHeight : 0)
+        visible: !root.galleryMode && UpdateChecker.hintVisible && !reader.fullscreen
+                 && LibraryController.libraryError === LibraryController.NoError
+        version: UpdateChecker.latestVersion
+        onDownloadRequested: Qt.openUrlExternally(UpdateChecker.releaseUrl)
+        onDismissRequested: UpdateChecker.dismiss()
+    }
+
+    // The library cannot be opened (release step 3): what happened and the
+    // ways out instead of the library.
+    LibraryProblem {
+        anchors.fill: parent
+        visible: !root.galleryMode && LibraryController.libraryError !== LibraryController.NoError
+        reason: LibraryController.libraryError
+        path: LibraryController.libraryPath
+
+        onRetryRequested: LibraryController.retryLibrary()
+        onOpenRequested: {
+            libraryFolderDialog.create = false
+            libraryFolderDialog.open()
+        }
+        onCreateRequested: {
+            libraryFolderDialog.create = true
+            libraryFolderDialog.open()
+        }
+    }
+
+    FolderDialog {
+        id: libraryFolderDialog
+
+        // A new library (any folder) or an existing one (a folder with calibly.db).
+        property bool create: false
+
+        title: libraryFolderDialog.create ? qsTr("Ordner für die neue Bibliothek") : qsTr("Bibliothek öffnen")
+        onAccepted: LibraryController.openLibraryUrl(libraryFolderDialog.selectedFolder, libraryFolderDialog.create)
     }
 
     Loader {

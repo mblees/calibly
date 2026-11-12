@@ -2,23 +2,36 @@
 
 #include <QDateTime>
 #include <QDesktopServices>
+#include <QDir>
 #include <QFileInfo>
+#include <QSettings>
 
 #include <algorithm>
 
 #include "librarybackend.h"
 #include "libraryfolder.h"
+#include "librarylock.h"
 #include "metadatareader.h"
+#include "sqlitebackend.h"
 #include "workmerge.h"
 
 LibraryController::LibraryController(LibraryBackend &backend, QQmlEngine *engine, QObject *parent)
     : QObject(parent)
-    , m_backend(backend)
+    , m_backend(&backend)
     , m_engine(engine)
 {
     Q_ASSERT(!s_instance);
     s_instance = this;
+    m_libraryPath = backend.libraryRoot();
     reload();
+}
+
+LibraryController::LibraryController(QQmlEngine *engine, QObject *parent)
+    : QObject(parent)
+    , m_engine(engine)
+{
+    Q_ASSERT(!s_instance);
+    s_instance = this;
 }
 
 LibraryController::~LibraryController()
@@ -35,12 +48,91 @@ LibraryController *LibraryController::create(QQmlEngine *qmlEngine, QJSEngine *)
 
 bool LibraryController::canImport() const
 {
-    return !m_backend.libraryRoot().isEmpty();
+    return !libraryRoot().isEmpty();
 }
 
 QString LibraryController::libraryRoot() const
 {
-    return m_backend.libraryRoot();
+    return m_backend ? m_backend->libraryRoot() : QString();
+}
+
+LibraryController::LibraryError LibraryController::openLibrary(const QString &folder, bool create)
+{
+    const QString path = QDir::cleanPath(QFileInfo(folder).absoluteFilePath());
+    if (m_ownedBackend && QFileInfo(path) == QFileInfo(libraryRoot()))
+        return NoError; // already open
+
+    // Fails without changing anything: kept if a library is open, shown
+    // otherwise.
+    const auto failed = [this, &path](LibraryError error) {
+        if (!m_backend) {
+            m_libraryError = error;
+            m_libraryPath = path;
+            emit libraryChanged();
+        }
+        return error;
+    };
+
+    const bool exists = QFileInfo::exists(SqliteBackend::databasePath(path));
+    if (!exists && !create)
+        return failed(NotFound);
+    if (!QDir().mkpath(path))
+        return failed(CannotCreate);
+    auto lock = std::make_unique<LibraryLock>(path);
+    switch (lock->acquire()) {
+    case LibraryLock::Acquired:
+        break;
+    case LibraryLock::HeldElsewhere:
+        return failed(InUse);
+    case LibraryLock::Failed:
+        return failed(exists ? InUse : CannotCreate);
+    }
+
+    auto backend = std::make_unique<SqliteBackend>(path);
+    if (!backend->open(nullptr, create)) {
+        switch (backend->openError()) {
+        case SqliteBackend::OpenError::NotFound:
+            return failed(NotFound);
+        case SqliteBackend::OpenError::Damaged:
+            return failed(Damaged);
+        case SqliteBackend::OpenError::NewerVersion:
+            return failed(NewerVersion);
+        case SqliteBackend::OpenError::CannotUpdate:
+            return failed(CannotUpdate);
+        case SqliteBackend::OpenError::CannotCreate:
+        case SqliteBackend::OpenError::None:
+            return failed(CannotCreate);
+        }
+    }
+
+    // Whoever uses a work of the old library (player, reader) lets go first.
+    QStringList ids;
+    for (int row = 0; row < m_works.rowCount(); ++row)
+        ids.append(m_works.workAt(row)->id);
+    if (!ids.isEmpty())
+        emit worksAboutToChange(ids);
+
+    connect(lock.get(), &LibraryLock::activationRequested, this, &LibraryController::activationRequested);
+    m_ownedBackend = std::move(backend);
+    m_backend = m_ownedBackend.get();
+    m_lock = std::move(lock);
+    m_libraryError = NoError;
+    m_libraryPath = path;
+    if (m_rememberLibrary)
+        QSettings().setValue(QStringLiteral("library/path"), path);
+    reload();
+    emit libraryChanged();
+    return NoError;
+}
+
+LibraryController::LibraryError LibraryController::openLibraryUrl(const QUrl &folder, bool create)
+{
+    return openLibrary(folder.toLocalFile(), create);
+}
+
+LibraryController::LibraryError LibraryController::retryLibrary()
+{
+    return openLibrary(m_libraryPath, false);
 }
 
 QStringList LibraryController::fileNameFilters() const
@@ -53,7 +145,7 @@ QStringList LibraryController::fileNameFilters() const
 
 void LibraryController::reload()
 {
-    m_works.setWorks(m_backend.loadWorks());
+    m_works.setWorks(m_backend ? m_backend->loadWorks() : QList<Work>());
 }
 
 bool LibraryController::openFormat(const QString &workId, const QString &kind)
@@ -147,7 +239,7 @@ QString LibraryController::mergeWorks(const QStringList &workIds)
         if (work.id == merged.id)
             continue;
         // The files stay: they now belong to the formats of the merged work.
-        if (!m_backend.removeWork(work.id))
+        if (!m_backend->removeWork(work.id))
             qWarning("Could not remove %s from the library", qPrintable(work.title));
         m_works.removeWork(work.id);
     }
@@ -162,14 +254,14 @@ int LibraryController::removeWorks(const QStringList &workIds)
 
     int removed = 0;
     for (const Work &work : worksById(workIds)) {
-        if (!m_backend.removeWork(work.id)) {
+        if (!m_backend->removeWork(work.id)) {
             qWarning("Could not remove %s from the library", qPrintable(work.title));
             continue;
         }
         m_works.removeWork(work.id);
         ++removed;
         // Only a real library owns its files.
-        const QStringList failed = LibraryFolder::removeWorkFiles(m_backend.libraryRoot(), work, m_trashFiles);
+        const QStringList failed = LibraryFolder::removeWorkFiles(m_backend->libraryRoot(), work, m_trashFiles);
         for (const QString &path : failed)
             qWarning("Could not remove the file %s", qPrintable(path));
     }
@@ -189,7 +281,7 @@ void LibraryController::setFileMissing(const QString &workId, int formatIndex, b
 
 bool LibraryController::saveWork(const Work &work)
 {
-    if (!m_backend.saveWork(work)) {
+    if (!m_backend || !m_backend->saveWork(work)) {
         qWarning("Could not save %s to the library", qPrintable(work.title));
         return false;
     }

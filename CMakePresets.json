@@ -1,6 +1,6 @@
 {
   "version": 6,
-  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "cmakeMinimumRequired": { "major": 3, "minor": 28, "patch": 0 },
   "configurePresets": [
     {
       "name": "mingw-base",
@@ -28,7 +28,7 @@
       "name": "mingw-release",
       "displayName": "MinGW Release",
       "inherits": "mingw-base",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release", "CALIBLY_DEV_TOOLS": "OFF" }
     }
   ],
   "buildPresets": [

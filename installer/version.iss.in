@@ -1,0 +1,6 @@
+; Written by CMake from installer/version.iss.in; included by calibly.iss.
+#define AppVersion "@CALIBLY_DISPLAY_VERSION@"
+#define AppVersionNumeric "@PROJECT_VERSION@"
+#define AppPublisher "@CALIBLY_PUBLISHER@"
+#define AppCopyright "@CALIBLY_COPYRIGHT@"
+#define AppReleasesUrl "@CALIBLY_RELEASES_URL@"
