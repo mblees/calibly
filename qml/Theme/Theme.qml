@@ -41,6 +41,7 @@ QtObject {
     readonly property color finished: "#5fcf80"
     readonly property color finishedForeground: "#062010"
     readonly property color danger: "#e05a5a"
+    readonly property color dangerForeground: "#ffffff"
     readonly property color shadow: "#80000000"
     readonly property color scrim: "#99000000"      // dims the window behind drawers
     readonly property color rating: "#f2c14e"
@@ -120,6 +121,8 @@ QtObject {
     readonly property real badgeIconStrokeWidth: 2.4 // thicker lines, so the small icons stay readable
     readonly property real disabledOpacity: 0.4
     readonly property int progressHeight: 3
+    readonly property int continueCardWidth: 300
+    readonly property int continueCoverWidth: 46  // cover in a "Continue" card (2:3)
     readonly property int importQueueWidth: 340
     readonly property int importQueueMaxHeight: 320
     readonly property int importThumbWidth: 26    // cover thumbnail in the import queue (2:3)
@@ -144,6 +147,10 @@ QtObject {
     readonly property real coverTitleHeight: 0.6     // share of the cover height available to the placeholder title
     readonly property real coverAuthorOpacity: 0.8   // placeholder author text
     readonly property color coverOverlay: "#b30a0a0c"     // background of badges on covers
+    readonly property color coverHoverScrim: "#80000000"  // darkens a cover behind its hover actions
+    readonly property int coverActionWidth: 120           // "Lesen" / "Hören" on a hovered cover
+    readonly property real missingSaturation: -1.0        // cover of a work whose file is missing: grey …
+    readonly property real missingBrightness: -0.12       // … and a little darker
     readonly property color coverProgressTrack: "#80000000"
     readonly property color coverStackBack: "#3a3b44"
     readonly property color coverStackMiddle: "#4a4b55"

@@ -12,6 +12,8 @@ import Calibly.Models
 // View A of the mockup: all works as a cover grid with search, format
 // selection, sorting and cover size. Filtering and sorting happen in C++
 // (WorkFilterModel); this view only holds the chosen values.
+// Above the grid, and scrolling with it: the row "Weitermachen" with the
+// titles that were opened last and are not finished (ContinueModel).
 // View D: files dropped on free space become new works, files dropped on a
 // cover become formats of that work (ImportController); the import queue
 // at the bottom right shows how it goes.
@@ -20,10 +22,23 @@ ViewBase {
 
     readonly property int total: LibraryController.works.count
     readonly property bool filtered: works.count !== root.total
+    // "Weitermachen" shows at most this many titles, and none while searching.
+    readonly property int continueLimit: 12
+    readonly property bool showContinue: continueWorks.count > 0 && search.text === ""
 
-    // Back to the first row, including the top margin of the grid.
+    // Back to the top of the grid, including its header.
     function scrollToTop() {
         grid.contentY = grid.originY - grid.topMargin
+    }
+
+    // Continues reading / listening where the user stopped: audiobooks play
+    // in calibly, ebooks open in the default application. A missing file
+    // shows as "DATEI FEHLT" on the cover.
+    function continueWith(workId: string, kind: string) {
+        if (kind === "audiobook")
+            PlayerController.play(workId)
+        else
+            LibraryController.openFormat(workId, kind)
     }
 
     function resetFilters() {
@@ -53,6 +68,15 @@ ViewBase {
         // Deferred: countChanged arrives while the GridView is still applying
         // the row changes; scrolling right away would create duplicate tiles.
         onCountChanged: Qt.callLater(root.scrollToTop)
+    }
+
+    // The format selection also applies to "Weitermachen".
+    ContinueModel {
+        id: continueWorks
+
+        sourceModel: LibraryController.works
+        formatFilter: settings.formatFilter
+        limit: root.continueLimit
     }
 
     Shortcut {
@@ -172,30 +196,7 @@ ViewBase {
         }
     }
 
-    // --- heading -------------------------------------------------------------
-    Text {
-        id: heading
-
-        anchors.left: parent.left
-        anchors.top: formats.bottom
-        anchors.leftMargin: Theme.spacingXl
-        anchors.topMargin: Theme.spacingXl
-        text: root.title
-        color: Theme.textPrimary
-        font.pixelSize: Theme.fontLarge
-        font.weight: Font.Bold
-    }
-    Text {
-        anchors.left: heading.right
-        anchors.leftMargin: Theme.spacingM
-        anchors.baseline: heading.baseline
-        text: root.filtered ? qsTr("%L1 von %Ln Titeln", "", root.total).arg(works.count)
-                            : qsTr("%Ln Titel", "", root.total)
-        color: Theme.textMuted
-        font.pixelSize: Theme.fontBody
-    }
-
-    // --- cover grid ----------------------------------------------------------
+    // --- cover grid, with "Weitermachen" and the heading as its header --------
     GridView {
         id: grid
 
@@ -204,18 +205,17 @@ ViewBase {
         readonly property int columns: Math.max(2, Math.floor((width + gap) / (settings.tileWidth + gap)))
         readonly property real tileWidth: cellWidth - gap
 
-        anchors.top: heading.bottom
+        anchors.top: formats.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.topMargin: Theme.spacingM
+        anchors.topMargin: Theme.spacingS
         anchors.leftMargin: Theme.spacingXl
         // The gap of the last column is part of the cell, so subtract it here.
         anchors.rightMargin: Theme.spacingXl - gap
 
         cellWidth: Math.floor(width / columns)
         cellHeight: Math.round(tileWidth * Theme.coverAspect) + Theme.coverTileTextHeight + Theme.spacingL
-        topMargin: Theme.coverStackOffset * 2 // room for the sheets of series stacks
         bottomMargin: Theme.spacingXl
         clip: true
         boundsBehavior: Flickable.StopAtBounds
@@ -223,6 +223,53 @@ ViewBase {
         model: works
 
         ScrollBar.vertical: ScrollBar {}
+
+        header: Column {
+            width: grid.width - grid.gap
+            topPadding: Theme.spacingL
+            // Below the heading: also room for the sheets of series stacks.
+            bottomPadding: Theme.spacingM + Theme.coverStackOffset * 2
+            spacing: Theme.spacingXl
+
+            ContinueRow {
+                width: parent.width
+                visible: root.showContinue
+                model: continueWorks
+                subtitle: settings.formatFilter === WorkFilterModel.Ebook
+                          || settings.formatFilter === WorkFilterModel.Audiobook
+                          ? "" : qsTr("gemeinsam für Lesen und Hören")
+
+                onOpenRequested: function(workId, coverUrl, coverIsSquare) {
+                    detail.openFor(workId, coverUrl, coverIsSquare)
+                }
+                onContinueRequested: function(workId, kind) {
+                    root.continueWith(workId, kind)
+                }
+            }
+
+            Item {
+                width: parent.width
+                height: heading.implicitHeight
+
+                Text {
+                    id: heading
+
+                    text: root.title
+                    color: Theme.textPrimary
+                    font.pixelSize: Theme.fontLarge
+                    font.weight: Font.Bold
+                }
+                Text {
+                    anchors.left: heading.right
+                    anchors.leftMargin: Theme.spacingM
+                    anchors.baseline: heading.baseline
+                    text: root.filtered ? qsTr("%L1 von %Ln Titeln", "", root.total).arg(works.count)
+                                        : qsTr("%Ln Titel", "", root.total)
+                    color: Theme.textMuted
+                    font.pixelSize: Theme.fontBody
+                }
+            }
+        }
 
         delegate: Item {
             id: cell
@@ -236,6 +283,7 @@ ViewBase {
             required property bool hasAudiobook
             required property real readProgress
             required property real listenProgress
+            required property int workState
 
             width: grid.cellWidth
             height: grid.cellHeight
@@ -252,8 +300,11 @@ ViewBase {
                 hasAudiobook: cell.hasAudiobook
                 readProgress: cell.readProgress
                 listenProgress: cell.listenProgress
+                workState: cell.workState
 
                 onClicked: detail.openFor(cell.workId, cell.coverUrl, cell.coverIsSquare)
+                onReadRequested: root.continueWith(cell.workId, "ebook")
+                onListenRequested: root.continueWith(cell.workId, "audiobook")
             }
         }
     }
@@ -275,8 +326,8 @@ ViewBase {
     // --- empty states --------------------------------------------------------
     Column {
         anchors.horizontalCenter: grid.horizontalCenter
-        anchors.top: heading.bottom
-        anchors.topMargin: Theme.spacingXxl * 3
+        anchors.top: grid.top
+        anchors.topMargin: (grid.headerItem ? grid.headerItem.height : 0) + Theme.spacingXxl * 2
         spacing: Theme.spacingL
         visible: works.count === 0
 

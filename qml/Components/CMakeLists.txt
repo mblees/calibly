@@ -15,6 +15,8 @@ qt_add_qml_module(calibly_components
         MiniPlayer.qml
         DropHint.qml
         ImportQueue.qml
+        ContinueCard.qml
 )
 
-target_link_libraries(calibly_components PRIVATE Qt6::Quick calibly_theme calibly_controls)
+# calibly_models: only for the enum WorkState (the state of a cover).
+target_link_libraries(calibly_components PRIVATE Qt6::Quick calibly_theme calibly_controls calibly_models)

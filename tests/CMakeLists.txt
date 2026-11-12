@@ -32,3 +32,7 @@ target_link_libraries(tst_import PRIVATE Qt6::Gui)
 qt_add_executable(tst_importcontroller tst_importcontroller.cpp)
 target_link_libraries(tst_importcontroller PRIVATE Qt6::Test calibly_models calibly_controllers)
 add_test(NAME tst_importcontroller COMMAND tst_importcontroller)
+
+qt_add_executable(tst_continuemodel tst_continuemodel.cpp)
+target_link_libraries(tst_continuemodel PRIVATE Qt6::Test calibly_models)
+add_test(NAME tst_continuemodel COMMAND tst_continuemodel)

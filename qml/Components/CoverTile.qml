@@ -1,10 +1,13 @@
 import QtQuick
+import QtQuick.Effects
 import Calibly.Theme
 import Calibly.Controls
+import Calibly.Models
 
-// One work in the gallery: cover with format badges (top right) and progress
-// lines (bottom: blue = read, orange = listened), title and author below.
-// Presentation only, no logic.
+// One work in the gallery: cover with format badges (top right), a state
+// label (top left) and progress lines (bottom: blue = read, orange =
+// listened, green = finished), title and author below. Hovering shows
+// "Lesen" / "Hören" to continue directly. Presentation only, no logic.
 //
 // Properties:
 //   title, author                 texts
@@ -12,11 +15,15 @@ import Calibly.Controls
 //   hasEbook, hasAudiobook        which format badges are shown
 //   readProgress, listenProgress  0.0 – 1.0, 0 = no line
 //   stacked                       draw the cover as a series stack
+//   workState                     WorkState.New ("NEU"), WorkState.Finished
+//                                 ("FERTIG"), WorkState.FileMissing (grey
+//                                 cover, "DATEI FEHLT") or WorkState.Normal
 //   dropLabel                     files are dragged over this cover: accent
 //                                 glow and this text, e.g. "Als Hörbuch zu
 //                                 „Dracula“ hinzufügen"; empty = no drag
 // Signals:
 //   clicked()
+//   readRequested(), listenRequested()   the hover actions
 Item {
     id: root
 
@@ -29,12 +36,19 @@ Item {
     required property real readProgress
     required property real listenProgress
     property bool stacked: false
+    property int workState: WorkState.Normal
     property string dropLabel
 
     readonly property bool hovered: hover.hovered
     readonly property bool dropTarget: root.dropLabel !== ""
+    readonly property bool fileMissing: root.workState === WorkState.FileMissing
+    // Not while files are dragged over the cover, and not for missing files.
+    readonly property bool showActions: root.hovered && !root.dropTarget && !root.fileMissing
+                                        && (root.hasEbook || root.hasAudiobook)
 
     signal clicked()
+    signal readRequested()
+    signal listenRequested()
 
     implicitWidth: Theme.coverTileMinWidth
     implicitHeight: art.height + Theme.coverTileTextHeight
@@ -53,6 +67,15 @@ Item {
         coverUrl: root.coverUrl
         coverIsSquare: root.coverIsSquare
         stacked: root.stacked
+        // The title of a generated cover starts below the state label.
+        titleInset: root.workState !== WorkState.Normal ? Theme.badgeSize + Theme.spacingXs : 0
+
+        // A missing file: the whole cover turns grey and darker.
+        layer.enabled: root.fileMissing
+        layer.effect: MultiEffect {
+            saturation: Theme.missingSaturation
+            brightness: Theme.missingBrightness
+        }
 
         Column {
             anchors.top: parent.top
@@ -82,7 +105,7 @@ Item {
                 width: parent.width
                 visible: root.readProgress > 0
                 value: root.readProgress
-                color: Theme.read
+                color: root.readProgress >= 1 ? Theme.finished : Theme.read
                 trackColor: Theme.coverProgressTrack
                 rounded: false
             }
@@ -90,10 +113,68 @@ Item {
                 width: parent.width
                 visible: root.listenProgress > 0
                 value: root.listenProgress
-                color: Theme.listen
+                color: root.listenProgress >= 1 ? Theme.finished : Theme.listen
                 trackColor: Theme.coverProgressTrack
                 rounded: false
             }
+        }
+    }
+
+    // Hovered: the cover gets darker behind the actions "Lesen" / "Hören".
+    Rectangle {
+        y: art.stackInset
+        width: art.width - art.stackInset
+        height: art.height - art.stackInset
+        visible: root.showActions
+        radius: Theme.radiusS
+        color: Theme.coverHoverScrim
+    }
+
+    // State label at the top left. Outside the cover, so the label of a
+    // missing file keeps its color.
+    Badge {
+        x: Theme.spacingS
+        y: art.stackInset + Theme.spacingS
+        visible: root.workState !== WorkState.Normal
+        text: root.workState === WorkState.New ? qsTr("NEU")
+              : root.workState === WorkState.Finished ? qsTr("✓ FERTIG") : qsTr("DATEI FEHLT")
+        color: root.workState === WorkState.New ? Theme.accentForeground
+               : root.workState === WorkState.Finished ? Theme.finishedForeground : Theme.dangerForeground
+        backgroundColor: root.workState === WorkState.New ? Theme.accent
+                         : root.workState === WorkState.Finished ? Theme.finished : Theme.danger
+    }
+
+    // Hover actions: continue directly. Both are also in the detail view.
+    Column {
+        x: (art.width - art.stackInset - width) / 2
+        y: art.stackInset + (art.height - art.stackInset - height) / 2
+        width: Math.min(Theme.coverActionWidth, art.width - art.stackInset - 2 * Theme.spacingS)
+        visible: root.showActions
+        spacing: Theme.spacingS
+
+        AppButton {
+            id: readButton
+
+            width: parent.width
+            visible: root.hasEbook
+            leftPadding: Theme.spacingS
+            rightPadding: Theme.spacingS
+            variant: AppButton.Read
+            iconName: "book"
+            text: qsTr("Lesen")
+            onClicked: root.readRequested()
+        }
+        AppButton {
+            id: listenButton
+
+            width: parent.width
+            visible: root.hasAudiobook
+            leftPadding: Theme.spacingS
+            rightPadding: Theme.spacingS
+            variant: AppButton.Primary
+            iconName: "play"
+            text: qsTr("Hören")
+            onClicked: root.listenRequested()
         }
     }
 
@@ -184,6 +265,8 @@ Item {
     }
 
     TapHandler {
+        // A click on a hover action is not a click on the cover.
+        enabled: !readButton.hovered && !listenButton.hovered
         onTapped: root.clicked()
     }
 }

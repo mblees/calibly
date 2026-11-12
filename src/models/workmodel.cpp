@@ -72,6 +72,12 @@ QVariant WorkModel::data(const QModelIndex &index, int role) const
         return work.listenProgress();
     case LastOpenedRole:
         return work.lastOpened;
+    case WorkStateRole:
+        return int(work.state());
+    case EbookStateRole:
+        return int(work.state(Format::Kind::Ebook));
+    case AudiobookStateRole:
+        return int(work.state(Format::Kind::Audiobook));
     case AuthorSortRole:
         return work.authors.isEmpty() ? QString() : TextUtils::nameSortKey(work.authors.first());
     case SearchTextRole:
@@ -104,6 +110,9 @@ QHash<int, QByteArray> WorkModel::roleNames() const
         { EbookCoverIsSquareRole, "ebookCoverIsSquare" },
         { AudiobookCoverUrlRole, "audiobookCoverUrl" },
         { AudiobookCoverIsSquareRole, "audiobookCoverIsSquare" },
+        { WorkStateRole, "workState" },
+        { EbookStateRole, "ebookState" },
+        { AudiobookStateRole, "audiobookState" },
     };
 }
 

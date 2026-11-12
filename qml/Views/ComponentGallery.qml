@@ -5,6 +5,7 @@ import Calibly.Controllers
 import Calibly.Theme
 import Calibly.Controls
 import Calibly.Components
+import Calibly.Models
 
 // Developer view (start with --gallery). Shows every building block in all
 // its states with mock data. New components are added here first and only
@@ -222,6 +223,10 @@ ViewBase {
                         text: qsTr("Deaktiviert")
                         enabled: false
                     }
+                    LinkButton {
+                        text: qsTr("Als fertig markieren")
+                        iconName: "check"
+                    }
                     IconButton {
                         text: qsTr("Suchen")
                         iconName: "search"
@@ -324,7 +329,12 @@ ViewBase {
                             { caption: qsTr("Lesen + Hören"), title: "Moby Dick", author: "Herman Melville", cover: "qrc:/mock/covers/moby-dick.jpg", square: false, ebook: true, audio: true, read: 0.31, listen: 0.58, stacked: false },
                             { caption: qsTr("Ohne Cover"), title: "Der Prozess", author: "Franz Kafka", cover: "", square: false, ebook: true, audio: true, read: 0.12, listen: 0, stacked: false },
                             { caption: qsTr("Serie"), title: "Der Hund der Baskervilles", author: "Arthur Conan Doyle", cover: "", square: false, ebook: true, audio: true, read: 0, listen: 0, stacked: true },
-                            { caption: qsTr("Ziel beim Ablegen"), title: "Dracula", author: "Bram Stoker", cover: "qrc:/mock/covers/dracula.jpg", square: true, ebook: true, audio: false, read: 0, listen: 0, stacked: false, drop: true }
+                            { caption: qsTr("Ziel beim Ablegen"), title: "Dracula", author: "Bram Stoker", cover: "qrc:/mock/covers/dracula.jpg", square: true, ebook: true, audio: false, read: 0, listen: 0, stacked: false, drop: true },
+                            { caption: qsTr("Neu importiert"), title: "Frankenstein", author: "Mary Shelley", cover: "qrc:/mock/covers/frankenstein.jpg", square: true, ebook: false, audio: true, read: 0, listen: 0, stacked: false, state: WorkState.New },
+                            { caption: qsTr("Neu, ohne Cover"), title: "Anna Karenina", author: "Leo Tolstoi", cover: "", square: false, ebook: true, audio: false, read: 0, listen: 0, stacked: false, state: WorkState.New },
+                            { caption: qsTr("Fertig"), title: "Effi Briest", author: "Theodor Fontane", cover: "qrc:/mock/covers/effi-briest.jpg", square: false, ebook: true, audio: false, read: 1, listen: 0, stacked: false, state: WorkState.Finished },
+                            { caption: qsTr("Gelesen fertig, gehört 58 %"), title: "Die Verwandlung", author: "Franz Kafka", cover: "qrc:/mock/covers/die-verwandlung.jpg", square: false, ebook: true, audio: true, read: 1, listen: 0.58, stacked: false, state: WorkState.Finished },
+                            { caption: qsTr("Datei fehlt"), title: "Buddenbrooks", author: "Thomas Mann", cover: "qrc:/mock/covers/buddenbrooks.jpg", square: false, ebook: true, audio: false, read: 0.2, listen: 0, stacked: false, state: WorkState.FileMissing }
                         ]
 
                         delegate: Column {
@@ -346,6 +356,7 @@ ViewBase {
                                 listenProgress: tileSample.modelData.listen
                                 stacked: tileSample.modelData.stacked
                                 dropLabel: tileSample.modelData.drop ? qsTr("Als Hörbuch zu „%1“ hinzufügen").arg(tileSample.modelData.title) : ""
+                                workState: tileSample.modelData.state || WorkState.Normal
                             }
                             Caption {
                                 text: tileSample.modelData.caption
@@ -464,6 +475,19 @@ ViewBase {
                         progress: 0
                         available: false
                     }
+                    FormatCard {
+                        width: Theme.formatCardWidth
+                        kind: "ebook"
+                        fileType: "EPUB"
+                        fileSize: 880000
+                        pages: 344
+                        durationSeconds: 0
+                        progress: 1
+                        available: true
+                    }
+                }
+                Caption {
+                    text: qsTr("Format-Karten: angefangen, Öffnen fehlgeschlagen, Datei fehlt, fertig")
                 }
 
                 Row {
@@ -769,6 +793,61 @@ ViewBase {
                             text: qsTr("Kapitelliste: gehört, aktuell, offen")
                         }
                     }
+                }
+            }
+
+            Section {
+                heading: qsTr("Weitermachen")
+                width: page.width
+
+                Flow {
+                    width: page.width
+                    spacing: Theme.spacingM
+
+                    ContinueCard {
+                        title: "Moby Dick"
+                        kind: "audiobook"
+                        coverUrl: "qrc:/mock/covers/moby-dick-hoerbuch.jpg"
+                        coverIsSquare: true
+                        progress: 0.58
+                        lastOpened: new Date()
+                        chapterNumber: 42
+                        remainingSeconds: 37620
+                        hasOtherFormat: true
+                    }
+                    ContinueCard {
+                        title: "Faust I"
+                        kind: "ebook"
+                        coverUrl: "qrc:/mock/covers/faust.jpg"
+                        coverIsSquare: false
+                        progress: 0.42
+                        lastOpened: new Date(Date.now() - 86400000)
+                        page: 88
+                        pages: 210
+                    }
+                    ContinueCard {
+                        title: "Der Mann ohne Eigenschaften"
+                        kind: "ebook"
+                        coverUrl: ""
+                        coverIsSquare: false
+                        progress: 0
+                        lastOpened: new Date(Date.now() - 3 * 86400000)
+                        pages: 1040
+                        hasOtherFormat: true
+                    }
+                    ContinueCard {
+                        title: "Dracula"
+                        kind: "audiobook"
+                        coverUrl: "qrc:/mock/covers/dracula.jpg"
+                        coverIsSquare: true
+                        progress: 0.33
+                        lastOpened: new Date(2026, 8, 14, 18, 20)
+                        remainingSeconds: 37320
+                        available: false
+                    }
+                }
+                Caption {
+                    text: qsTr("Weitermachen-Karten: Hörbuch mit Kapitel, E-Book mit Seite, E-Book ohne Fortschritt, Datei fehlt")
                 }
             }
 

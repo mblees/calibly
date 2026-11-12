@@ -226,6 +226,8 @@ SideDrawer {
                             progress: modelData.progress
                             available: modelData.available
 
+                            onFinishedToggled: LibraryController.setFinished(root.workId, card.kind, !card.finished)
+
                             // Audiobooks play in calibly, ebooks open in the default application.
                             onOpenRequested: {
                                 card.openFailed = card.kind === "audiobook"

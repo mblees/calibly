@@ -15,7 +15,8 @@ import Calibly.Controls
 //   available        the file exists; otherwise the button is disabled
 //   openFailed       show that the system could not open the file
 // Signals:
-//   openRequested()  the user wants to read / listen
+//   openRequested()     the user wants to read / listen
+//   finishedToggled()   the link "Als fertig markieren" was clicked
 Rectangle {
     id: root
 
@@ -29,7 +30,9 @@ Rectangle {
     property bool openFailed: false
 
     signal openRequested()
+    signal finishedToggled()
 
+    readonly property bool finished: root.progress >= 1
     readonly property bool isAudiobook: root.kind === "audiobook"
     readonly property color formatColor: root.isAudiobook ? Theme.listen : Theme.read
     readonly property int percent: Math.round(root.progress * 100)
@@ -125,7 +128,7 @@ Rectangle {
         ProgressLine {
             width: parent.width
             value: root.progress
-            color: root.formatColor
+            color: root.finished ? Theme.finished : root.formatColor
         }
 
         AppButton {
@@ -151,6 +154,13 @@ Rectangle {
             wrapMode: Text.Wrap
             color: Theme.textMuted
             font.pixelSize: Theme.fontSmall
+        }
+
+        LinkButton {
+            iconName: "check"
+            iconColor: root.finished ? Theme.finished : Theme.textMuted
+            text: root.finished ? qsTr("Als nicht fertig markieren") : qsTr("Als fertig markieren")
+            onClicked: root.finishedToggled()
         }
     }
 }

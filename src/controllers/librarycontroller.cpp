@@ -4,6 +4,8 @@
 #include <QDesktopServices>
 #include <QFileInfo>
 
+#include <algorithm>
+
 #include "librarybackend.h"
 #include "metadatareader.h"
 
@@ -57,18 +59,65 @@ bool LibraryController::openFormat(const QString &workId, const QString &kind)
     const Work *work = m_works.workAt(m_works.rowOf(workId));
     if (!work)
         return false;
-    const Format *format = work->format(kind == QLatin1String("audiobook") ? Format::Kind::Audiobook
+    const int index = work->formatIndex(kind == QLatin1String("audiobook") ? Format::Kind::Audiobook
                                                                            : Format::Kind::Ebook);
-    if (!format || !QFileInfo::exists(format->filePath))
+    if (index < 0)
         return false;
-    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(format->filePath).absoluteFilePath())))
+    const QString filePath = work->formats.at(index).filePath;
+    if (!QFileInfo::exists(filePath)) {
+        setFileMissing(workId, index, true);
+        return false;
+    }
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(filePath).absoluteFilePath())))
         return false;
 
-    // Remember for "recently opened".
+    // Remember for "recently opened" and "Continue".
     Work opened = *work;
-    opened.lastOpened = QDateTime::currentDateTime();
+    opened.markOpened(index, QDateTime::currentDateTime());
+    opened.formats[index].fileMissing = false;
     saveWork(opened);
     return true;
+}
+
+bool LibraryController::setFinished(const QString &workId, const QString &kind, bool finished)
+{
+    const Work *work = m_works.workAt(m_works.rowOf(workId));
+    const int index = work ? work->formatIndex(kind == QLatin1String("audiobook") ? Format::Kind::Audiobook
+                                                                                  : Format::Kind::Ebook)
+                           : -1;
+    if (index < 0)
+        return false;
+    if (work->formats.at(index).finished() == finished)
+        return true;
+
+    Work changed = *work;
+    Format &format = changed.formats[index];
+    if (finished) {
+        format.progress = 1.0;
+    } else {
+        // Back to where it was: the listening position, or the start if
+        // the position is the end (or unknown, as for ebooks).
+        const qint64 durationMs = qint64(format.durationSeconds) * 1000;
+        const double progress = durationMs > 0 ? double(format.positionMs) / double(durationMs) : 0.0;
+        if (progress >= 0.999) {
+            format.progress = 0.0;
+            format.positionMs = 0;
+        } else {
+            format.progress = std::clamp(progress, 0.0, 1.0);
+        }
+    }
+    return saveWork(changed);
+}
+
+void LibraryController::setFileMissing(const QString &workId, int formatIndex, bool missing)
+{
+    const Work *work = m_works.workAt(m_works.rowOf(workId));
+    if (!canImport() || !work || formatIndex < 0 || formatIndex >= work->formats.size()
+        || work->formats.at(formatIndex).fileMissing == missing)
+        return;
+    Work changed = *work;
+    changed.formats[formatIndex].fileMissing = missing;
+    m_works.updateWork(changed); // not stored, see Format::fileMissing
 }
 
 bool LibraryController::saveWork(const Work &work)

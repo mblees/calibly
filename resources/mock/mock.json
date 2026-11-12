@@ -41,7 +41,7 @@
         { "kind": "audiobook", "publisher": "Beispiel Audio", "file": "der-prozess.mp3", "duration": 27660, "size": 442560000 } ] },
     { "id": "buddenbrooks", "title": "Buddenbrooks", "authors": ["Thomas Mann"], "description": "Vier Generationen einer Lübecker Kaufmannsfamilie und ihr allmählicher Niedergang.", "tags": ["Klassiker", "Familie"], "rating": 4, "language": "de", "published": 1901, "publisher": "Beispielverlag", "added": "2026-08-01T10:00:00",
       "formats": [
-        { "kind": "ebook", "file": "buddenbrooks.epub", "cover": "buddenbrooks.jpg", "pages": 760, "size": 1896000 } ] },
+        { "kind": "ebook", "missing": true, "file": "buddenbrooks.epub", "cover": "buddenbrooks.jpg", "pages": 760, "size": 1896000 } ] },
     { "id": "die-schatzinsel", "title": "Die Schatzinsel", "authors": ["Robert Louis Stevenson"], "narrators": ["Lea Hofmann"], "lastOpened": "2026-11-01T09:00:00", "description": "Der junge Jim Hawkins findet eine Schatzkarte und segelt mit einer zweifelhaften Mannschaft los.", "tags": ["Abenteuer", "Meer"], "rating": 4, "language": "de", "published": 1883, "publisher": "Beispielverlag", "added": "2026-08-19T10:00:00",
       "formats": [
         { "kind": "audiobook", "publisher": "Beispiel Audio", "file": "die-schatzinsel.m4b", "progress": 0.25, "cover": "die-schatzinsel.jpg", "duration": 25440, "size": 407040000 } ] },

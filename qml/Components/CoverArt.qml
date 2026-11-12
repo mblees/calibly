@@ -17,6 +17,8 @@ import Calibly.Theme
 //   coverUrl        image, empty = placeholder
 //   coverIsSquare   square cover (or square placeholder for pure audiobooks)
 //   stacked         draw as a stack of sheets (series)
+//   titleInset      space to keep free above the placeholder title, e.g. for
+//                   a label at the top left of the cover
 Item {
     id: root
 
@@ -25,6 +27,7 @@ Item {
     property url coverUrl
     property bool coverIsSquare: false
     property bool stacked: false
+    property real titleInset: 0
 
     default property alias overlay: overlayItem.data
 
@@ -49,6 +52,7 @@ Item {
         required property string title
         required property string author
         required property var colors
+        property real titleInset: 0
 
         gradient: Gradient {
             GradientStop { position: 0; color: face.colors[0] }
@@ -60,6 +64,7 @@ Item {
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.margins: Theme.spacingS
+            anchors.topMargin: Theme.spacingS + face.titleInset
             // Keep the top right corner free for the format badges.
             anchors.rightMargin: Theme.badgeSize + Theme.spacingS
             // Long words shrink the font instead of being broken apart.
@@ -156,6 +161,8 @@ Item {
                 title: root.title
                 author: root.author
                 colors: root.colors
+                // A square face starts below the top of the frame anyway.
+                titleInset: root.coverIsSquare ? 0 : root.titleInset
             }
 
             // --- square image: blurred fill ----------------------------------

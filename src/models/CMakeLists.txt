@@ -13,6 +13,9 @@ qt_add_qml_module(calibly_models
         workdetails.cpp
         importqueuemodel.h
         importqueuemodel.cpp
+        workstate.h
+        continuemodel.h
+        continuemodel.cpp
 )
 
 target_include_directories(calibly_models PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

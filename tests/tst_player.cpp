@@ -106,6 +106,69 @@ private slots:
         QCOMPARE(player.error(), PlayerController::FileMissing);
         QVERIFY(!player.hasWork());
         QVERIFY(!player.play(QStringLiteral("unknown")));
+        // The gallery now shows the cover as "file missing".
+        QCOMPARE(m_library->works()->workAt(1)->state(), Work::State::FileMissing);
+        QCOMPARE(m_library->works()->workAt(0)->state(), Work::State::New);
+    }
+
+    // Playing remembers when the audiobook was opened, for "Continue".
+    void playMarksFormatOpened()
+    {
+        PlayerController player(*m_library, nullptr);
+        QVERIFY(!m_library->works()->workAt(0)->formats.first().lastOpened.isValid());
+        QVERIFY(player.play(QStringLiteral("marsianer")));
+        player.pause();
+        const Work *work = m_library->works()->workAt(0);
+        QVERIFY(work->formats.first().lastOpened.isValid());
+        QCOMPARE(work->formats.first().lastOpened, work->lastOpened);
+        QCOMPARE(m_backend->works.first().formats.first().lastOpened, work->lastOpened);
+        QCOMPARE(work->state(), Work::State::Normal);
+    }
+
+    // "Mark as finished" stays when the player, which has the audiobook
+    // loaded but does not play it, saves on quit; taking it back returns to
+    // the listening position.
+    void finishedMarkSurvivesPlayer()
+    {
+        const auto saved = [this]() -> const Format & { return m_backend->works.first().formats.first(); };
+        {
+            PlayerController player(*m_library, nullptr);
+            QVERIFY(player.load(QStringLiteral("marsianer")));
+            player.seek(1000);
+            QCOMPARE(saved().progress, 0.25);
+            QVERIFY(m_library->setFinished(QStringLiteral("marsianer"), QStringLiteral("audiobook"), true));
+            QCOMPARE(m_library->works()->workAt(0)->state(), Work::State::Finished);
+        }
+        QCOMPARE(saved().progress, 1.0);
+        QCOMPARE(saved().positionMs, 1000);
+
+        // "Restart": the finished audiobook is loaded at its start, and
+        // stays finished as long as it is not played.
+        m_library.reset();
+        m_library = std::make_unique<LibraryController>(*m_backend, nullptr);
+        {
+            PlayerController player(*m_library, nullptr);
+            QVERIFY(player.hasWork());
+            QCOMPARE(player.position(), 0.0);
+        }
+        QCOMPARE(saved().progress, 1.0);
+
+        QVERIFY(m_library->setFinished(QStringLiteral("marsianer"), QStringLiteral("audiobook"), false));
+        QCOMPARE(saved().progress, 0.25);
+        QCOMPARE(saved().positionMs, 1000);
+        QCOMPARE(m_library->works()->workAt(0)->state(), Work::State::Normal);
+
+        // A position at the very end has nothing to return to: back to the start.
+        Work atEnd = *m_library->works()->workAt(0);
+        atEnd.formats.first().positionMs = 4000;
+        atEnd.formats.first().progress = 1.0;
+        QVERIFY(m_library->saveWork(atEnd));
+        QVERIFY(m_library->setFinished(QStringLiteral("marsianer"), QStringLiteral("audiobook"), false));
+        QCOMPARE(saved().progress, 0.0);
+        QCOMPARE(saved().positionMs, 0);
+
+        QVERIFY(!m_library->setFinished(QStringLiteral("unknown"), QStringLiteral("audiobook"), true));
+        QVERIFY(!m_library->setFinished(QStringLiteral("marsianer"), QStringLiteral("ebook"), true)); // has no ebook
     }
 
     void chaptersAndSeeking()

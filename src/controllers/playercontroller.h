@@ -139,6 +139,7 @@ private:
     qint64 m_pendingOffsetMs = -1; // position to set once the part is loaded
     bool m_loadingSeen = false;    // the backend really loads the part (see loadPart())
     qint64 m_positionMs = 0;
+    qint64 m_savedPositionMs = 0;  // the position the library knows (see savePosition())
     int m_chapterIndex = -1;
     bool m_playing = false;
     double m_speed = 1.0;

@@ -523,6 +523,7 @@ private slots:
         format.publisher = QStringLiteral("Hörverlag");
         format.isbn = QStringLiteral("978-3-16-148410-0");
         format.positionMs = 900000;
+        format.lastOpened = QDateTime(QDate(2026, 11, 10), QTime(8, 14));
         format.chapters = { { QStringLiteral("Eins"), QString(), 0, 1000 },
                             { QStringLiteral("Zwei"), root + QStringLiteral("/Jacob Grimm/Grimms Märchen/02.mp3"), 0, 2000 } };
         work.formats = { format };
@@ -557,11 +558,100 @@ private slots:
         QCOMPARE(loaded.formats.first().publisher, QStringLiteral("Hörverlag"));
         QCOMPARE(loaded.formats.first().isbn, QStringLiteral("978-3-16-148410-0"));
         QCOMPARE(loaded.formats.first().positionMs, 900000);
+        QCOMPARE(loaded.formats.first().lastOpened, format.lastOpened);
+        QVERIFY(loaded.formats.first().fileMissing); // the test never created the file
         QCOMPARE(loaded.formats.first().chapters.size(), 2);
         QCOMPARE(loaded.formats.first().chapters.at(0).filePath, QString());
         QCOMPARE(QDir::cleanPath(loaded.formats.first().chapters.at(1).filePath),
                  QDir::cleanPath(format.chapters.at(1).filePath));
         QCOMPARE(loaded.formats.first().chapters.at(1).durationMs, 2000);
+    }
+
+    // Loading checks whether the files are still there, also the parts of
+    // an audiobook of several files.
+    void sqliteFindsMissingFiles()
+    {
+        QTemporaryDir dir;
+        const QString root = dir.path();
+        const auto touch = [&root](const QString &name) {
+            QFile f(root + u'/' + name);
+            return f.open(QIODevice::WriteOnly) && f.write("x") == 1;
+        };
+        QVERIFY(touch(QStringLiteral("book.epub")));
+        QVERIFY(touch(QStringLiteral("01.mp3")));
+
+        Work work;
+        work.id = QStringLiteral("w1");
+        work.title = QStringLiteral("Der Marsianer");
+        Format ebook;
+        ebook.kind = Format::Kind::Ebook;
+        ebook.filePath = root + QStringLiteral("/book.epub");
+        Format audiobook;
+        audiobook.kind = Format::Kind::Audiobook;
+        audiobook.filePath = root + QStringLiteral("/01.mp3");
+        audiobook.chapters = { { QStringLiteral("Eins"), QString(), 0, 1000 },
+                               { QStringLiteral("Zwei"), root + QStringLiteral("/02.mp3"), 0, 1000 } };
+        work.formats = { ebook, audiobook };
+
+        SqliteBackend backend(root);
+        QVERIFY(backend.open());
+        QVERIFY(backend.saveWork(work));
+        QList<Work> works = backend.loadWorks();
+        QVERIFY(!works.first().formats.at(0).fileMissing);
+        QVERIFY(works.first().formats.at(1).fileMissing); // 02.mp3 is not there
+        QCOMPARE(works.first().state(), Work::State::FileMissing);
+
+        QVERIFY(touch(QStringLiteral("02.mp3")));
+        works = backend.loadWorks();
+        QVERIFY(!works.first().formats.at(1).fileMissing);
+        QCOMPARE(works.first().state(), Work::State::New);
+    }
+
+    // A library of phase 7 (schema 3) gets "last opened" per format: the
+    // format with progress takes it over from the work.
+    void sqliteMigratesVersion3()
+    {
+        QTemporaryDir dir;
+        const QString root = dir.path();
+        Work work;
+        work.id = QStringLiteral("w1");
+        work.title = QStringLiteral("Moby Dick");
+        work.lastOpened = QDateTime(QDate(2026, 11, 11), QTime(8, 14));
+        Format ebook;
+        ebook.kind = Format::Kind::Ebook;
+        ebook.filePath = root + QStringLiteral("/moby.epub");
+        Format audiobook;
+        audiobook.kind = Format::Kind::Audiobook;
+        audiobook.filePath = root + QStringLiteral("/moby.m4b");
+        audiobook.progress = 0.5;
+        work.formats = { ebook, audiobook };
+        {
+            SqliteBackend backend(root);
+            QVERIFY(backend.open());
+            QVERIFY(backend.saveWork(work));
+        }
+        {
+            // Back to how phase 7 left the database.
+            QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), QStringLiteral("v3"));
+            db.setDatabaseName(root + QStringLiteral("/calibly.db"));
+            QVERIFY(db.open());
+            QSqlQuery query(db);
+            QVERIFY2(query.exec(QStringLiteral("ALTER TABLE formats DROP COLUMN last_opened")),
+                     qPrintable(query.lastError().text()));
+            QVERIFY(query.exec(QStringLiteral("PRAGMA user_version = 3")));
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(QStringLiteral("v3"));
+
+        SqliteBackend backend(root);
+        QString error;
+        QVERIFY2(backend.open(&error), qPrintable(error));
+        const QList<Work> works = backend.loadWorks();
+        QCOMPARE(works.size(), 1);
+        QVERIFY(!works.first().formats.at(0).lastOpened.isValid());
+        QCOMPARE(works.first().formats.at(1).lastOpened, work.lastOpened);
+        QVERIFY(backend.saveWork(works.first()));
+        QCOMPARE(backend.loadWorks().first().formats.at(1).lastOpened, work.lastOpened);
     }
 
     // A library of phase 4 (schema 1, publisher per work) is updated on open.

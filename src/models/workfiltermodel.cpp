@@ -53,7 +53,7 @@ void WorkFilterModel::setFormatFilter(FormatFilter filter)
         emit dataChanged(index(0, 0), index(rowCount() - 1, 0),
                          { WorkModel::HasEbookRole, WorkModel::HasAudiobookRole,
                            WorkModel::ReadProgressRole, WorkModel::ListenProgressRole,
-                           WorkModel::CoverUrlRole, WorkModel::CoverIsSquareRole });
+                           WorkModel::CoverUrlRole, WorkModel::CoverIsSquareRole, WorkModel::WorkStateRole });
     }
     emit formatFilterChanged();
 }
@@ -82,6 +82,10 @@ QVariant WorkFilterModel::data(const QModelIndex &index, int role) const
     if (role == WorkModel::CoverIsSquareRole && (m_formatFilter == Ebook || m_formatFilter == Audiobook)) {
         return QSortFilterProxyModel::data(index, m_formatFilter == Ebook ? WorkModel::EbookCoverIsSquareRole
                                                                           : WorkModel::AudiobookCoverIsSquareRole);
+    }
+    if (role == WorkModel::WorkStateRole && (m_formatFilter == Ebook || m_formatFilter == Audiobook)) {
+        return QSortFilterProxyModel::data(index, m_formatFilter == Ebook ? WorkModel::EbookStateRole
+                                                                          : WorkModel::AudiobookStateRole);
     }
     if (m_formatFilter == Audiobook && (role == WorkModel::HasEbookRole || role == WorkModel::ReadProgressRole))
         return role == WorkModel::HasEbookRole ? QVariant(false) : QVariant(0.0);

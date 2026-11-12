@@ -141,6 +141,7 @@ bool PlayerController::load(const QString &workId)
     const bool filesExist = !timeline.isEmpty()
                             && std::all_of(timeline.parts().cbegin(), timeline.parts().cend(),
                                            [](const AudioTimeline::Part &part) { return QFileInfo::exists(part.filePath); });
+    m_library.setFileMissing(workId, index, !filesExist);
     if (!filesExist) {
         setError(FileMissing);
         return false;
@@ -152,6 +153,7 @@ bool PlayerController::load(const QString &workId)
     // A finished audiobook starts again from the beginning.
     const bool finished = format.progress >= 1.0 || format.positionMs >= m_timeline.durationMs() - kFinishedMarginMs;
     m_positionMs = finished ? 0 : std::clamp<qint64>(format.positionMs, 0, m_timeline.durationMs());
+    m_savedPositionMs = m_positionMs;
     m_chapterIndex = m_timeline.chapterAt(m_positionMs);
     if (!m_library.libraryRoot().isEmpty()) {
         QSettings settings;
@@ -172,11 +174,11 @@ bool PlayerController::play(const QString &workId, int chapter)
     if (chapter >= 0 && chapter < m_timeline.chapters().size())
         seek(double(m_timeline.chapters().at(chapter).startMs));
 
-    // Remember for "recently opened".
+    // Remember for "recently opened" and "Continue".
     const WorkModel *works = m_library.works();
     if (const Work *work = works->workAt(works->rowOf(workId))) {
         Work opened = *work;
-        opened.lastOpened = QDateTime::currentDateTime();
+        opened.markOpened(audiobookIndex(opened), QDateTime::currentDateTime());
         m_library.saveWork(opened);
     }
     resume();
@@ -307,7 +309,10 @@ void PlayerController::setSleepAtChapterEnd()
 
 void PlayerController::savePosition()
 {
-    if (!hasWork())
+    // Only what the player itself moved is stored: an audiobook that was
+    // loaded but not played keeps its state in the library, e.g. "finished"
+    // (it starts again at 0 here) or a state the user set meanwhile.
+    if (!hasWork() || m_positionMs == m_savedPositionMs)
         return;
     const WorkModel *works = m_library.works();
     const Work *current = works->workAt(works->rowOf(m_workId));
@@ -320,6 +325,7 @@ void PlayerController::savePosition()
     const qint64 duration = m_timeline.durationMs();
     const double progress = m_positionMs >= duration - kFinishedMarginMs ? 1.0
                           : duration > 0 ? double(m_positionMs) / double(duration) : 0.0;
+    m_savedPositionMs = m_positionMs;
     if (format.positionMs == m_positionMs && qFuzzyCompare(format.progress + 1, progress + 1))
         return;
     format.positionMs = m_positionMs;

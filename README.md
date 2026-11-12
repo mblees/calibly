@@ -53,6 +53,8 @@ Command line options of `calibly.exe`:
 
 Audiobooks play in calibly: "Continue listening" in the detail view starts the player bar at the bottom, which opens the fullscreen player. Space plays / pauses, ← / → skip 30 seconds. The position is saved, and the last audiobook is ready again after a restart.
 
+The row "Continue" at the top of the library shows the titles that were opened last and are not finished; the round button continues directly, and so do "Read" / "Listen" when hovering a cover. Covers carry a label: "NEW" until a title is opened for the first time, "FINISHED" (audiobooks listened to the end; ebooks are marked with "Mark as finished" in the detail view, because they open in another application) and "FILE MISSING" when a file is no longer in the library folder.
+
 Metadata is edited with ✎ in the detail view of a title. Fields marked with 🔗 apply to all formats of the title, the others only to the audiobook or the ebook. Ctrl+S saves, Ctrl+PgUp / Ctrl+PgDown go to the previous / next title.
 
 Files are added with "Add" or by dragging them (or whole folders) into the window: dropped on free space they become new titles, dropped on a cover they become a format of that title (e.g. the audiobook of an ebook). The MP3 files of one folder become one audiobook. The import queue at the bottom right shows each title; "Review" opens the metadata of titles whose name could only be taken from the file name.

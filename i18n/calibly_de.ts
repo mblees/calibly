@@ -2,9 +2,20 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="de" sourcelanguage="de">
 <context>
+    <name>ContinueCard</name>
+    <message numerus="yes">
+        <location filename="../qml/Components/ContinueCard.qml" line="69"/>
+        <source>%Ln Seiten</source>
+        <translation>
+            <numerusform>%Ln Seite</numerusform>
+            <numerusform>%Ln Seiten</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>FormatCard</name>
     <message numerus="yes">
-        <location filename="../qml/Components/FormatCard.qml" line="64"/>
+        <location filename="../qml/Components/FormatCard.qml" line="67"/>
         <source>%Ln Seiten</source>
         <translation>
             <numerusform>%Ln Seite</numerusform>
@@ -12,7 +23,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Components/FormatCard.qml" line="65"/>
+        <location filename="../qml/Components/FormatCard.qml" line="68"/>
         <source>%Ln Seiten · Seite %1</source>
         <translation>
             <numerusform>%Ln Seite · Seite %1</numerusform>
@@ -42,7 +53,7 @@
 <context>
     <name>LibraryView</name>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="192"/>
+        <location filename="../qml/Views/LibraryView.qml" line="266"/>
         <source>%L1 von %Ln Titeln</source>
         <translation>
             <numerusform>%L1 von %Ln Titel</numerusform>
@@ -50,7 +61,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="193"/>
+        <location filename="../qml/Views/LibraryView.qml" line="267"/>
         <source>%Ln Titel</source>
         <translation>
             <numerusform>%Ln Titel</numerusform>

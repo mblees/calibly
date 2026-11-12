@@ -10,7 +10,9 @@
 // JSON file. Relative format file paths are relative to the JSON file; for
 // existing files without a "size" the real file size is used. Audiobook
 // formats can list "chapters" (title, start and duration in seconds,
-// optional file).
+// optional file). A format can have its own "lastOpened"; without one the
+// formats with progress get the "lastOpened" of the work. "missing": true
+// shows the format as "file missing" (the sample files never exist).
 class MockBackend : public LibraryBackend
 {
 public:

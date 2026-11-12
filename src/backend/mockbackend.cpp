@@ -129,6 +129,10 @@ QList<Work> MockBackend::readJson() const
                                          qint64(chapterObject.value(QStringLiteral("duration")).toDouble() * 1000) });
             }
             format.positionMs = qint64(format.progress * format.durationSeconds * 1000);
+            format.lastOpened = QDateTime::fromString(formatObject.value(QStringLiteral("lastOpened")).toString(),
+                                                      Qt::ISODate);
+            // The sample files do not exist; "missing" shows the state on purpose.
+            format.fileMissing = formatObject.value(QStringLiteral("missing")).toBool();
             const QString cover = formatObject.value(QStringLiteral("cover")).toString();
             if (!cover.isEmpty()) {
                 format.coverPath = coverDir + cover;
@@ -136,6 +140,7 @@ QList<Work> MockBackend::readJson() const
             }
             work.formats.append(format);
         }
+        work.inheritLastOpened();
 
         works.append(work);
     }

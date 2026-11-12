@@ -11,6 +11,7 @@ qt_add_qml_module(calibly_views
         MetadataEditor.qml
         PlayerView.qml
         PlayerBar.qml
+        ContinueRow.qml
         ComponentGallery.qml
 )
 

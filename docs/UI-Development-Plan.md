@@ -132,8 +132,8 @@ Each QML folder is its own module (`qt_add_qml_module`): `Calibly.Theme`, `Calib
 | `coverUrl`, `coverIsSquare` | url / bool | Cover of the shown format (ebook, else audiobook; in the Ebooks/Audiobooks selection that format). Controls how square covers are displayed |
 | `hasEbook`, `hasAudiobook` | bool | Determines the format icons |
 | `readProgress`, `listenProgress` | real 0–1 | Progress lines |
-| `state` | enum | `Normal`, `New`, `Finished`, `FileMissing` |
-| `lastOpened` | datetime | Sorting and "Continue" |
+| `workState` | enum `WorkState` | `Normal`, `New`, `Finished`, `FileMissing` (not `state`: every QML item already has a property of that name) |
+| `lastOpened` | datetime | Sorting; "Continue" uses the date of the format (`ContinueModel`) |
 
 `WorkFilterModel` (`QSortFilterProxyModel`) has the properties `formatFilter` (All / Ebook / Audiobook / Both), `searchText` and `sortOrder`.
 
@@ -149,7 +149,7 @@ Item {
     required property bool   hasAudiobook
     property real readProgress: 0
     property real listenProgress: 0
-    property int  state: WorkState.Normal
+    property int  workState: WorkState.Normal
     property bool selected: false
 
     signal clicked()
@@ -196,6 +196,7 @@ View F from the mockup becomes a real developer view `ComponentGallery.qml` (sta
 | `CoverTile` (icons, labels, progress, hover, selection) | Components | A, D | 1 / 8 / 9 |
 | `SideDrawer`, `Tabs`, `RatingStars` | Controls | B | 3 |
 | `FormatCard` | Components | B | 3 |
+| `LinkButton` ("Als fertig markieren") | Controls | B | 8 |
 | `FormField`, `InputField`, `TextAreaField`, `TagField` | Controls | E | 5 |
 | `MetadataForm` | Components | E | 5 |
 | `SeekBar` | Controls | A, C | 6 |
@@ -287,6 +288,10 @@ Every phase ends with a **runnable app**. A phase only starts once the previous 
 - "Continue" row with `ContinueCard`, sorted by last opened.
 - States on the cover: New, Finished, File missing.
 - **Done when:** every state from view F can appear in the real gallery.
+
+**Implemented as:** `Work::state()` (core) decides the state of a cover, in this order: **file missing** (a file of a format was not found), **finished** (a format has progress 1), **new** (never opened since it was added, as in the mockup – there is no time limit). The models report it as the role `workState` with the QML enum `WorkState`; with the format selection "Ebooks" / "Audiobooks" it is the state of that format only. `CoverTile` shows the label at the top left ("NEU", "✓ FERTIG", "DATEI FEHLT"), draws the progress line of a finished format in green and the cover of a missing file in grey. Whether the files exist is checked when the library is loaded (`Format::fileMissing`, not stored; the sample data marks one title with `"missing": true`) and again when a file is opened or played. Because ebooks still open in another application, calibly cannot know when one is finished: the detail view got "Als fertig markieren" / "Als nicht fertig markieren" on every `FormatCard` (`LibraryController::setFinished()`; an audiobook returns to its listening position). The player now only stores a position it moved itself, so loading the last audiobook at start no longer resets a finished one.
+"Continue": formats have their own `lastOpened` (database schema 4; older libraries take it over from the work for the formats with progress). `ContinueModel` (`Calibly.Models`) lists per work the unfinished format that was opened last, most recent first, following the format selection; the row hides while searching and shows at most 12 titles. `ContinueRow` (a view part) is the header of the cover grid together with the "Bibliothek" heading, so it scrolls away with the covers. A `ContinueCard` shows chapter and remaining time or page, the progress, "zuletzt: gestern, 22:40" and a round button that continues directly; a click on the card opens the detail view. An ebook that was opened stays in the row (without known progress) until it is marked as finished.
+Hover actions (interaction principle 1): hovering a cover shows "Lesen" / "Hören" for the formats it has; they do the same as the buttons in the detail view. The sidebar entry "Weitermachen" is still a placeholder.
 
 ### Phase 9 – Multi-selection and series
 - Selection via the circle on the cover, Ctrl+click or Ctrl+A. Plus a `BulkActionBar` with Metadata, "Merge into one work" and Remove.

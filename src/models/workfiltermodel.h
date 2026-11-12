@@ -19,7 +19,8 @@
 // Format filter: "Ebook" = works that have an ebook (they may also have an
 // audiobook), "Audiobook" accordingly, "BothFormats" = works with both.
 // With "Ebook" or "Audiobook" the works are presented as that format only:
-// coverUrl/coverIsSquare report the cover of the selected format, and the
+// coverUrl/coverIsSquare report the cover of the selected format, workState
+// its state (e.g. finished only if that format is finished), and the
 // roles of the other format (hasAudiobook/listenProgress or
 // hasEbook/readProgress) report false / 0, so the tiles show only the cover,
 // badge and progress of the selected format.

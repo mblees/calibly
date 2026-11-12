@@ -54,10 +54,26 @@ struct Format
     // chapters) and the saved listening position across all files.
     QList<Chapter> chapters;
     qint64 positionMs = 0;
+
+    // When this format was last read / listened to; invalid = never.
+    QDateTime lastOpened;
+    // The file (or one file of an audiobook of several files) was not found.
+    // Not stored: the backend sets it when it loads the library.
+    bool fileMissing = false;
+
+    // Read or listened to the end (or marked as finished by the user).
+    bool finished() const { return progress >= 1.0; }
 };
 
 struct Work
 {
+    // What the cover says about the work besides formats and progress
+    // (view F of the mockup). Only one applies, in this order:
+    //   FileMissing  a file of a format was not found
+    //   Finished     a format was read / listened to the end
+    //   New          never opened since it was added
+    enum class State { Normal, New, Finished, FileMissing };
+
     QString id;
     QString title;
     QStringList authors;
@@ -76,6 +92,8 @@ struct Work
     // First format of this kind, nullptr if there is none.
     const Format *format(Format::Kind kind) const;
     Format *format(Format::Kind kind);
+    // Its index in formats, -1 if there is none.
+    int formatIndex(Format::Kind kind) const;
 
     bool hasFormat(Format::Kind kind) const { return format(kind) != nullptr; }
     bool hasEbook() const { return hasFormat(Format::Kind::Ebook); }
@@ -95,4 +113,19 @@ struct Work
     // square like a real audiobook cover.
     QString coverPath(Format::Kind kind) const;
     bool coverIsSquare(Format::Kind kind) const;
+
+    // State of the work, looking at all its formats.
+    State state() const;
+    // State of the work presented as this format only (format selection
+    // "Ebooks" / "Audiobooks"): the other format is ignored.
+    State state(Format::Kind kind) const;
+
+    // Remembers that this format was opened now: for the format ("Continue")
+    // and for the work (sorting by "last opened", state New).
+    void markOpened(int formatIndex, const QDateTime &when);
+
+    // Libraries from before formats had their own lastOpened: the formats
+    // with progress (or, if none has any, the first format) get the work's
+    // lastOpened. Does nothing if a format already has one.
+    void inheritLastOpened();
 };

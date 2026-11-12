@@ -18,6 +18,9 @@ class LibraryBackend;
 //       opens the file of a format ("ebook" or "audiobook") with the default
 //       application of the system and remembers when; false if the file is
 //       missing or no application could open it
+//   LibraryController.setFinished(workId, kind, finished)
+//       marks a format as read / listened to the end, or takes that back
+//       (an audiobook then is where it was stopped, an ebook at the start)
 //
 //   canImport         files can be imported (a real library, not --mock);
 //                     importing itself is done by ImportController
@@ -59,6 +62,12 @@ public:
 
     Q_INVOKABLE void reload();
     Q_INVOKABLE bool openFormat(const QString &workId, const QString &kind);
+    Q_INVOKABLE bool setFinished(const QString &workId, const QString &kind, bool finished);
+
+    // A file of this format was (not) found, e.g. when it was opened. Only
+    // changes what the views show; it is checked again when the library is
+    // loaded. Ignored for sample data, whose files never exist.
+    void setFileMissing(const QString &workId, int formatIndex, bool missing);
 
 private:
     LibraryBackend &m_backend;
