@@ -92,8 +92,12 @@ void readAudio(const QString &path, FileMetadata &metadata)
     }
 
     const TagLib::PropertyMap properties = file.properties();
-    metadata.title = firstValue(properties, { "ALBUM", "TITLE" });
     metadata.trackTitle = firstValue(properties, { "TITLE" });
+    metadata.title = firstValue(properties, { "ALBUM" });
+    if (metadata.title.isEmpty() && !metadata.trackTitle.isEmpty()) {
+        metadata.title = metadata.trackTitle;
+        metadata.titleFromTrack = true;
+    }
     metadata.trackNumber = firstValue(properties, { "TRACKNUMBER" }).section(u'/', 0, 0).toInt(); // "3/12"
     metadata.chapters = readChapters(file.file(), metadata.durationMs);
     metadata.authors = TextUtils::splitNames(firstValue(properties, { "ALBUMARTIST", "ARTIST" }));

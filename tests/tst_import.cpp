@@ -333,6 +333,150 @@ private slots:
         QCOMPARE(plan.duplicates, QStringList{ QStringLiteral("c:/in/marsianer.epub") });
     }
 
+    // Phase 7: the parts of an audiobook folder become one work, also
+    // without album tags and across "CD 1" / "CD 2" subfolders.
+    void groupAudioFoldersJoinsParts()
+    {
+        auto part = [](const QString &path, const QString &title, bool fromName, bool fromTrack) {
+            FileMetadata metadata = file(path, Format::Kind::Audiobook, title, QString());
+            metadata.authors.clear();
+            metadata.titleFromFileName = fromName;
+            metadata.titleFromTrack = fromTrack;
+            return metadata;
+        };
+        QList<FileMetadata> files = {
+            // No album: track titles and file names only.
+            part(QStringLiteral("c:/in/Dracula - Bram Stoker/01.mp3"), QStringLiteral("Kapitel 1"), false, true),
+            part(QStringLiteral("c:/in/Dracula - Bram Stoker/02.mp3"), QStringLiteral("02"), true, false),
+            // Disc folders: the album tag of one part names the book.
+            part(QStringLiteral("c:/in/Odyssee/CD 1/01.mp3"), QStringLiteral("Die Odyssee"), false, false),
+            part(QStringLiteral("c:/in/Odyssee/CD 2/01.mp3"), QStringLiteral("01"), true, false),
+            // Two different albums in one folder: left alone.
+            part(QStringLiteral("c:/in/Mix/a.mp3"), QStringLiteral("Faust"), false, false),
+            part(QStringLiteral("c:/in/Mix/b.mp3"), QStringLiteral("Woyzeck"), false, false),
+            // M4B files are complete audiobooks: left alone.
+            part(QStringLiteral("c:/in/Reihe/Band 1.m4b"), QStringLiteral("Band 1"), true, false),
+            part(QStringLiteral("c:/in/Reihe/Band 2.m4b"), QStringLiteral("Band 2"), true, false),
+        };
+        files[0].authors = { QStringLiteral("Bram Stoker") };
+        files[0].authorsFromFileName = true; // guessed, the folder knows better
+
+        groupAudioFolders(files);
+        QCOMPARE(files.at(0).title, QStringLiteral("Dracula"));
+        QCOMPARE(files.at(1).title, QStringLiteral("Dracula"));
+        QCOMPARE(files.at(1).authors, QStringList{ QStringLiteral("Bram Stoker") });
+        QVERIFY(files.at(1).titleFromFileName);
+        QVERIFY(!files.at(0).titleFromTrack);
+        QCOMPARE(files.at(2).title, QStringLiteral("Die Odyssee"));
+        QCOMPARE(files.at(3).title, QStringLiteral("Die Odyssee"));
+        QVERIFY(!files.at(3).titleFromFileName);
+        QCOMPARE(files.at(4).title, QStringLiteral("Faust"));
+        QCOMPARE(files.at(5).title, QStringLiteral("Woyzeck"));
+        QCOMPARE(files.at(6).title, QStringLiteral("Band 1"));
+        QCOMPARE(files.at(7).title, QStringLiteral("Band 2"));
+
+        const ImportPlan plan = planImport(files, {});
+        QCOMPARE(plan.works.size(), 6); // Dracula, Odyssee, Faust, Woyzeck, Band 1, Band 2
+        QVERIFY(!needsReview(files.at(1)));  // the folder named the author
+    }
+
+    void needsReviewOnlyForUnknownFiles()
+    {
+        FileMetadata scan = file(QStringLiteral("c:/in/scan_042.pdf"), Format::Kind::Ebook,
+                                 QStringLiteral("scan 042"), QString());
+        scan.authors.clear();
+        scan.titleFromFileName = true;
+        QVERIFY(needsReview(scan));
+        scan.authors = { QStringLiteral("Someone") };
+        QVERIFY(!needsReview(scan));
+        scan.authors.clear();
+        scan.titleFromFileName = false; // the file has its own title
+        QVERIFY(!needsReview(scan));
+    }
+
+    // Files dropped onto a cover become formats of that work, whatever
+    // their own title says; duplicates are still skipped.
+    void planAddsToDropTarget()
+    {
+        Work dracula;
+        dracula.id = QStringLiteral("dracula");
+        dracula.title = QStringLiteral("Dracula");
+        dracula.authors = { QStringLiteral("Bram Stoker") };
+        Format ebook;
+        ebook.kind = Format::Kind::Ebook;
+        ebook.fileSize = 500;
+        dracula.formats = { ebook };
+        Work other;
+        other.id = QStringLiteral("other");
+        other.title = QStringLiteral("Hoerbuch");
+        other.authors = { QStringLiteral("Niemand") };
+
+        const QList<FileMetadata> files = {
+            file(QStringLiteral("c:/in/Dracula_Hoerbuch/01.mp3"), Format::Kind::Audiobook,
+                 QStringLiteral("Hoerbuch"), QStringLiteral("Niemand")),
+            file(QStringLiteral("c:/in/dracula.epub"), Format::Kind::Ebook, QStringLiteral("Dracula"),
+                 QStringLiteral("Bram Stoker"), 500),
+        };
+        const ImportPlan plan = planImport(files, { other, dracula }, QStringLiteral("dracula"));
+        QCOMPARE(plan.works.size(), 1);
+        QCOMPARE(plan.works.at(0).id, QStringLiteral("dracula"));
+        QCOMPARE(plan.works.at(0).title, QStringLiteral("Dracula")); // the target keeps its metadata
+        QCOMPARE(plan.formats.size(), 1);
+        QCOMPARE(plan.formats.at(0).metadata.kind, Format::Kind::Audiobook);
+        QCOMPARE(plan.duplicates, QStringList{ QStringLiteral("c:/in/dracula.epub") });
+    }
+
+    // The worker reports one queue item per work before copying, then each work.
+    void workerReportsItems()
+    {
+        QTemporaryDir dir;
+        const QString source = dir.filePath(QStringLiteral("in"));
+        QVERIFY(QDir().mkpath(source));
+        writeMp3(source + QStringLiteral("/1.mp3"), 1000, QStringLiteral("Der Marsianer"), QString(), 1);
+        writeMp3(source + QStringLiteral("/2.mp3"), 1000, QStringLiteral("Der Marsianer"), QString(), 2);
+        QFile scan(source + QStringLiteral("/scan_042.mobi"));
+        QVERIFY(scan.open(QIODevice::WriteOnly));
+        scan.write("x");
+        scan.close();
+
+        Work existing;
+        existing.id = QStringLiteral("marsianer");
+        existing.title = QStringLiteral("Der Marsianer");
+        existing.authors = { QStringLiteral("Andy Weir") };
+
+        ImportWorker worker;
+        QSignalSpy planned(&worker, &ImportWorker::planned);
+        QSignalSpy ready(&worker, &ImportWorker::workReady);
+        worker.run({ source }, { existing }, dir.filePath(QStringLiteral("library")));
+
+        QCOMPARE(planned.count(), 1);
+        const QList<ImportItem> items = planned.first().at(0).value<QList<ImportItem>>();
+        QCOMPARE(items.size(), 2);
+        // Ebooks are planned first.
+        QCOMPARE(items.at(0).title, QStringLiteral("scan 042"));
+        QVERIFY(items.at(0).newWork);
+        QVERIFY(items.at(0).needsReview);
+        QCOMPARE(items.at(0).fileTypes, QStringList{ QStringLiteral("MOBI") });
+        QCOMPARE(items.at(1).workId, QStringLiteral("marsianer"));
+        QVERIFY(!items.at(1).newWork);
+        QVERIFY(items.at(1).merged);
+        QVERIFY(items.at(1).hasAudiobook);
+        QCOMPARE(items.at(1).fileCount, 2);
+
+        QCOMPARE(ready.count(), 2);
+        const Work marsianer = ready.at(1).at(1).value<Work>();
+        QCOMPARE(marsianer.id, QStringLiteral("marsianer"));
+        QCOMPARE(marsianer.formats.size(), 1);
+        QCOMPARE(marsianer.formats.first().chapters.size(), 2);
+        QVERIFY(ready.at(1).at(2).toStringList().isEmpty());
+
+        const PathSummary summary = ImportWorker::inspectPaths({ source });
+        QCOMPARE(summary.name, QStringLiteral("in"));
+        QCOMPARE(summary.audiobookCount, 2);
+        QCOMPARE(summary.ebookCount, 1);
+        QCOMPARE(summary.countBySuffix.value(QStringLiteral("MP3")), 2);
+    }
+
     void safeNames()
     {
         QCOMPARE(LibraryFolder::safeName(QStringLiteral("Carl's: Doom? <Scenario>.")),

@@ -13,6 +13,8 @@ qt_add_qml_module(calibly_components
         PlaybackOptions.qml
         ChapterList.qml
         MiniPlayer.qml
+        DropHint.qml
+        ImportQueue.qml
 )
 
 target_link_libraries(calibly_components PRIVATE Qt6::Quick calibly_theme calibly_controls)

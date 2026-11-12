@@ -12,6 +12,9 @@ import Calibly.Models
 // View A of the mockup: all works as a cover grid with search, format
 // selection, sorting and cover size. Filtering and sorting happen in C++
 // (WorkFilterModel); this view only holds the chosen values.
+// View D: files dropped on free space become new works, files dropped on a
+// cover become formats of that work (ImportController); the import queue
+// at the bottom right shows how it goes.
 ViewBase {
     id: root
 
@@ -81,7 +84,6 @@ ViewBase {
         anchors.leftMargin: Theme.spacingM
         anchors.verticalCenter: search.verticalCenter
         visible: LibraryController.canImport
-        enabled: !LibraryController.importing
         text: qsTr("Hinzufügen")
         iconName: "plus"
         variant: AppButton.Primary
@@ -97,7 +99,7 @@ ViewBase {
         nameFilters: [qsTr("E-Books und Hörbücher (%1)").arg(LibraryController.fileNameFilters.join(" ")),
                       qsTr("Alle Dateien (*)")]
 
-        onAccepted: LibraryController.importFiles(importDialog.selectedFiles)
+        onAccepted: ImportController.importFiles(importDialog.selectedFiles)
     }
 
     AppSlider {
@@ -239,6 +241,8 @@ ViewBase {
             height: grid.cellHeight
 
             CoverTile {
+                dropLabel: drop.containsDrag && drop.targetWorkId === cell.workId
+                           ? drop.labelFor(cell.title) : ""
                 width: grid.tileWidth
                 title: cell.title
                 author: cell.authorText
@@ -293,7 +297,7 @@ ViewBase {
         }
         AppButton {
             anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.total === 0 && LibraryController.canImport && !LibraryController.importing
+            visible: root.total === 0 && LibraryController.canImport
             text: qsTr("E-Books und Hörbücher hinzufügen")
             iconName: "plus"
             variant: AppButton.Primary
@@ -301,79 +305,137 @@ ViewBase {
         }
     }
 
-    // --- import progress and result ------------------------------------------
-    Rectangle {
-        id: importStatus
+    // --- drag & drop (view D) -------------------------------------------------
+    DropArea {
+        id: drop
 
-        property string summary
+        // What is dragged (see ImportController.inspect()).
+        property var summary: ({})
+        // The work under the pointer, empty = free space.
+        property string targetWorkId
+        // -1 / 1 while the pointer is near the top / bottom edge of the grid.
+        property int scrollDirection: 0
+        property point lastPosition
 
-        anchors.horizontalCenter: parent.horizontalCenter
+        readonly property string summaryText: drop.summary.name
+                                              ? drop.summary.name + " · " + drop.summary.typesText : ""
+
+        // Text on the cover the files would be added to.
+        function labelFor(title: string): string {
+            const ebooks = drop.summary.ebookCount || 0
+            const audiobooks = drop.summary.audiobookCount || 0
+            if (audiobooks > 0 && ebooks === 0)
+                return qsTr("Als Hörbuch zu „%1“ hinzufügen").arg(title)
+            if (ebooks > 0 && audiobooks === 0)
+                return qsTr("Als E-Book zu „%1“ hinzufügen").arg(title)
+            return qsTr("Zu „%1“ hinzufügen").arg(title)
+        }
+
+        // Finds the cover under the point (in the coordinates of the drop area).
+        function updateTarget(x: real, y: real) {
+            drop.lastPosition = Qt.point(x, y)
+            const p = grid.mapFromItem(drop, x, y)
+            const inGrid = p.x >= 0 && p.y >= 0 && p.x < grid.width && p.y < grid.height
+            drop.scrollDirection = !inGrid ? 0
+                                 : p.y < Theme.dropScrollMargin ? -1
+                                 : p.y > grid.height - Theme.dropScrollMargin ? 1 : 0
+
+            let workId = ""
+            if (inGrid) {
+                const contentX = p.x + grid.contentX
+                const contentY = p.y + grid.contentY
+                const index = grid.indexAt(contentX, contentY)
+                // The gap between two columns is free space.
+                const xInCell = contentX - Math.floor(contentX / grid.cellWidth) * grid.cellWidth
+                if (index >= 0 && xInCell < grid.tileWidth)
+                    workId = works.workIdAt(index)
+            }
+            drop.targetWorkId = workId
+        }
+
+        function reset() {
+            drop.summary = ({})
+            drop.targetWorkId = ""
+            drop.scrollDirection = 0
+        }
+
+        anchors.fill: parent
+        enabled: LibraryController.canImport && !detail.visible && !metadataEditor.visible
+
+        onEntered: function(drag) {
+            drop.summary = drag.hasUrls ? ImportController.inspect(drag.urls) : ({})
+            if (!drop.summary.fileCount) {
+                drag.accepted = false // nothing calibly can import
+                return
+            }
+            drag.accept(Qt.CopyAction)
+            drop.updateTarget(drag.x, drag.y)
+        }
+        onPositionChanged: function(drag) {
+            drop.updateTarget(drag.x, drag.y)
+        }
+        onExited: drop.reset()
+        onDropped: function(event) {
+            ImportController.importFiles(event.urls, drop.targetWorkId)
+            event.accept(Qt.CopyAction)
+            drop.reset()
+        }
+    }
+
+    // Scrolls the grid while files are dragged near its top or bottom edge,
+    // so every cover can be reached.
+    Timer {
+        interval: Theme.dropScrollInterval
+        repeat: true
+        running: drop.containsDrag && drop.scrollDirection !== 0
+
+        onTriggered: {
+            const top = grid.originY - grid.topMargin
+            const bottom = Math.max(top, grid.originY + grid.contentHeight + grid.bottomMargin - grid.height)
+            grid.contentY = Math.max(top, Math.min(bottom, grid.contentY + drop.scrollDirection * Theme.dropScrollStep))
+            drop.updateTarget(drop.lastPosition.x, drop.lastPosition.y)
+        }
+    }
+
+    DropHint {
+        anchors.horizontalCenter: grid.horizontalCenter
+        anchors.top: grid.top
+        anchors.topMargin: Theme.spacingS
+        width: Math.min(implicitWidth, grid.width)
+        visible: drop.containsDrag
+        onCover: drop.targetWorkId !== ""
+        summary: drop.summaryText
+    }
+
+    // --- import queue ----------------------------------------------------------
+    ImportQueue {
+        id: importQueue
+
+        anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: Theme.spacingL
-        width: Math.min(Theme.searchFieldWidth + Theme.formatCardWidth, parent.width - 2 * Theme.spacingXl)
-        height: statusColumn.implicitHeight + 2 * Theme.spacingM
-        radius: Theme.radiusL
-        color: Theme.surfaceRaised
-        border.width: Theme.borderWidth
-        border.color: Theme.border
-        visible: LibraryController.importing || summaryTimer.running
+        anchors.margins: Theme.spacingL
+        width: Math.min(implicitWidth, parent.width - 2 * Theme.spacingL)
+        visible: ImportController.queue.count > 0
+        model: ImportController.queue
+        finishedCount: ImportController.queue.finishedCount
 
-        Accessible.role: Accessible.StatusBar
-        Accessible.name: statusText.text
-
-        Column {
-            id: statusColumn
-
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.margins: Theme.spacingM
-            spacing: Theme.spacingS
-
-            Text {
-                id: statusText
-
-                width: parent.width
-                elide: Text.ElideMiddle
-                color: Theme.textPrimary
-                font.pixelSize: Theme.fontBody
-                text: {
-                    if (!LibraryController.importing)
-                        return importStatus.summary
-                    if (LibraryController.importTotal === 0)
-                        return qsTr("Dateien werden gesucht …")
-                    return qsTr("Importiere %1 von %2: %3").arg(Math.min(LibraryController.importDone + 1,
-                                                                        LibraryController.importTotal))
-                                                         .arg(LibraryController.importTotal)
-                                                         .arg(LibraryController.importFileName)
-                }
-            }
-            ProgressLine {
-                width: parent.width
-                visible: LibraryController.importing
-                value: LibraryController.importTotal > 0
-                       ? LibraryController.importDone / LibraryController.importTotal : 0
-            }
+        onReviewRequested: function(entryId, workId) {
+            ImportController.queue.markReviewed(entryId)
+            metadataEditor.openFor(workId)
         }
+        onEntryActivated: function(workId, coverUrl, coverIsSquare) {
+            detail.openFor(workId, coverUrl, coverIsSquare)
+        }
+        onCloseRequested: ImportController.queue.clearFinished()
 
+        // Rows that went fine disappear after a while; rows that need
+        // attention stay until they are looked at or the queue is closed.
         Timer {
-            id: summaryTimer
-
             interval: Theme.messageDuration
-        }
+            running: importQueue.visible && !ImportController.queue.active
+                     && ImportController.queue.attentionCount === 0
 
-        Connections {
-            target: LibraryController
-
-            function onImportFinished(added: int, skipped: int, failed: int) {
-                const parts = [qsTr("%n Datei(en) hinzugefügt", "", added)]
-                if (skipped > 0)
-                    parts.push(qsTr("%n bereits vorhanden", "", skipped))
-                if (failed > 0)
-                    parts.push(qsTr("%n fehlgeschlagen", "", failed))
-                importStatus.summary = parts.join(" · ")
-                summaryTimer.restart()
-            }
+            onTriggered: ImportController.queue.clearFinished()
         }
     }
 }

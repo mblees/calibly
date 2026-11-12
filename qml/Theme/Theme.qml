@@ -120,6 +120,13 @@ QtObject {
     readonly property real badgeIconStrokeWidth: 2.4 // thicker lines, so the small icons stay readable
     readonly property real disabledOpacity: 0.4
     readonly property int progressHeight: 3
+    readonly property int importQueueWidth: 340
+    readonly property int importQueueMaxHeight: 320
+    readonly property int importThumbWidth: 26    // cover thumbnail in the import queue (2:3)
+    readonly property int dropGlowWidth: 6        // accent glow around the cover files are dropped on
+    readonly property real dropGlowOpacity: 0.35
+    readonly property int dropScrollMargin: 56    // dragging this close to the grid edge scrolls it
+    readonly property int dropScrollStep: 14      // pixels per scroll tick while dragging
 
     // Covers
     readonly property real coverAspect: 1.5        // height / width of the 2:3 frame
@@ -128,6 +135,7 @@ QtObject {
     readonly property int coverTileLargest: 240
     readonly property int coverTileTextHeight: 44  // title + author below a cover
     readonly property int coverDecodeWidth: 400    // decode size of cover images (memory)
+    readonly property int coverTextMinWidth: 60    // smaller placeholders show no title and author
     readonly property int coverStackOffset: 3      // offset of the sheets behind a series stack
     readonly property int coverBlurMax: 48
     readonly property real coverFillDarkening: 2.2  // Qt.darker() factor for the fill around square placeholders
@@ -152,6 +160,8 @@ QtObject {
     readonly property int durationFast: 120
     readonly property int durationDrawer: 220
     readonly property int messageDuration: 6000 // how long short messages stay visible
+    readonly property int spinnerDuration: 900  // one turn of the busy spinner
+    readonly property int dropScrollInterval: 16
     readonly property real heroBlurBrightness: -0.1  // darkening of the blurred cover behind the detail header
     readonly property real heroOverlayOpacity: 0.5   // background-colored veil over it, keeps the text readable
 }

@@ -48,12 +48,14 @@ Command line options of `calibly.exe`:
 - `--size <W>x<H>` sets the initial window size, e.g. `1900x1000`.
 - `--screenshot <file>` saves a screenshot of the window and quits.
 - `--library <folder>` uses this library folder instead of the last used one (default `Documents\calibly-Bibliothek`).
-- `--import <path>` imports a file or folder after start, as if it was picked with "Add"; can be given several times.
+- `--import <path>` imports a file or folder after start, as if it was dropped on the gallery; can be given several times.
 - `--mock <file.json>` reads the library from your own JSON file in the format of `resources/mock/mock.json`, e.g. to try the app with real files. Relative file paths are relative to the JSON file.
 
 Audiobooks play in calibly: "Continue listening" in the detail view starts the player bar at the bottom, which opens the fullscreen player. Space plays / pauses, ← / → skip 30 seconds. The position is saved, and the last audiobook is ready again after a restart.
 
 Metadata is edited with ✎ in the detail view of a title. Fields marked with 🔗 apply to all formats of the title, the others only to the audiobook or the ebook. Ctrl+S saves, Ctrl+PgUp / Ctrl+PgDown go to the previous / next title.
+
+Files are added with "Add" or by dragging them (or whole folders) into the window: dropped on free space they become new titles, dropped on a cover they become a format of that title (e.g. the audiobook of an ebook). The MP3 files of one folder become one audiobook. The import queue at the bottom right shows each title; "Review" opens the metadata of titles whose name could only be taken from the file name.
 
 The library lives in `Documents\calibly-Bibliothek`: imported files are copied there (sorted by author and title) together with the database `calibly.db`. With `--mock` the app shows sample data instead (`resources/mock/mock.json`); the files of the sample formats do not exist, so "Read" and "Listen" are disabled there. The sample covers are generated with `powershell -ExecutionPolicy Bypass -File tools/generate-mock-covers.ps1`.
 

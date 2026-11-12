@@ -323,7 +323,8 @@ ViewBase {
                             { caption: qsTr("Gehört 33 %"), title: "Dracula", author: "Bram Stoker", cover: "qrc:/mock/covers/dracula.jpg", square: true, ebook: false, audio: true, read: 0, listen: 0.33, stacked: false },
                             { caption: qsTr("Lesen + Hören"), title: "Moby Dick", author: "Herman Melville", cover: "qrc:/mock/covers/moby-dick.jpg", square: false, ebook: true, audio: true, read: 0.31, listen: 0.58, stacked: false },
                             { caption: qsTr("Ohne Cover"), title: "Der Prozess", author: "Franz Kafka", cover: "", square: false, ebook: true, audio: true, read: 0.12, listen: 0, stacked: false },
-                            { caption: qsTr("Serie"), title: "Der Hund der Baskervilles", author: "Arthur Conan Doyle", cover: "", square: false, ebook: true, audio: true, read: 0, listen: 0, stacked: true }
+                            { caption: qsTr("Serie"), title: "Der Hund der Baskervilles", author: "Arthur Conan Doyle", cover: "", square: false, ebook: true, audio: true, read: 0, listen: 0, stacked: true },
+                            { caption: qsTr("Ziel beim Ablegen"), title: "Dracula", author: "Bram Stoker", cover: "qrc:/mock/covers/dracula.jpg", square: true, ebook: true, audio: false, read: 0, listen: 0, stacked: false, drop: true }
                         ]
 
                         delegate: Column {
@@ -344,6 +345,7 @@ ViewBase {
                                 readProgress: tileSample.modelData.read
                                 listenProgress: tileSample.modelData.listen
                                 stacked: tileSample.modelData.stacked
+                                dropLabel: tileSample.modelData.drop ? qsTr("Als Hörbuch zu „%1“ hinzufügen").arg(tileSample.modelData.title) : ""
                             }
                             Caption {
                                 text: tileSample.modelData.caption
@@ -765,6 +767,64 @@ ViewBase {
                         }
                         Caption {
                             text: qsTr("Kapitelliste: gehört, aktuell, offen")
+                        }
+                    }
+                }
+            }
+
+            Section {
+                heading: qsTr("Import (Drag & Drop)")
+                width: page.width
+
+                Column {
+                    spacing: Theme.spacingS
+
+                    DropHint {
+                        summary: "Dracula_Hoerbuch · 27 MP3"
+                    }
+                    Caption {
+                        text: qsTr("Hinweis beim Ziehen: über freier Fläche")
+                    }
+                    DropHint {
+                        onCover: true
+                        summary: "Die Verwandlung.m4b · 1 M4B"
+                    }
+                    Caption {
+                        text: qsTr("Hinweis beim Ziehen: über einem Cover")
+                    }
+                }
+
+                Row {
+                    spacing: Theme.spacingXxl
+
+                    Column {
+                        spacing: Theme.spacingS
+
+                        // Status values as in ImportQueue.Status.
+                        ImportQueue {
+                            finishedCount: 5
+                            model: ListModel {
+                                ListElement { entryId: 1; title: "Krieg und Frieden"; status: 3; newWork: true; fileTypes: "EPUB"; fileCount: 1; merged: false; hasEbook: true; hasAudiobook: false; progress: 1; coverUrl: "qrc:/mock/covers/krieg-und-frieden.jpg"; coverIsSquare: false; workId: "w1" }
+                                ListElement { entryId: 2; title: "Die Verwandlung"; status: 3; newWork: false; fileTypes: "M4B"; fileCount: 1; merged: false; hasEbook: false; hasAudiobook: true; progress: 1; coverUrl: "qrc:/mock/covers/die-verwandlung-hoerbuch.jpg"; coverIsSquare: true; workId: "w2" }
+                                ListElement { entryId: 3; title: "Der Prozess"; status: 2; newWork: true; fileTypes: "MP3"; fileCount: 12; merged: true; hasEbook: false; hasAudiobook: true; progress: 0.4; coverUrl: ""; coverIsSquare: true; workId: "w3" }
+                                ListElement { entryId: 4; title: "scan_042"; status: 4; newWork: true; fileTypes: "PDF"; fileCount: 1; merged: false; hasEbook: true; hasAudiobook: false; progress: 1; coverUrl: ""; coverIsSquare: false; workId: "w4" }
+                                ListElement { entryId: 5; title: "Hörspiele"; status: 1; newWork: true; fileTypes: ""; fileCount: 48; merged: false; hasEbook: false; hasAudiobook: false; progress: 0.25; coverUrl: ""; coverIsSquare: false; workId: "" }
+                                ListElement { entryId: 6; title: "Neue Bücher"; status: 0; newWork: true; fileTypes: ""; fileCount: 3; merged: false; hasEbook: false; hasAudiobook: false; progress: 0; coverUrl: ""; coverIsSquare: false; workId: "" }
+                                ListElement { entryId: 7; title: "Moby Dick"; status: 6; newWork: true; fileTypes: "EPUB"; fileCount: 2; merged: false; hasEbook: true; hasAudiobook: false; progress: 1; coverUrl: ""; coverIsSquare: false; workId: "" }
+                                ListElement { entryId: 8; title: "Faust I"; status: 5; newWork: true; fileTypes: "EPUB"; fileCount: 1; merged: false; hasEbook: true; hasAudiobook: false; progress: 1; coverUrl: ""; coverIsSquare: false; workId: "w8" }
+                            }
+                        }
+                        Caption {
+                            text: qsTr("Import-Warteschlange: fertig, ergänzt, läuft, prüfen, liest, wartet, übersprungen, Fehler")
+                        }
+                    }
+
+                    Column {
+                        spacing: Theme.spacingS
+
+                        Spinner {}
+                        Caption {
+                            text: qsTr("Spinner")
                         }
                     }
                 }

@@ -11,6 +11,8 @@ qt_add_qml_module(calibly_controllers
         languagemanager.cpp
         librarycontroller.h
         librarycontroller.cpp
+        importcontroller.h
+        importcontroller.cpp
         workeditor.h
         workeditor.cpp
         playercontroller.h

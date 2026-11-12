@@ -21,6 +21,7 @@ qt_add_qml_module(calibly_controls
         TextAreaField.qml
         TagField.qml
         SeekBar.qml
+        Spinner.qml
         TimeFormat.js
 )
 

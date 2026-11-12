@@ -50,8 +50,11 @@ public:
     int count() const { return int(m_works.size()); }
     void setWorks(QList<Work> works);
 
-    // Replaces the work with the same id (e.g. after opening it).
+    // Replaces the work with the same id (e.g. after opening it), or adds it
+    // at the end if it is new (e.g. after an import).
     void updateWork(const Work &work);
+
+    const QList<Work> &works() const { return m_works; }
 
     // Row of the work with this id, -1 if there is none.
     int rowOf(const QString &workId) const;

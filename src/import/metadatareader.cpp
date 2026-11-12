@@ -62,10 +62,14 @@ FileMetadata readMetadata(const QString &path)
 
     // Fill the gaps from the file name.
     const FileNameInfo fromName = parseFileName(info.completeBaseName());
-    if (metadata.title.isEmpty())
+    if (metadata.title.isEmpty()) {
         metadata.title = fromName.title;
-    if (metadata.authors.isEmpty() && !fromName.author.isEmpty())
+        metadata.titleFromFileName = true;
+    }
+    if (metadata.authors.isEmpty() && !fromName.author.isEmpty()) {
         metadata.authors = { fromName.author };
+        metadata.authorsFromFileName = true;
+    }
     if (metadata.seriesIndex == 0)
         metadata.seriesIndex = fromName.seriesIndex;
     if (metadata.series.isEmpty() && !fromName.seriesCode.isEmpty())

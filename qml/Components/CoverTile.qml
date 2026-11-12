@@ -12,6 +12,9 @@ import Calibly.Controls
 //   hasEbook, hasAudiobook        which format badges are shown
 //   readProgress, listenProgress  0.0 – 1.0, 0 = no line
 //   stacked                       draw the cover as a series stack
+//   dropLabel                     files are dragged over this cover: accent
+//                                 glow and this text, e.g. "Als Hörbuch zu
+//                                 „Dracula“ hinzufügen"; empty = no drag
 // Signals:
 //   clicked()
 Item {
@@ -26,8 +29,10 @@ Item {
     required property real readProgress
     required property real listenProgress
     property bool stacked: false
+    property string dropLabel
 
     readonly property bool hovered: hover.hovered
+    readonly property bool dropTarget: root.dropLabel !== ""
 
     signal clicked()
 
@@ -98,11 +103,56 @@ Item {
         y: art.stackInset - Theme.spacingXxs
         width: art.width - art.stackInset + 2 * Theme.spacingXxs
         height: art.height - art.stackInset + 2 * Theme.spacingXxs
-        visible: root.hovered
+        visible: root.hovered && !root.dropTarget
         color: "transparent"
         radius: Theme.radiusS + Theme.spacingXxs
         border.width: Theme.focusWidth
         border.color: Theme.textPrimary
+    }
+
+    // Drop target: accent outline with a soft glow and what will happen.
+    Rectangle {
+        x: -Theme.dropGlowWidth
+        y: art.stackInset - Theme.dropGlowWidth
+        width: art.width - art.stackInset + 2 * Theme.dropGlowWidth
+        height: art.height - art.stackInset + 2 * Theme.dropGlowWidth
+        visible: root.dropTarget
+        color: "transparent"
+        radius: Theme.radiusS + Theme.dropGlowWidth
+        border.width: Theme.dropGlowWidth - Theme.focusWidth
+        border.color: Qt.alpha(Theme.accent, Theme.dropGlowOpacity)
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: Theme.dropGlowWidth - Theme.focusWidth
+            color: "transparent"
+            radius: Theme.radiusS + Theme.focusWidth
+            border.width: Theme.focusWidth
+            border.color: Theme.accent
+        }
+    }
+    Rectangle {
+        anchors.horizontalCenter: art.horizontalCenter
+        y: art.stackInset + (art.height - art.stackInset - height) / 2
+        width: Math.min(dropText.implicitWidth + 2 * Theme.spacingM, art.width - 2 * Theme.spacingS)
+        height: dropText.implicitHeight + 2 * Theme.spacingS
+        visible: root.dropTarget
+        radius: Theme.radiusM
+        color: Theme.accent
+
+        Text {
+            id: dropText
+
+            anchors.fill: parent
+            anchors.margins: Theme.spacingS
+            text: root.dropLabel
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            color: Theme.accentForeground
+            font.pixelSize: Theme.fontSmall
+            font.weight: Font.Bold
+        }
     }
 
     Text {

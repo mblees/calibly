@@ -39,5 +39,13 @@ struct FileMetadata
     int trackNumber = 0;
     QList<Chapter> chapters;
 
+    // Title and authors were guessed from the file name, because the file
+    // itself does not name them (see readMetadata()).
+    bool titleFromFileName = false;
+    bool authorsFromFileName = false;
+    // Audio files without album tag: the title is the title of this track,
+    // which says little about the book when the file is one part of many.
+    bool titleFromTrack = false;
+
     QString error;               // why the file could not be read, empty = fine
 };

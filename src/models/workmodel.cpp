@@ -109,12 +109,19 @@ QHash<int, QByteArray> WorkModel::roleNames() const
 
 void WorkModel::updateWork(const Work &work)
 {
-    const int row = rowOf(work.id);
-    if (row < 0)
-        return;
-    m_works[row] = work;
     const QStringList parts = QStringList{ work.title, work.series } + work.authors + work.narrators + work.tags;
-    m_searchTexts[row] = TextUtils::foldForSearch(parts.join(u' '));
+    const QString searchText = TextUtils::foldForSearch(parts.join(u' '));
+    const int row = rowOf(work.id);
+    if (row < 0) {
+        beginInsertRows(QModelIndex(), count(), count());
+        m_works.append(work);
+        m_searchTexts.append(searchText);
+        endInsertRows();
+        emit countChanged();
+        return;
+    }
+    m_works[row] = work;
+    m_searchTexts[row] = searchText;
     emit dataChanged(index(row), index(row));
 }
 

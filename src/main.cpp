@@ -6,6 +6,7 @@
 #include <QQuickWindow>
 #include <QTimer>
 
+#include "importcontroller.h"
 #include "languagemanager.h"
 #include "librarycontroller.h"
 #include "mockbackend.h"
@@ -100,6 +101,7 @@ int main(int argc, char *argv[])
     auto *languageManager = new LanguageManager(&engine, &engine);
     languageManager->start(parser.value(languageOption));
     auto *libraryController = new LibraryController(*backend, &engine, &engine);
+    auto *importController = new ImportController(*libraryController, &engine, &engine);
     // Created after the library: it loads the last audiobook from it.
     new PlayerController(*libraryController, &engine, &engine);
 
@@ -121,7 +123,7 @@ int main(int argc, char *argv[])
         QList<QUrl> urls;
         for (const QString &path : parser.values(importOption))
             urls.append(QUrl::fromLocalFile(QFileInfo(path).absoluteFilePath()));
-        libraryController->importFiles(urls);
+        importController->importFiles(urls);
     }
 
     if (parser.isSet(sizeOption)) {

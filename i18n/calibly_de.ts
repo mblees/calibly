@@ -21,9 +21,28 @@
     </message>
 </context>
 <context>
+    <name>ImportQueue</name>
+    <message numerus="yes">
+        <location filename="../qml/Components/ImportQueue.qml" line="152"/>
+        <source>%n Datei(en) werden gelesen …</source>
+        <translation>
+            <numerusform>%n Datei wird gelesen …</numerusform>
+            <numerusform>%n Dateien werden gelesen …</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Components/ImportQueue.qml" line="170"/>
+        <source>%n Datei(en) bereits in der Bibliothek</source>
+        <translation>
+            <numerusform>%n Datei bereits in der Bibliothek</numerusform>
+            <numerusform>%n Dateien bereits in der Bibliothek</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>LibraryView</name>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="190"/>
+        <location filename="../qml/Views/LibraryView.qml" line="192"/>
         <source>%L1 von %Ln Titeln</source>
         <translation>
             <numerusform>%L1 von %Ln Titel</numerusform>
@@ -31,35 +50,11 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="191"/>
+        <location filename="../qml/Views/LibraryView.qml" line="193"/>
         <source>%Ln Titel</source>
         <translation>
             <numerusform>%Ln Titel</numerusform>
             <numerusform>%Ln Titel</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="369"/>
-        <source>%n Datei(en) hinzugefügt</source>
-        <translation>
-            <numerusform>%n Datei hinzugefügt</numerusform>
-            <numerusform>%n Dateien hinzugefügt</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="371"/>
-        <source>%n bereits vorhanden</source>
-        <translation>
-            <numerusform>%n bereits vorhanden</numerusform>
-            <numerusform>%n bereits vorhanden</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="373"/>
-        <source>%n fehlgeschlagen</source>
-        <translation>
-            <numerusform>%n fehlgeschlagen</numerusform>
-            <numerusform>%n fehlgeschlagen</numerusform>
         </translation>
     </message>
 </context>

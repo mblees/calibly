@@ -64,6 +64,8 @@ Item {
             anchors.rightMargin: Theme.badgeSize + Theme.spacingS
             // Long words shrink the font instead of being broken apart.
             height: parent.height * Theme.coverTitleHeight
+            // Thumbnails (e.g. in the import queue) are too small for text.
+            visible: face.width >= Theme.coverTextMinWidth
             text: face.title
             wrapMode: Text.WordWrap
             fontSizeMode: Text.Fit
@@ -80,6 +82,7 @@ Item {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.margins: Theme.spacingS
+            visible: face.width >= Theme.coverTextMinWidth
             text: face.author
             elide: Text.ElideRight
             opacity: Theme.coverAuthorOpacity

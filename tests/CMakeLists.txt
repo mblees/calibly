@@ -28,3 +28,7 @@ target_link_libraries(tst_import PRIVATE Qt6::Test Qt6::CorePrivate Qt6::Sql cal
 add_test(NAME tst_import COMMAND tst_import)
 # The PDF test only runs when calibly is built with Qt PDF.
 target_link_libraries(tst_import PRIVATE Qt6::Gui)
+
+qt_add_executable(tst_importcontroller tst_importcontroller.cpp)
+target_link_libraries(tst_importcontroller PRIVATE Qt6::Test calibly_models calibly_controllers)
+add_test(NAME tst_importcontroller COMMAND tst_importcontroller)

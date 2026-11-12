@@ -9,8 +9,10 @@
 // Decides which work each imported file belongs to (pure logic, no files are
 // touched):
 //   * files with the same base name ("DCC 01 - … .epub" / "… .m4b") or the
-//     same title and author belong to one work,
+//     same title and author belong to one work (base names do not count for
+//     MP3 and other audio parts: "01.mp3" exists in many folders),
 //   * a file whose work already exists in the library is added to it,
+//   * files dropped onto a work (targetWorkId) all belong to that work,
 //   * a file whose format already exists there with the same size is a
 //     duplicate and skipped.
 // Ebooks are processed first, so their metadata wins over audiobook tags.
@@ -30,7 +32,23 @@ struct ImportPlan
     QStringList duplicates;      // source paths that are already in the library
 };
 
-ImportPlan planImport(QList<FileMetadata> files, const QList<Work> &existing);
+// targetWorkId: the files were dropped onto this work (a cover in the
+// gallery), so every file that is not a duplicate becomes a format of it.
+ImportPlan planImport(QList<FileMetadata> files, const QList<Work> &existing,
+                      const QString &targetWorkId = QString());
+
+// Detects audiobooks that consist of several files in one folder (an MP3
+// folder, also split into "CD 1", "CD 2" … subfolders) and gives all their
+// files the same title and authors, so planImport() joins them into one
+// work. The album tag wins; files without album tag get title and author
+// from the folder name ("Dracula - Bram Stoker"). A folder whose files name different
+// albums holds several books and is left alone, and so are M4B files, which
+// are complete audiobooks on their own.
+void groupAudioFolders(QList<FileMetadata> &files);
+
+// The file does not tell what it is: title from the file name, no author.
+// Such works are shown as "needs review" in the import queue.
+bool needsReview(const FileMetadata &file);
 
 // Key that is equal for the same book in different editions:
 // title (without subtitle, case, accents, punctuation) + last name of the

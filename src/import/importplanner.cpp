@@ -2,13 +2,17 @@
 
 #include <QCollator>
 #include <QDateTime>
+#include <QDir>
 #include <QFileInfo>
 #include <QHash>
+#include <QRegularExpression>
+#include <QSet>
 #include <QUuid>
 
 #include <algorithm>
 
 #include "audiotimeline.h"
+#include "filenameparser.h"
 #include "textutils.h"
 
 namespace {
@@ -87,6 +91,25 @@ QList<Chapter> partChapters(const FileMetadata &file, const QString &filePath)
     return chapters;
 }
 
+// Folder that stands for the book: the folder of the file, or its parent for
+// disc folders such as "CD 1", "Disc 2", "Teil 3".
+QString bookFolder(const QString &filePath)
+{
+    static const QRegularExpression discFolder(QStringLiteral(R"(^(cd|disc|disk|teil|part)\s*\d+$)"),
+                                               QRegularExpression::CaseInsensitiveOption);
+    const QString folder = QFileInfo(filePath).absolutePath();
+    if (discFolder.match(QFileInfo(folder).fileName().simplified()).hasMatch())
+        return QFileInfo(folder).absolutePath(); // the parent; works without the folder existing
+    return folder;
+}
+
+// Audio files that are usually one part of a longer audiobook.
+bool isAudioPart(const FileMetadata &file)
+{
+    return file.kind == Format::Kind::Audiobook
+        && QFileInfo(file.sourcePath).suffix().compare(QLatin1String("m4b"), Qt::CaseInsensitive) != 0;
+}
+
 } // namespace
 
 QString workMatchKey(const QString &title, const QStringList &authors)
@@ -97,7 +120,79 @@ QString workMatchKey(const QString &title, const QStringList &authors)
     return simplifiedKey(mainTitle) + u'|' + simplifiedKey(author);
 }
 
-ImportPlan planImport(QList<FileMetadata> files, const QList<Work> &existing)
+void groupAudioFolders(QList<FileMetadata> &files)
+{
+    QHash<QString, QList<int>> partsByFolder;
+    QStringList folders; // in order of appearance, so the result does not depend on hashing
+    for (int i = 0; i < files.size(); ++i) {
+        if (!isAudioPart(files.at(i)))
+            continue;
+        const QString folder = bookFolder(files.at(i).sourcePath);
+        if (!partsByFolder.contains(folder))
+            folders.append(folder);
+        partsByFolder[folder].append(i);
+    }
+
+    for (const QString &folder : std::as_const(folders)) {
+        const QList<int> parts = partsByFolder.value(folder);
+        if (parts.size() < 2)
+            continue;
+
+        // The album tags (the title of tagged audio files) must agree.
+        QSet<QString> albums;
+        int tagged = -1;
+        for (int i : parts) {
+            if (!files.at(i).titleFromFileName && !files.at(i).titleFromTrack) {
+                albums.insert(simplifiedKey(files.at(i).title));
+                if (tagged < 0)
+                    tagged = i;
+            }
+        }
+        if (albums.size() > 1)
+            continue;
+
+        const FileNameInfo fromFolder = parseFileName(QDir(folder).dirName());
+        QString title = fromFolder.title;
+        bool titleFromFileName = true;
+        if (tagged >= 0) {
+            title = files.at(tagged).title;
+            titleFromFileName = false;
+        }
+
+        QStringList authors;
+        bool authorsFromFileName = false;
+        for (int i : parts) {
+            if (!files.at(i).authorsFromFileName && !files.at(i).authors.isEmpty()) {
+                authors = files.at(i).authors;
+                break;
+            }
+        }
+        if (authors.isEmpty() && !fromFolder.author.isEmpty()) {
+            authors = { fromFolder.author };
+            authorsFromFileName = true;
+        }
+
+        for (int i : parts) {
+            FileMetadata &file = files[i];
+            file.title = title;
+            file.titleFromFileName = titleFromFileName;
+            file.titleFromTrack = false;
+            file.authors = authors;
+            file.authorsFromFileName = authorsFromFileName;
+            if (file.series.isEmpty() && !fromFolder.seriesCode.isEmpty()) {
+                file.series = fromFolder.seriesCode;
+                file.seriesIndex = fromFolder.seriesIndex;
+            }
+        }
+    }
+}
+
+bool needsReview(const FileMetadata &file)
+{
+    return file.titleFromFileName && file.authors.isEmpty();
+}
+
+ImportPlan planImport(QList<FileMetadata> files, const QList<Work> &existing, const QString &targetWorkId)
 {
     QCollator collator;
     collator.setNumericMode(true);
@@ -117,8 +212,12 @@ ImportPlan planImport(QList<FileMetadata> files, const QList<Work> &existing)
     });
 
     QHash<QString, int> existingByKey;
-    for (int i = 0; i < existing.size(); ++i)
+    int targetIndex = -1; // index in existing of the work the files were dropped onto
+    for (int i = 0; i < existing.size(); ++i) {
         existingByKey.insert(workMatchKey(existing.at(i).title, existing.at(i).authors), i);
+        if (!targetWorkId.isEmpty() && existing.at(i).id == targetWorkId)
+            targetIndex = i;
+    }
 
     ImportPlan plan;
     QHash<QString, int> plannedByKey;      // match key -> index in plan.works
@@ -127,13 +226,16 @@ ImportPlan planImport(QList<FileMetadata> files, const QList<Work> &existing)
 
     for (const FileMetadata &file : std::as_const(files)) {
         const QString key = workMatchKey(file.title, file.authors);
-        const QString baseName = simplifiedKey(QFileInfo(file.sourcePath).completeBaseName());
+        // The same base name ("DCC 01 - … .epub" / ".m4b") is the same book,
+        // but not for parts of an audiobook ("01.mp3" is in many folders).
+        const QString baseName = isAudioPart(file) ? QString()
+                                                   : simplifiedKey(QFileInfo(file.sourcePath).completeBaseName());
 
-        int workIndex = plannedByBaseName.value(baseName, -1);
-        if (workIndex < 0)
+        int workIndex = targetIndex >= 0 || baseName.isEmpty() ? -1 : plannedByBaseName.value(baseName, -1);
+        if (workIndex < 0 && targetIndex < 0)
             workIndex = plannedByKey.value(key, -1);
-        if (workIndex < 0 && existingByKey.contains(key)) {
-            const int existingIndex = existingByKey.value(key);
+        if (workIndex < 0 && (targetIndex >= 0 || existingByKey.contains(key))) {
+            const int existingIndex = targetIndex >= 0 ? targetIndex : existingByKey.value(key);
             workIndex = plannedFromExisting.value(existingIndex, -1);
             if (workIndex < 0) {
                 plan.works.append(existing.at(existingIndex));
@@ -156,7 +258,8 @@ ImportPlan planImport(QList<FileMetadata> files, const QList<Work> &existing)
         mergeInto(plan.works[workIndex], file);
         plannedByKey.insert(key, workIndex);
         plannedByKey.insert(workMatchKey(plan.works.at(workIndex).title, plan.works.at(workIndex).authors), workIndex);
-        plannedByBaseName.insert(baseName, workIndex);
+        if (!baseName.isEmpty())
+            plannedByBaseName.insert(baseName, workIndex);
         plan.formats.append({ workIndex, file });
     }
     return plan;
