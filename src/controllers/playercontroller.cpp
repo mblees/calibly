@@ -69,6 +69,12 @@ PlayerController::PlayerController(LibraryController &library, QQmlEngine *engin
     m_sleepTimer.setInterval(1000);
     connect(&m_sleepTimer, &QTimer::timeout, this, &PlayerController::onSleepTick);
     connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &PlayerController::savePosition);
+    // The loaded audiobook is about to be merged or removed: store the
+    // position and let go of it. It can be played again afterwards.
+    connect(&m_library, &LibraryController::worksAboutToChange, this, [this](const QStringList &workIds) {
+        if (hasWork() && workIds.contains(m_workId))
+            close();
+    });
 
     QSettings settings;
     setSpeed(settings.value(kSpeedKey, 1.0).toDouble());

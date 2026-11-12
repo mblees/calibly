@@ -19,8 +19,10 @@ public:
     explicit MockBackend(QString jsonPath = QStringLiteral(":/mock/mock.json"));
 
     QList<Work> loadWorks() override;
-    // Changes are kept in memory only (e.g. "last opened"), the JSON file stays unchanged.
+    // Changes are kept in memory only (e.g. "last opened", merged or removed
+    // works), the JSON file stays unchanged.
     bool saveWork(const Work &work) override;
+    bool removeWork(const QString &workId) override;
 
 private:
     QList<Work> readJson() const;

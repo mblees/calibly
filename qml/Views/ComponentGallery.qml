@@ -220,6 +220,12 @@ ViewBase {
                         variant: AppButton.Primary
                     }
                     AppButton {
+                        text: qsTr("Entfernen")
+                        iconName: "trash"
+                        variant: AppButton.Danger
+                        onClicked: confirmSample.open()
+                    }
+                    AppButton {
                         text: qsTr("Deaktiviert")
                         enabled: false
                     }
@@ -334,7 +340,10 @@ ViewBase {
                             { caption: qsTr("Neu, ohne Cover"), title: "Anna Karenina", author: "Leo Tolstoi", cover: "", square: false, ebook: true, audio: false, read: 0, listen: 0, stacked: false, state: WorkState.New },
                             { caption: qsTr("Fertig"), title: "Effi Briest", author: "Theodor Fontane", cover: "qrc:/mock/covers/effi-briest.jpg", square: false, ebook: true, audio: false, read: 1, listen: 0, stacked: false, state: WorkState.Finished },
                             { caption: qsTr("Gelesen fertig, gehört 58 %"), title: "Die Verwandlung", author: "Franz Kafka", cover: "qrc:/mock/covers/die-verwandlung.jpg", square: false, ebook: true, audio: true, read: 1, listen: 0.58, stacked: false, state: WorkState.Finished },
-                            { caption: qsTr("Datei fehlt"), title: "Buddenbrooks", author: "Thomas Mann", cover: "qrc:/mock/covers/buddenbrooks.jpg", square: false, ebook: true, audio: false, read: 0.2, listen: 0, stacked: false, state: WorkState.FileMissing }
+                            { caption: qsTr("Datei fehlt"), title: "Buddenbrooks", author: "Thomas Mann", cover: "qrc:/mock/covers/buddenbrooks.jpg", square: false, ebook: true, audio: false, read: 0.2, listen: 0, stacked: false, state: WorkState.FileMissing },
+                            { caption: qsTr("Serien-Stapel mit Bänden"), title: "Sherlock Holmes", author: qsTr("%Ln Bände · Serie", "", 4), cover: "", square: false, ebook: true, audio: true, read: 0, listen: 0, stacked: true, stackLabel: qsTr("Band %1–%2").arg(1).arg(4), selectable: false },
+                            { caption: qsTr("Ausgewählt"), title: "Der Prozess", author: "Franz Kafka", cover: "", square: false, ebook: true, audio: true, read: 0.12, listen: 0, stacked: false, selected: true },
+                            { caption: qsTr("Auswahl läuft"), title: "Faust I", author: "J. W. von Goethe", cover: "qrc:/mock/covers/faust.jpg", square: false, ebook: true, audio: false, read: 0.42, listen: 0, stacked: false, selecting: true }
                         ]
 
                         delegate: Column {
@@ -357,6 +366,10 @@ ViewBase {
                                 stacked: tileSample.modelData.stacked
                                 dropLabel: tileSample.modelData.drop ? qsTr("Als Hörbuch zu „%1“ hinzufügen").arg(tileSample.modelData.title) : ""
                                 workState: tileSample.modelData.state || WorkState.Normal
+                                stackLabel: tileSample.modelData.stackLabel || ""
+                                selectable: tileSample.modelData.selectable !== false
+                                selected: tileSample.modelData.selected === true
+                                selecting: tileSample.modelData.selecting === true
                             }
                             Caption {
                                 text: tileSample.modelData.caption
@@ -793,6 +806,80 @@ ViewBase {
                             text: qsTr("Kapitelliste: gehört, aktuell, offen")
                         }
                     }
+                }
+            }
+
+            Section {
+                heading: qsTr("Mehrfachauswahl")
+                width: page.width
+
+                BulkActionBar {
+                    count: 2
+                    canMerge: true
+                    onRemoveRequested: confirmSample.open()
+                }
+                BulkActionBar {
+                    count: 1
+                    canMerge: false
+                }
+                Caption {
+                    text: qsTr("Aktionsleiste: zwei Titel, ein Titel (Verbinden nicht möglich). „Entfernen“ öffnet die Rückfrage.")
+                }
+
+                Row {
+                    spacing: Theme.spacingM
+
+                    AppButton {
+                        id: menuSampleButton
+
+                        text: qsTr("Menü eines Titels")
+                        onClicked: titleMenuSample.popup(menuSampleButton, 0, menuSampleButton.height)
+                    }
+                    AppButton {
+                        id: bulkMenuSampleButton
+
+                        text: qsTr("Menü einer Auswahl")
+                        onClicked: bulkMenuSample.popup(bulkMenuSampleButton, 0, bulkMenuSampleButton.height)
+                    }
+                    AppButton {
+                        id: stackMenuSampleButton
+
+                        text: qsTr("Menü eines Serien-Stapels")
+                        onClicked: stackMenuSample.popup(stackMenuSampleButton, 0, stackMenuSampleButton.height)
+                    }
+                }
+                Caption {
+                    text: qsTr("Kontextmenü (Rechtsklick auf ein Cover): ein Titel mit beiden Formaten, eine Auswahl, ein Serien-Stapel")
+                }
+
+                WorkMenu {
+                    id: titleMenuSample
+
+                    hasEbook: true
+                    hasAudiobook: true
+                    ebookFinished: true
+                }
+                WorkMenu {
+                    id: bulkMenuSample
+
+                    hasEbook: true
+                    selected: true
+                    selectionCount: 3
+                    canMerge: true
+                }
+                WorkMenu {
+                    id: stackMenuSample
+
+                    stack: true
+                }
+
+                ConfirmDialog {
+                    id: confirmSample
+
+                    title: qsTr("%Ln Titel entfernen?", "", 2)
+                    message: qsTr("Die Titel werden aus der Bibliothek entfernt. Ihre Dateien im Bibliotheksordner kommen in den Papierkorb.")
+                    confirmText: qsTr("Entfernen")
+                    destructive: true
                 }
             }
 

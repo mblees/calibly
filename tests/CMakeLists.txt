@@ -36,3 +36,11 @@ add_test(NAME tst_importcontroller COMMAND tst_importcontroller)
 qt_add_executable(tst_continuemodel tst_continuemodel.cpp)
 target_link_libraries(tst_continuemodel PRIVATE Qt6::Test calibly_models)
 add_test(NAME tst_continuemodel COMMAND tst_continuemodel)
+
+qt_add_executable(tst_workmerge tst_workmerge.cpp)
+target_link_libraries(tst_workmerge PRIVATE Qt6::Test calibly_core)
+add_test(NAME tst_workmerge COMMAND tst_workmerge)
+
+qt_add_executable(tst_librarycontroller tst_librarycontroller.cpp)
+target_link_libraries(tst_librarycontroller PRIVATE Qt6::Test calibly_models calibly_controllers)
+add_test(NAME tst_librarycontroller COMMAND tst_librarycontroller)

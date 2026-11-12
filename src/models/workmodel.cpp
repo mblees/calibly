@@ -134,6 +134,19 @@ void WorkModel::updateWork(const Work &work)
     emit dataChanged(index(row), index(row));
 }
 
+bool WorkModel::removeWork(const QString &workId)
+{
+    const int row = rowOf(workId);
+    if (row < 0)
+        return false;
+    beginRemoveRows(QModelIndex(), row, row);
+    m_works.removeAt(row);
+    m_searchTexts.removeAt(row);
+    endRemoveRows();
+    emit countChanged();
+    return true;
+}
+
 int WorkModel::rowOf(const QString &workId) const
 {
     for (int row = 0; row < m_works.size(); ++row) {

@@ -567,6 +567,81 @@ private slots:
         QCOMPARE(loaded.formats.first().chapters.at(1).durationMs, 2000);
     }
 
+    // Phase 9: a removed work is gone after a restart, with its formats.
+    void sqliteRemovesWork()
+    {
+        QTemporaryDir dir;
+        const QString root = dir.path();
+        Work work;
+        work.id = QStringLiteral("w1");
+        work.title = QStringLiteral("Faust");
+        Format format;
+        format.kind = Format::Kind::Ebook;
+        format.filePath = root + QStringLiteral("/faust.epub");
+        work.formats = { format };
+        Work other = work;
+        other.id = QStringLiteral("w2");
+        {
+            SqliteBackend backend(root);
+            QVERIFY(backend.open());
+            QVERIFY(backend.saveWork(work));
+            QVERIFY(backend.saveWork(other));
+            QVERIFY(backend.removeWork(QStringLiteral("w1")));
+            QVERIFY(!backend.removeWork(QStringLiteral("w1"))); // already gone
+            QVERIFY(!backend.removeWork(QString()));
+        }
+        SqliteBackend reopened(root);
+        QVERIFY(reopened.open());
+        const QList<Work> works = reopened.loadWorks();
+        QCOMPARE(works.size(), 1);
+        QCOMPARE(works.first().id, QStringLiteral("w2"));
+        QCOMPARE(works.first().formats.size(), 1);
+
+        // The formats of the removed work did not stay behind.
+        {
+            QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), QStringLiteral("check"));
+            db.setDatabaseName(root + QStringLiteral("/calibly.db"));
+            QVERIFY(db.open());
+            QSqlQuery query(db);
+            QVERIFY(query.exec(QStringLiteral("SELECT COUNT(*) FROM formats")));
+            QVERIFY(query.next());
+            QCOMPARE(query.value(0).toInt(), 1);
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(QStringLiteral("check"));
+    }
+
+    // Only files inside the library folder belong to a work.
+    void workFilesInLibraryOnly()
+    {
+        QTemporaryDir dir;
+        const QString root = dir.filePath(QStringLiteral("library"));
+        const QString inside = root + QStringLiteral("/Autor/Titel/book.epub");
+        const QString outside = dir.filePath(QStringLiteral("elsewhere/book.m4b"));
+        for (const QString &path : { inside, inside + QStringLiteral(".cover.jpg"), outside }) {
+            QVERIFY(QDir().mkpath(QFileInfo(path).absolutePath()));
+            QFile f(path);
+            QVERIFY(f.open(QIODevice::WriteOnly));
+        }
+        Work work;
+        Format ebook;
+        ebook.kind = Format::Kind::Ebook;
+        ebook.filePath = inside;
+        ebook.coverPath = inside + QStringLiteral(".cover.jpg");
+        Format audiobook;
+        audiobook.kind = Format::Kind::Audiobook;
+        audiobook.filePath = outside;
+        work.formats = { ebook, audiobook };
+
+        QCOMPARE(LibraryFolder::workFiles(root, work).size(), 2);
+        QVERIFY(LibraryFolder::workFiles(QString(), work).isEmpty());
+        QVERIFY(LibraryFolder::removeWorkFiles(root, work, false).isEmpty());
+        QVERIFY(!QFileInfo::exists(inside));
+        QVERIFY(!QFileInfo::exists(root + QStringLiteral("/Autor")));
+        QVERIFY(QFileInfo::exists(root));
+        QVERIFY(QFileInfo::exists(outside));
+    }
+
     // Loading checks whether the files are still there, also the parts of
     // an audiobook of several files.
     void sqliteFindsMissingFiles()

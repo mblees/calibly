@@ -57,6 +57,9 @@ public:
     // at the end if it is new (e.g. after an import).
     void updateWork(const Work &work);
 
+    // Removes the work with this id; false if there is none.
+    bool removeWork(const QString &workId);
+
     const QList<Work> &works() const { return m_works; }
 
     // Row of the work with this id, -1 if there is none.

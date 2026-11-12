@@ -27,4 +27,16 @@ QString copyInto(const QString &sourcePath, const QString &folder, QString *erro
 // image is null or cannot be saved.
 QString saveCover(const QImage &cover, const QString &formatFilePath);
 
+// The files of the work inside the library folder: the format files, the
+// files of audiobooks of several files and the covers. Files outside the
+// library folder (e.g. of sample data) are never part of it.
+QStringList workFiles(const QString &libraryRoot, const Work &work);
+
+// Removes the files of a removed work from the library folder, and the
+// folders that are empty afterwards (title, author). toTrash moves the files
+// to the recycle bin of the system and deletes only where there is none;
+// otherwise they are deleted. Files that are already gone do not count as
+// failed. Returns the files that could not be removed.
+QStringList removeWorkFiles(const QString &libraryRoot, const Work &work, bool toTrash);
+
 } // namespace LibraryFolder

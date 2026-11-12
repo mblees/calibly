@@ -23,6 +23,15 @@ Work makeWork(const QString &title, const QStringList &authors, bool ebook, bool
     return work;
 }
 
+Work seriesWork(const QString &title, const QString &series, int index, bool audiobook = false,
+                const QString &lastOpened = QString())
+{
+    Work work = makeWork(title, { QStringLiteral("Arthur Conan Doyle") }, true, audiobook, lastOpened);
+    work.series = series;
+    work.seriesIndex = index;
+    return work;
+}
+
 QStringList titles(const QAbstractItemModel &model)
 {
     QStringList result;
@@ -73,6 +82,11 @@ private slots:
         m_filter.setSourceModel(&m_works);
         m_filter.setFormatFilter(WorkFilterModel::AllFormats);
         m_filter.setSearchText(QString());
+        m_filter.setGroupSeries(false);
+        m_filter.setSeriesFilter(QString());
+        m_filter.setSeriesOnly(false);
+        m_filter.setOnlyIds({});
+        m_filter.clearSelection();
         m_filter.setSortOrder(WorkFilterModel::LastOpened);
     }
 
@@ -287,6 +301,175 @@ private slots:
         QCOMPARE(m_filter.count(), 1);
         QCOMPARE(m_filter.countAll(), 1);
         QCOMPARE(m_filter.countAudiobook(), 0);
+    }
+
+    // Phase 9: shown works can be selected; what is no longer shown leaves
+    // the selection.
+    void selection()
+    {
+        m_filter.setSortOrder(WorkFilterModel::Title);
+        QSignalSpy changed(&m_filter, &WorkFilterModel::selectionChanged);
+        QVERIFY(m_filter.roleNames().values().contains("selected"));
+        QVERIFY(!m_filter.canMergeSelection());
+
+        m_filter.toggleSelected(QStringLiteral("Faust I"));
+        m_filter.toggleSelected(QStringLiteral("Dracula"));
+        m_filter.toggleSelected(QStringLiteral("unknown"));
+        QCOMPARE(changed.count(), 2);
+        QCOMPARE(m_filter.selectedCount(), 2);
+        // In the shown order, not in the order of the clicks.
+        QCOMPARE(m_filter.selectedIds(), (QStringList{ QStringLiteral("Dracula"), QStringLiteral("Faust I") }));
+        const int dracula = m_filter.rowOf(QStringLiteral("Dracula"));
+        QVERIFY(m_filter.index(dracula, 0).data(WorkFilterModel::SelectedRole).toBool());
+        QVERIFY(!m_filter.index(m_filter.rowOf(QStringLiteral("Moby Dick")), 0).data(WorkFilterModel::SelectedRole).toBool());
+        QVERIFY(m_filter.canMergeSelection());
+
+        m_filter.toggleSelected(QStringLiteral("Dracula"));
+        QCOMPARE(m_filter.selectedIds(), QStringList{ QStringLiteral("Faust I") });
+        QVERIFY(!m_filter.canMergeSelection()); // one work with one file
+
+        // "Faust I" has no audiobook: hidden, so no longer selected.
+        m_filter.setFormatFilter(WorkFilterModel::Audiobook);
+        QCOMPARE(m_filter.selectedCount(), 0);
+
+        m_filter.selectAll();
+        QCOMPARE(m_filter.selectedCount(), m_filter.count());
+        m_filter.setSearchText(QStringLiteral("kafka"));
+        QCOMPARE(m_filter.selectedIds(), QStringList{ QStringLiteral("Der Prozess") });
+        m_filter.clearSelection();
+        QCOMPARE(m_filter.selectedCount(), 0);
+        QVERIFY(!m_filter.index(0, 0).data(WorkFilterModel::SelectedRole).toBool());
+    }
+
+    void selectionFollowsTheLibrary()
+    {
+        m_filter.toggleSelected(QStringLiteral("Dracula"));
+        m_filter.toggleSelected(QStringLiteral("Moby Dick"));
+        QVERIFY(m_works.removeWork(QStringLiteral("Dracula")));
+        QCOMPARE(m_filter.selectedIds(), QStringList{ QStringLiteral("Moby Dick") });
+        QVERIFY(!m_works.removeWork(QStringLiteral("Dracula")));
+
+        // One work with several audiobook files can be "merged" with itself.
+        Work parts = makeWork(QStringLiteral("Teile"), {}, false, true);
+        parts.formats.append({ Format::Kind::Audiobook, QStringLiteral("02.mp3"), 0.0 });
+        m_works.updateWork(parts);
+        m_filter.clearSelection();
+        m_filter.toggleSelected(QStringLiteral("Teile"));
+        QVERIFY(m_filter.canMergeSelection());
+    }
+
+    // Phase 9: the volumes of a series are one row, a stack.
+    void seriesStacks()
+    {
+        m_works.setWorks({
+            seriesWork(QStringLiteral("Der Hund der Baskervilles"), QStringLiteral("Sherlock Holmes"), 3, true,
+                       QStringLiteral("2026-11-08T21:15:00")),
+            seriesWork(QStringLiteral("Eine Studie in Scharlachrot"), QStringLiteral("Sherlock Holmes"), 1, false,
+                       QStringLiteral("2026-08-02T20:10:00")),
+            seriesWork(QStringLiteral("Abenteuer"), QStringLiteral("sherlock holmes"), 0), // same series, no number
+            seriesWork(QStringLiteral("Einzelband"), QStringLiteral("Solo"), 1, false, QStringLiteral("2026-09-01T10:00:00")),
+            makeWork(QStringLiteral("Zauberberg"), { QStringLiteral("Thomas Mann") }, true, false),
+        });
+        m_filter.setSortOrder(WorkFilterModel::Title);
+        QCOMPARE(m_filter.count(), 5);
+        QCOMPARE(m_filter.workCount(), 5);
+        QVERIFY(!m_filter.isStack(0));
+
+        QSignalSpy countChanged(&m_filter, &WorkFilterModel::countChanged);
+        m_filter.setGroupSeries(true);
+        QVERIFY(countChanged.count() > 0);
+        // The stack sorts by the name of the series; one volume is no stack.
+        QCOMPARE(titles(m_filter), (QStringList{ QStringLiteral("Einzelband"), QStringLiteral("Eine Studie in Scharlachrot"),
+                                                 QStringLiteral("Zauberberg") }));
+        QCOMPARE(m_filter.count(), 3);
+        QCOMPARE(m_filter.workCount(), 5);
+        QVERIFY(!m_filter.isStack(0));
+        QVERIFY(m_filter.isStack(1));
+        QVERIFY(!m_filter.isStack(7));
+
+        // The first volume stands for the series.
+        const QModelIndex stack = m_filter.index(1, 0);
+        QCOMPARE(stack.data(WorkModel::SeriesRole).toString(), QStringLiteral("Sherlock Holmes"));
+        QCOMPARE(stack.data(WorkFilterModel::SeriesCountRole).toInt(), 3);
+        QCOMPARE(stack.data(WorkFilterModel::SeriesFirstRole).toInt(), 1);
+        QCOMPARE(stack.data(WorkFilterModel::SeriesLastRole).toInt(), 3);
+        QVERIFY(stack.data(WorkModel::HasEbookRole).toBool());
+        QVERIFY(stack.data(WorkModel::HasAudiobookRole).toBool()); // volume 3 has one
+        QCOMPARE(stack.data(WorkModel::WorkStateRole).toInt(), 0);
+        QCOMPARE(m_filter.index(0, 0).data(WorkFilterModel::SeriesCountRole).toInt(), 0);
+
+        // By "last opened" the stack counts with its latest volume.
+        m_filter.setSortOrder(WorkFilterModel::LastOpened);
+        QVERIFY(m_filter.isStack(0));
+        QCOMPARE(m_filter.workIdAt(1), QStringLiteral("Einzelband"));
+
+        // Stacks cannot be selected.
+        m_filter.selectAll();
+        QCOMPARE(m_filter.selectedIds(), (QStringList{ QStringLiteral("Einzelband"), QStringLiteral("Zauberberg") }));
+        m_filter.toggleSelected(m_filter.workIdAt(0));
+        QCOMPARE(m_filter.selectedCount(), 2);
+        m_filter.clearSelection();
+
+        // With the format selection the stack only has what its volumes have there.
+        m_filter.setFormatFilter(WorkFilterModel::Audiobook);
+        QCOMPARE(titles(m_filter), QStringList{ QStringLiteral("Der Hund der Baskervilles") }); // one volume: no stack
+        QVERIFY(!m_filter.isStack(0));
+        m_filter.setFormatFilter(WorkFilterModel::AllFormats);
+
+        // An opened stack: its volumes by number, the unnumbered one last.
+        m_filter.setSeriesFilter(QStringLiteral("Sherlock Holmes"));
+        QCOMPARE(titles(m_filter), (QStringList{ QStringLiteral("Eine Studie in Scharlachrot"),
+                                                 QStringLiteral("Der Hund der Baskervilles"), QStringLiteral("Abenteuer") }));
+        QVERIFY(!m_filter.isStack(0));
+        QCOMPARE(m_filter.workCount(), 3);
+        QCOMPARE(m_filter.countAll(), 3);
+        QCOMPARE(m_filter.countAudiobook(), 1);
+        m_filter.setSeriesFilter(QString());
+        QCOMPARE(m_filter.count(), 3);
+
+        // Only series: every series is a stack, also a single volume.
+        m_filter.setSeriesOnly(true);
+        m_filter.setSortOrder(WorkFilterModel::Title);
+        QCOMPARE(m_filter.count(), 2);
+        QVERIFY(m_filter.isStack(0));
+        QVERIFY(m_filter.isStack(1));
+        QCOMPARE(m_filter.index(1, 0).data(WorkModel::SeriesRole).toString(), QStringLiteral("Solo"));
+        QCOMPARE(m_filter.index(1, 0).data(WorkFilterModel::SeriesCountRole).toInt(), 1);
+        QCOMPARE(m_filter.workCount(), 4);
+        m_filter.setSeriesOnly(false);
+
+        // A search that leaves one volume shows that volume.
+        m_filter.setSearchText(QStringLiteral("hund"));
+        QCOMPARE(titles(m_filter), QStringList{ QStringLiteral("Der Hund der Baskervilles") });
+        QVERIFY(!m_filter.isStack(0));
+        m_filter.setSearchText(QString());
+
+        // The stack follows the library: a volume leaves the series.
+        Work study = *m_works.workAt(1);
+        study.series.clear();
+        m_works.updateWork(study);
+        QCOMPARE(m_filter.count(), 4);
+        const int row = m_filter.rowOf(QStringLiteral("Der Hund der Baskervilles")); // the first volume now
+        QVERIFY(m_filter.isStack(row));
+        QCOMPARE(m_filter.index(row, 0).data(WorkFilterModel::SeriesCountRole).toInt(), 2);
+        QVERIFY(!m_filter.isStack(m_filter.rowOf(QStringLiteral("Eine Studie in Scharlachrot"))));
+
+        // And a removed one.
+        QVERIFY(m_works.removeWork(QStringLiteral("Abenteuer")));
+        QCOMPARE(m_filter.count(), 4);
+        QVERIFY(!m_filter.isStack(m_filter.rowOf(QStringLiteral("Der Hund der Baskervilles"))));
+    }
+
+    // A fixed list of works in its order, e.g. the selection for the metadata editor.
+    void onlyIds()
+    {
+        m_filter.setSearchText(QStringLiteral("kafka"));
+        m_filter.setOnlyIds({ QStringLiteral("Moby Dick"), QStringLiteral("Dracula"), QStringLiteral("Faust I") });
+        QCOMPARE(titles(m_filter), (QStringList{ QStringLiteral("Moby Dick"), QStringLiteral("Dracula"),
+                                                 QStringLiteral("Faust I") }));
+        QCOMPARE(m_filter.rowOf(QStringLiteral("Dracula")), 1);
+        m_filter.setOnlyIds({});
+        QCOMPARE(m_filter.count(), 2); // the search again
     }
 
 private:

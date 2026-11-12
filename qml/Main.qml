@@ -28,16 +28,18 @@ Window {
 
         ListElement { title: qsTr("Bibliothek"); iconName: "library"; count: 0; view: "LibraryView" }
         ListElement { title: qsTr("Weitermachen"); iconName: "clock"; count: 0; view: "ContinueView" }
-        ListElement { title: qsTr("Serien"); iconName: "layers"; count: 0; view: "PlaceholderView" }
+        ListElement { title: qsTr("Serien"); iconName: "layers"; count: 0; view: "SeriesView" }
         ListElement { title: qsTr("Autoren"); iconName: "user"; count: 0; view: "PlaceholderView" }
         ListElement { title: qsTr("Sprecher"); iconName: "mic"; count: 0; view: "PlaceholderView" }
     }
 
     // The library entry shows the number of works, "Weitermachen" the
-    // number of titles that were started and are not finished.
+    // number of titles that were started and are not finished, "Serien" the
+    // number of series.
     function updateCounts() {
         navigation.setProperty(0, "count", LibraryController.works.count)
         navigation.setProperty(1, "count", continueWorks.count)
+        navigation.setProperty(2, "count", seriesStacks.count)
     }
 
     Component.onCompleted: root.updateCounts()
@@ -46,6 +48,17 @@ Window {
         id: continueWorks
 
         sourceModel: LibraryController.works
+
+        onCountChanged: root.updateCounts()
+    }
+
+    // One row per series, like the view "Serien".
+    WorkFilterModel {
+        id: seriesStacks
+
+        sourceModel: LibraryController.works
+        groupSeries: true
+        seriesOnly: true
 
         onCountChanged: root.updateCounts()
     }

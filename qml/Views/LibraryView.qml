@@ -17,14 +17,44 @@ import Calibly.Models
 // View D: files dropped on free space become new works, files dropped on a
 // cover become formats of that work (ImportController); the import queue
 // at the bottom right shows how it goes.
+// Series: the volumes of a series are one stack ("Gruppieren: Serien"); a
+// click on it shows its volumes, "‹" leads back.
+// Selection: the circle on a cover, Ctrl + click or Ctrl + A select works;
+// the bar at the bottom then edits their metadata, joins them into one work
+// or removes them. Esc ends the selection, then leaves an opened series.
+// A right click on a cover opens a menu with the actions for that title, or
+// for the selection if the title is one of several selected ones.
+//
+// Properties:
+//   seriesOnly  show only the series, each as a stack: the view "Serien" of
+//               the sidebar (see SeriesView)
 ViewBase {
     id: root
 
+    property bool seriesOnly: false
+    // The series whose volumes are shown, "" = all works: an opened stack.
+    property string openedSeries: ""
+    // The metadata editor steps through the selection instead of the grid.
+    property bool editingSelection: false
+    // The works the question of mergeDialog / removeDialog is about: the
+    // selection (bar, menu of a selected title) or the title of the menu.
+    property list<string> actionIds: []
+    property string actionTitle
+    property bool actionOnSelection: false
+
     readonly property int total: LibraryController.works.count
-    readonly property bool filtered: works.count !== root.total
+    readonly property bool filtered: works.workCount !== root.total
     // "Weitermachen" shows at most this many titles, and none while searching.
     readonly property int continueLimit: 12
     readonly property bool showContinue: continueWorks.count > 0 && search.text === ""
+                                         && !root.seriesOnly && root.openedSeries === ""
+    // The list of all series has only stacks, which cannot be selected.
+    readonly property bool canSelect: works.count > 0 && !(root.seriesOnly && root.openedSeries === "")
+    readonly property bool popupOpen: detail.visible || metadataEditor.visible
+                                      || mergeDialog.visible || removeDialog.visible || workMenu.visible
+    // The view "Serien" without any series (and without a filter that hides them).
+    readonly property bool noSeries: root.seriesOnly && root.openedSeries === "" && search.text === ""
+                                     && settings.formatFilter === WorkFilterModel.AllFormats
 
     // Back to the top of the grid, including its header.
     function scrollToTop() {
@@ -46,6 +76,43 @@ ViewBase {
         settings.formatFilter = WorkFilterModel.AllFormats
     }
 
+    function openSeries(series: string) {
+        works.clearSelection()
+        root.openedSeries = series
+    }
+
+    function closeSeries() {
+        works.clearSelection()
+        root.openedSeries = ""
+    }
+
+    // "Metadaten" of the bar: the editor with the first selected work;
+    // ‹ / › there step through the selection.
+    function editSelection() {
+        const ids = works.selectedIds
+        if (ids.length === 0)
+            return
+        selectedWorks.onlyIds = ids
+        root.editingSelection = true
+        metadataEditor.openFor(ids[0])
+    }
+
+    // Asks before the selected works are joined into one.
+    function askMerge() {
+        root.actionIds = works.selectedIds
+        root.actionOnSelection = true
+        root.actionTitle = LibraryController.mergeTitle(root.actionIds)
+        mergeDialog.open()
+    }
+
+    // Asks before works are removed: the selection, or one title (with its name).
+    function askRemove(workIds: list<string>, title: string) {
+        root.actionIds = workIds
+        root.actionOnSelection = title === ""
+        root.actionTitle = title
+        removeDialog.open()
+    }
+
     // Choices that are kept between starts (stored by Qt in the user settings).
     Settings {
         id: settings
@@ -55,6 +122,7 @@ ViewBase {
         property int formatFilter: WorkFilterModel.AllFormats
         property int sortOrder: WorkFilterModel.LastOpened
         property real tileWidth: Theme.coverTileMinWidth
+        property bool groupSeries: true
     }
 
     WorkFilterModel {
@@ -64,10 +132,20 @@ ViewBase {
         formatFilter: settings.formatFilter
         sortOrder: settings.sortOrder
         searchText: search.text
+        groupSeries: root.seriesOnly || settings.groupSeries
+        seriesOnly: root.seriesOnly
+        seriesFilter: root.openedSeries
 
         // Deferred: countChanged arrives while the GridView is still applying
         // the row changes; scrolling right away would create duplicate tiles.
         onCountChanged: Qt.callLater(root.scrollToTop)
+        // The opened series is gone (its volumes were removed, merged or
+        // renamed): back to where it was opened from.
+        onWorkCountChanged: {
+            if (root.openedSeries !== "" && works.workCount === 0 && search.text === ""
+                    && settings.formatFilter === WorkFilterModel.AllFormats)
+                Qt.callLater(root.closeSeries)
+        }
     }
 
     // The format selection also applies to "Weitermachen".
@@ -77,6 +155,30 @@ ViewBase {
         sourceModel: LibraryController.works
         formatFilter: settings.formatFilter
         limit: root.continueLimit
+    }
+
+    // The selected works in the shown order, for the metadata editor.
+    WorkFilterModel {
+        id: selectedWorks
+
+        sourceModel: LibraryController.works
+    }
+
+    Shortcut {
+        sequences: [StandardKey.SelectAll]
+        enabled: root.canSelect && !root.popupOpen
+        onActivated: works.selectAll()
+    }
+    Shortcut {
+        sequence: "Esc"
+        enabled: !root.popupOpen && !search.activeFocus
+                 && (works.selectedCount > 0 || root.openedSeries !== "")
+        onActivated: {
+            if (works.selectedCount > 0)
+                works.clearSelection()
+            else
+                root.closeSeries()
+        }
     }
 
     Shortcut {
@@ -181,8 +283,27 @@ ViewBase {
         }
     }
 
+    // Stacks for series or every volume on its own. Not where the view
+    // itself is about series.
+    SelectMenu {
+        anchors.right: sortMenu.left
+        anchors.rightMargin: Theme.spacingS
+        anchors.verticalCenter: formats.verticalCenter
+        visible: !root.seriesOnly && root.openedSeries === ""
+        iconName: "layers"
+        label: qsTr("Gruppieren")
+        options: [qsTr("Keine"), qsTr("Serien")]
+        currentIndex: settings.groupSeries ? 1 : 0
+
+        onActivated: function(index) {
+            settings.groupSeries = index === 1
+        }
+    }
+
     // The option order matches WorkFilterModel.SortOrder (LastOpened, Title, Author).
     SelectMenu {
+        id: sortMenu
+
         anchors.right: parent.right
         anchors.rightMargin: Theme.spacingXl
         anchors.verticalCenter: formats.verticalCenter
@@ -249,12 +370,26 @@ ViewBase {
 
             Item {
                 width: parent.width
-                height: heading.implicitHeight
+                height: Math.max(heading.implicitHeight, selectAll.implicitHeight)
 
+                // Back from an opened series to the library (or all series).
+                LinkButton {
+                    id: back
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: root.openedSeries !== ""
+                    width: visible ? implicitWidth + Theme.spacingM : 0
+                    iconName: "chevronLeft"
+                    text: root.title
+                    font.pixelSize: Theme.fontBody
+                    onClicked: root.closeSeries()
+                }
                 Text {
                     id: heading
 
-                    text: root.title
+                    anchors.left: back.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.openedSeries !== "" ? root.openedSeries : root.title
                     color: Theme.textPrimary
                     font.pixelSize: Theme.fontLarge
                     font.weight: Font.Bold
@@ -262,11 +397,40 @@ ViewBase {
                 Text {
                     anchors.left: heading.right
                     anchors.leftMargin: Theme.spacingM
+                    anchors.right: selectAll.left
+                    anchors.rightMargin: Theme.spacingM
                     anchors.baseline: heading.baseline
-                    text: root.filtered ? qsTr("%L1 von %Ln Titeln", "", root.total).arg(works.count)
-                                        : qsTr("%Ln Titel", "", root.total)
+                    elide: Text.ElideRight
+                    text: {
+                        const count = root.openedSeries !== "" ? qsTr("%Ln Bände", "", works.count)
+                                    : root.seriesOnly ? qsTr("%Ln Serien", "", works.count)
+                                    : root.filtered ? qsTr("%L1 von %Ln Titeln", "", root.total).arg(works.workCount)
+                                                    : qsTr("%Ln Titel", "", root.total)
+                        return works.selectedCount > 0
+                               ? count + " · " + qsTr("%Ln ausgewählt", "", works.selectedCount) : count
+                    }
                     color: Theme.textMuted
                     font.pixelSize: Theme.fontBody
+                }
+                Row {
+                    id: selectAll
+
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: root.canSelect
+                    spacing: Theme.spacingS
+
+                    LinkButton {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: qsTr("Alle auswählen")
+                        onClicked: works.selectAll()
+                    }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: qsTr("Strg A")
+                        color: Theme.textDisabled
+                        font.pixelSize: Theme.fontSmall
+                    }
                 }
             }
         }
@@ -284,16 +448,33 @@ ViewBase {
             required property real readProgress
             required property real listenProgress
             required property int workState
+            required property bool selected
+            required property string series
+            required property int seriesCount
+            required property int seriesFirst
+            required property int seriesLast
+
+            // The volumes of a series as one tile.
+            readonly property bool stack: cell.seriesCount > 0
 
             width: grid.cellWidth
             height: grid.cellHeight
 
             CoverTile {
+                id: tile
+
                 dropLabel: drop.containsDrag && drop.targetWorkId === cell.workId
                            ? drop.labelFor(cell.title) : ""
                 width: grid.tileWidth
-                title: cell.title
-                author: cell.authorText
+                title: cell.stack ? cell.series : cell.title
+                author: cell.stack ? qsTr("%Ln Bände · Serie", "", cell.seriesCount) : cell.authorText
+                stacked: cell.stack
+                stackLabel: !cell.stack || cell.seriesFirst === 0 ? ""
+                            : cell.seriesFirst === cell.seriesLast ? qsTr("Band %1").arg(cell.seriesFirst)
+                            : qsTr("Band %1–%2").arg(cell.seriesFirst).arg(cell.seriesLast)
+                selectable: !cell.stack
+                selected: cell.selected
+                selecting: works.selectedCount > 0
                 coverUrl: cell.coverUrl
                 coverIsSquare: cell.coverIsSquare
                 hasEbook: cell.hasEbook
@@ -302,7 +483,28 @@ ViewBase {
                 listenProgress: cell.listenProgress
                 workState: cell.workState
 
-                onClicked: detail.openFor(cell.workId, cell.coverUrl, cell.coverIsSquare)
+                onClicked: {
+                    if (cell.stack)
+                        root.openSeries(cell.series)
+                    else
+                        detail.openFor(cell.workId, cell.coverUrl, cell.coverIsSquare)
+                }
+                onSelectToggled: works.toggleSelected(cell.workId)
+                onMenuRequested: function(x, y) {
+                    workMenu.workId = cell.workId
+                    workMenu.title = cell.title
+                    workMenu.series = cell.series
+                    workMenu.coverUrl = cell.coverUrl
+                    workMenu.coverIsSquare = cell.coverIsSquare
+                    workMenu.stack = cell.stack
+                    workMenu.hasEbook = cell.hasEbook
+                    workMenu.hasAudiobook = cell.hasAudiobook
+                    workMenu.ebookFinished = cell.readProgress >= 1
+                    workMenu.audiobookFinished = cell.listenProgress >= 1
+                    workMenu.fileMissing = cell.workState === WorkState.FileMissing
+                    workMenu.selected = cell.selected
+                    workMenu.popup(tile, x, y)
+                }
                 onReadRequested: root.continueWith(cell.workId, "ebook")
                 onListenRequested: root.continueWith(cell.workId, "audiobook")
             }
@@ -320,7 +522,112 @@ ViewBase {
     MetadataEditor {
         id: metadataEditor
 
-        navigationModel: works
+        navigationModel: root.editingSelection ? selectedWorks : works
+
+        onClosed: root.editingSelection = false
+    }
+
+    // --- selection: bar and questions ----------------------------------------
+    BulkActionBar {
+        anchors.horizontalCenter: grid.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: Theme.spacingL
+        visible: works.selectedCount > 0
+        count: works.selectedCount
+        canMerge: works.canMergeSelection
+        // An import that is running may still add to the selected works.
+        busy: ImportController.busy
+
+        onMetadataRequested: root.editSelection()
+        onMergeRequested: root.askMerge()
+        onRemoveRequested: root.askRemove(works.selectedIds, "")
+        onCloseRequested: works.clearSelection()
+    }
+
+    // --- context menu of a cover (right click) --------------------------------
+    WorkMenu {
+        id: workMenu
+
+        // The title that was clicked (its name is the "title" of the menu).
+        property string workId
+        property string series
+        property url coverUrl
+        property bool coverIsSquare: false
+
+        selectionCount: works.selectedCount
+        canMerge: works.canMergeSelection
+        busy: ImportController.busy
+
+        onOpenRequested: {
+            if (workMenu.stack)
+                root.openSeries(workMenu.series)
+            else
+                detail.openFor(workMenu.workId, workMenu.coverUrl, workMenu.coverIsSquare)
+        }
+        onReadRequested: root.continueWith(workMenu.workId, "ebook")
+        onListenRequested: root.continueWith(workMenu.workId, "audiobook")
+        onEditRequested: {
+            if (workMenu.bulk)
+                root.editSelection()
+            else
+                metadataEditor.openFor(workMenu.workId)
+        }
+        onFinishedToggled: function(kind) {
+            const finished = kind === "audiobook" ? workMenu.audiobookFinished : workMenu.ebookFinished
+            LibraryController.setFinished(workMenu.workId, kind, !finished)
+        }
+        onSelectToggled: works.toggleSelected(workMenu.workId)
+        onClearSelectionRequested: works.clearSelection()
+        onMergeRequested: root.askMerge()
+        onRemoveRequested: {
+            if (workMenu.bulk)
+                root.askRemove(works.selectedIds, "")
+            else
+                root.askRemove([workMenu.workId], workMenu.title)
+        }
+    }
+
+    // actionTitle: the work that is left, see LibraryController.mergeTitle().
+    ConfirmDialog {
+        id: mergeDialog
+
+        title: root.actionIds.length > 1 ? qsTr("%Ln Titel zu einem Werk verbinden?", "", root.actionIds.length)
+                                         : qsTr("Hörbuch-Dateien verbinden?")
+        message: root.actionIds.length > 1
+                 ? qsTr("Alle Formate kommen zu „%1“. Mehrere Hörbuch-Dateien werden dabei zu einem Hörbuch. Das lässt sich nicht rückgängig machen.").arg(root.actionTitle)
+                 : qsTr("Die Hörbuch-Dateien von „%1“ werden zu einem Hörbuch mit einem Kapitel pro Datei. Das lässt sich nicht rückgängig machen.").arg(root.actionTitle)
+        confirmText: qsTr("Verbinden")
+
+        onAccepted: {
+            works.clearSelection()
+            LibraryController.mergeWorks(root.actionIds)
+        }
+    }
+
+    // actionTitle: the one title that is removed, "" for the selection.
+    ConfirmDialog {
+        id: removeDialog
+
+        title: root.actionTitle !== "" ? qsTr("„%1“ entfernen?").arg(root.actionTitle)
+                                       : qsTr("%Ln Titel entfernen?", "", root.actionIds.length)
+        message: {
+            if (root.actionTitle !== "") {
+                return LibraryController.canImport
+                       ? qsTr("Der Titel wird aus der Bibliothek entfernt. Seine Dateien im Bibliotheksordner kommen in den Papierkorb.")
+                       : qsTr("Der Titel wird aus der Bibliothek entfernt.")
+            }
+            return LibraryController.canImport
+                   ? qsTr("Die Titel werden aus der Bibliothek entfernt. Ihre Dateien im Bibliotheksordner kommen in den Papierkorb.")
+                   : qsTr("Die Titel werden aus der Bibliothek entfernt.")
+        }
+        confirmText: qsTr("Entfernen")
+        destructive: true
+
+        onAccepted: {
+            if (root.actionOnSelection)
+                works.clearSelection()
+            LibraryController.removeWorks(root.actionIds)
+        }
     }
 
     // --- empty states --------------------------------------------------------
@@ -334,14 +641,15 @@ ViewBase {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.total === 0 ? qsTr("Noch keine Titel in der Bibliothek.")
-                                   : search.text !== "" ? qsTr("Keine Treffer für „%1“.").arg(search.text)
-                                                        : qsTr("Keine Titel in dieser Auswahl.")
+                  : search.text !== "" ? qsTr("Keine Treffer für „%1“.").arg(search.text)
+                  : root.noSeries ? qsTr("Noch keine Serien. Eine Serie entsteht, sobald sie in den Metadaten eines Titels steht.")
+                                  : qsTr("Keine Titel in dieser Auswahl.")
             color: Theme.textMuted
             font.pixelSize: Theme.fontBody
         }
         AppButton {
             anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.total > 0
+            visible: root.total > 0 && !root.noSeries
             text: qsTr("Filter zurücksetzen")
             iconName: "x"
             onClicked: root.resetFilters()
@@ -396,9 +704,10 @@ ViewBase {
                 const contentX = p.x + grid.contentX
                 const contentY = p.y + grid.contentY
                 const index = grid.indexAt(contentX, contentY)
-                // The gap between two columns is free space.
+                // The gap between two columns is free space, and so is a
+                // series stack: it stands for several works.
                 const xInCell = contentX - Math.floor(contentX / grid.cellWidth) * grid.cellWidth
-                if (index >= 0 && xInCell < grid.tileWidth)
+                if (index >= 0 && xInCell < grid.tileWidth && !works.isStack(index))
                     workId = works.workIdAt(index)
             }
             drop.targetWorkId = workId
@@ -411,7 +720,7 @@ ViewBase {
         }
 
         anchors.fill: parent
-        enabled: LibraryController.canImport && !detail.visible && !metadataEditor.visible
+        enabled: LibraryController.canImport && !root.popupOpen
 
         onEntered: function(drag) {
             drop.summary = drag.hasUrls ? ImportController.inspect(drag.urls) : ({})

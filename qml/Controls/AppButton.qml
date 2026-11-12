@@ -9,6 +9,7 @@ import Calibly.Theme
 //   iconName  optional icon, a key of Icons.paths
 //   variant   AppButton.Primary   – main action, accent color
 //             AppButton.Read      – reading action, blue
+//             AppButton.Danger    – removes or deletes something, red
 //             AppButton.Secondary – everything else (default)
 // Signals:
 //   clicked() (inherited)
@@ -18,7 +19,8 @@ T.Button {
     enum Variant {
         Primary,
         Read,
-        Secondary
+        Secondary,
+        Danger
     }
 
     property string iconName
@@ -30,6 +32,8 @@ T.Button {
             return Theme.accent;
         case AppButton.Read:
             return Theme.read;
+        case AppButton.Danger:
+            return Theme.danger;
         default:
             return Theme.surfaceRaised;
         }
@@ -40,6 +44,8 @@ T.Button {
             return Theme.accentForeground;
         case AppButton.Read:
             return Theme.readForeground;
+        case AppButton.Danger:
+            return Theme.dangerForeground;
         default:
             return Theme.textPrimary;
         }

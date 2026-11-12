@@ -4,6 +4,8 @@
 #include <QFile>
 #include <QFileInfo>
 
+#include <utility>
+
 namespace LibraryFolder {
 
 QString safeName(const QString &name)
@@ -75,6 +77,59 @@ QString saveCover(const QImage &cover, const QString &formatFilePath)
                               : cover;
     const QString path = formatFilePath + QStringLiteral(".cover.jpg");
     return scaled.convertToFormat(QImage::Format_RGB32).save(path, "JPG", 90) ? path : QString();
+}
+
+QStringList workFiles(const QString &libraryRoot, const Work &work)
+{
+    QStringList files;
+    if (libraryRoot.isEmpty())
+        return files;
+    const QString root = QDir::cleanPath(QDir(libraryRoot).absolutePath()) + u'/';
+    const auto add = [&files, &root](const QString &path) {
+        if (path.isEmpty())
+            return;
+        const QString absolute = QDir::cleanPath(QFileInfo(path).absoluteFilePath());
+        if (absolute.startsWith(root, Qt::CaseInsensitive) && !files.contains(absolute))
+            files.append(absolute);
+    };
+    for (const Format &format : work.formats) {
+        add(format.filePath);
+        add(format.coverPath);
+        for (const Chapter &chapter : format.chapters) {
+            add(chapter.filePath);
+            // Covers are saved next to each imported file.
+            if (!chapter.filePath.isEmpty())
+                add(chapter.filePath + QStringLiteral(".cover.jpg"));
+        }
+    }
+    return files;
+}
+
+QStringList removeWorkFiles(const QString &libraryRoot, const Work &work, bool toTrash)
+{
+    QStringList failed;
+    QStringList folders;
+    for (const QString &path : workFiles(libraryRoot, work)) {
+        if (!QFileInfo::exists(path))
+            continue;
+        const QString folder = QFileInfo(path).absolutePath();
+        if (!folders.contains(folder))
+            folders.append(folder);
+        if (toTrash && QFile::moveToTrash(path))
+            continue;
+        if (!QFile::remove(path))
+            failed.append(path);
+    }
+
+    // Empty folders go too, up to (not including) the library folder.
+    const QString root = QDir::cleanPath(QDir(libraryRoot).absolutePath());
+    for (QString folder : std::as_const(folders)) {
+        while (folder.length() > root.length() && folder.startsWith(root, Qt::CaseInsensitive)
+               && QDir(folder).isEmpty() && QDir().rmdir(folder)) {
+            folder = QFileInfo(folder).absolutePath();
+        }
+    }
+    return failed;
 }
 
 } // namespace LibraryFolder

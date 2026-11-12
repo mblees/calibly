@@ -19,6 +19,8 @@ import Calibly.Theme
 //   stacked         draw as a stack of sheets (series)
 //   titleInset      space to keep free above the placeholder title, e.g. for
 //                   a label at the top left of the cover
+//   authorInset     space to keep free left of the placeholder author, e.g.
+//                   for a button at the bottom left of the cover
 Item {
     id: root
 
@@ -28,6 +30,7 @@ Item {
     property bool coverIsSquare: false
     property bool stacked: false
     property real titleInset: 0
+    property real authorInset: 0
 
     default property alias overlay: overlayItem.data
 
@@ -53,6 +56,7 @@ Item {
         required property string author
         required property var colors
         property real titleInset: 0
+        property real authorInset: 0
 
         gradient: Gradient {
             GradientStop { position: 0; color: face.colors[0] }
@@ -87,6 +91,7 @@ Item {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.margins: Theme.spacingS
+            anchors.leftMargin: Theme.spacingS + face.authorInset
             visible: face.width >= Theme.coverTextMinWidth
             text: face.author
             elide: Text.ElideRight
@@ -163,6 +168,7 @@ Item {
                 colors: root.colors
                 // A square face starts below the top of the frame anyway.
                 titleInset: root.coverIsSquare ? 0 : root.titleInset
+                authorInset: root.coverIsSquare ? 0 : root.authorInset
             }
 
             // --- square image: blurred fill ----------------------------------

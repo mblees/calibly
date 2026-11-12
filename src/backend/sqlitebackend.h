@@ -29,6 +29,7 @@ public:
 
     QList<Work> loadWorks() override;
     bool saveWork(const Work &work) override;
+    bool removeWork(const QString &workId) override;
     QString libraryRoot() const override { return m_root; }
 
     // Default library folder: <Documents>/calibly-Bibliothek

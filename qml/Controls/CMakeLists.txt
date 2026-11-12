@@ -23,6 +23,10 @@ qt_add_qml_module(calibly_controls
         SeekBar.qml
         Spinner.qml
         LinkButton.qml
+        ConfirmDialog.qml
+        AppMenu.qml
+        AppMenuItem.qml
+        AppMenuSeparator.qml
         TimeFormat.js
 )
 

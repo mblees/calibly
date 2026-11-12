@@ -204,6 +204,9 @@ View F from the mockup becomes a real developer view `ComponentGallery.qml` (sta
 | `DropHint`, `ImportQueue` | Components | D | 7 |
 | `ContinueCard` | Components | A | 8 |
 | `BulkActionBar` | Components | A | 9 |
+| `ConfirmDialog` (question before merging / removing) | Controls | A | 9 |
+| `AppMenu`, `AppMenuItem`, `AppMenuSeparator` (menu at the pointer) | Controls | A | 9 |
+| `WorkMenu` (context menu of a cover) | Components | A | 9 |
 | `SuggestionList` | Components | E | 10 |
 
 ---
@@ -298,6 +301,15 @@ The sidebar entry "Weitermachen" opens `ContinueView`: all titles that were star
 - Selection via the circle on the cover, Ctrl+click or Ctrl+A. Plus a `BulkActionBar` with Metadata, "Merge into one work" and Remove.
 - Series stacks in the gallery. Clicking one opens the series.
 - **Done when:** a standalone ebook and a standalone audiobook can be merged into one work.
+
+**Implemented as:** Selection and series are part of `WorkFilterModel`, so the views only show them.
+*Selection:* the role `selected`, `toggleSelected()`, `selectAll()`, `clearSelection()`, `selectedIds` (in the shown order). Works that are no longer shown (filter, search, removed) leave the selection, so the bar never acts on something the user does not see. On a cover it is the circle at the bottom left (a ring while hovering or selecting, a check mark and an accent frame when selected – at the bottom, because the state labels are at the top left), Ctrl + click, or Ctrl + A / "Alle auswählen" for everything shown; Esc ends the selection. A plain click still opens the detail view. `BulkActionBar` offers three actions, the two that change the library ask first (`ConfirmDialog`) and are disabled while an import runs:
+- *Metadaten* opens the metadata editor with the first selected work; ‹ / › step through the selection (a `WorkFilterModel` with `onlyIds`). There is no dialog that changes several works at once.
+- *Zu einem Werk verbinden* (`mergeWorks()` in core, `LibraryController::mergeWorks()`): the work with an ebook keeps its id and metadata (as in the import), empty fields are filled from the others, narrators and tags are united; all formats are kept and the other works are removed from the database, their files stay where they are. Several audiobook formats become one audiobook (`joinAudiobooks()`): the files in the order of their paths, one chapter per file or the chapters the file has, continuing where the last file was stopped. That also joins the MP3 files that phase 4 imported as separate formats – for those the action is available with a single selected work. There is no way to split a work again.
+- *Entfernen* (`LibraryController::removeWorks()`, `LibraryBackend::removeWork()`): removes the works from the database and moves their files inside the library folder (formats, parts of audiobooks, covers) to the recycle bin; folders that are empty afterwards are removed. Files outside the library folder are never touched.
+Before works are merged or removed the controller emits `worksAboutToChange`, so the player stores its position and unloads the audiobook.
+*Context menu:* a right click on a cover opens `WorkMenu` (built on the neutral `AppMenu`). For a title: Details, Lesen / Hören, Metadaten bearbeiten, "Als fertig markieren" per format, Auswählen, Entfernen (after the question, with the name of the title). If the title is one of several selected ones, the menu is about the selection and offers what the bar offers. For a series stack it opens the series. Every entry is also reachable elsewhere (detail view, bar), as interaction principle 2 asks.
+*Series:* with `groupSeries` the shown works of one series (two or more; names are compared without case and accents) are one row, a stack: the first volume stands for it, `seriesCount` / `seriesFirst` / `seriesLast` describe it ("Band 1–4", "4 Bände · Serie"), it has the formats that any volume has, and it sorts by the name of the series or by its most recently opened volume. A search or format selection that leaves one volume shows that volume. Stacks cannot be selected and are not a drop target. A click sets `seriesFilter`: the volumes in the order of their numbers, with "‹ Bibliothek" (or Esc) leading back. "Gruppieren: Keine / Serien" next to the sorting switches the stacks off and on (kept between starts, on by default). The sidebar entry "Serien" opens `SeriesView`: the library view with `seriesOnly`, where every series is a stack, also one with a single volume; the entry shows the number of series. Authors and narrators are still placeholders.
 
 ### Phase 10 – Online suggestions
 - `SuggestionList` in the metadata dialog with before/after and per-field adoption.

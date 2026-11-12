@@ -55,6 +55,10 @@ Audiobooks play in calibly: "Continue listening" in the detail view starts the p
 
 The row "Continue" at the top of the library shows the titles that were opened last and are not finished; the round button continues directly, and so do "Read" / "Listen" when hovering a cover. "Continue" in the sidebar lists all started titles in the same order. Covers carry a label: "NEW" until a title is opened for the first time, "FINISHED" (audiobooks listened to the end; ebooks are marked with "Mark as finished" in the detail view, because they open in another application) and "FILE MISSING" when a file is no longer in the library folder.
 
+Several titles are selected with the circle at the bottom left of a cover, with Ctrl + click or with Ctrl + A; Esc ends the selection. The bar at the bottom then edits their metadata one after the other, joins them into one title ("Merge into one work", e.g. an ebook and its audiobook; several audiobook files become one audiobook) or removes them – removing moves their files in the library folder to the recycle bin. Merging cannot be undone. A right click on a cover opens a menu with the same actions for that title (or for the selection, if the title is part of it).
+
+The volumes of a series are shown as one stack; a click opens it, "‹" or Esc leads back. "Group: None" next to the sorting shows every volume on its own. "Series" in the sidebar lists all series.
+
 Metadata is edited with ✎ in the detail view of a title. Fields marked with 🔗 apply to all formats of the title, the others only to the audiobook or the ebook. Ctrl+S saves, Ctrl+PgUp / Ctrl+PgDown go to the previous / next title.
 
 Files are added with "Add" or by dragging them (or whole folders) into the window: dropped on free space they become new titles, dropped on a cover they become a format of that title (e.g. the audiobook of an ebook). The MP3 files of one folder become one audiobook. The import queue at the bottom right shows each title; "Review" opens the metadata of titles whose name could only be taken from the file name.

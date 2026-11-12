@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Effects
+import QtQuick.Templates as T
 import Calibly.Theme
 import Calibly.Controls
 import Calibly.Models
@@ -7,7 +8,10 @@ import Calibly.Models
 // One work in the gallery: cover with format badges (top right), a state
 // label (top left) and progress lines (bottom: blue = read, orange =
 // listened, green = finished), title and author below. Hovering shows
-// "Lesen" / "Hören" to continue directly. Presentation only, no logic.
+// "Lesen" / "Hören" to continue directly, and a circle (bottom left) that
+// selects the work; a selected work has an accent frame and a check mark.
+// A series stack shows its volumes ("Band 1–4") instead of a state.
+// Presentation only, no logic.
 //
 // Properties:
 //   title, author                 texts
@@ -15,6 +19,12 @@ import Calibly.Models
 //   hasEbook, hasAudiobook        which format badges are shown
 //   readProgress, listenProgress  0.0 – 1.0, 0 = no line
 //   stacked                       draw the cover as a series stack
+//   stackLabel                    label of a stack, e.g. "Band 1–4"; shown
+//                                 instead of the state label
+//   selectable                    the work can be selected (not a stack)
+//   selected                      it is selected
+//   selecting                     other works are selected: the circle is
+//                                 shown without hovering
 //   workState                     WorkState.New ("NEU"), WorkState.Finished
 //                                 ("FERTIG"), WorkState.FileMissing (grey
 //                                 cover, "DATEI FEHLT") or WorkState.Normal
@@ -23,6 +33,9 @@ import Calibly.Models
 //                                 „Dracula“ hinzufügen"; empty = no drag
 // Signals:
 //   clicked()
+//   menuRequested(real x, real y)        right click, at this position of
+//                                        the tile: the context menu
+//   selectToggled()                      the circle, or Ctrl + click
 //   readRequested(), listenRequested()   the hover actions
 Item {
     id: root
@@ -36,17 +49,27 @@ Item {
     required property real readProgress
     required property real listenProgress
     property bool stacked: false
+    property string stackLabel
+    property bool selectable: true
+    property bool selected: false
+    property bool selecting: false
     property int workState: WorkState.Normal
     property string dropLabel
 
     readonly property bool hovered: hover.hovered
     readonly property bool dropTarget: root.dropLabel !== ""
     readonly property bool fileMissing: root.workState === WorkState.FileMissing
-    // Not while files are dragged over the cover, and not for missing files.
-    readonly property bool showActions: root.hovered && !root.dropTarget && !root.fileMissing
+    // Not while files are dragged over the cover, not for missing files and
+    // not for a stack (it stands for several works).
+    readonly property bool showActions: root.hovered && !root.dropTarget && !root.fileMissing && !root.stacked
                                         && (root.hasEbook || root.hasAudiobook)
+    readonly property bool showSelectCircle: root.selectable && !root.dropTarget
+                                             && (root.selected || root.selecting || root.hovered)
+    readonly property bool hasLabel: root.stackLabel !== "" || root.workState !== WorkState.Normal
 
     signal clicked()
+    signal menuRequested(real x, real y)
+    signal selectToggled()
     signal readRequested()
     signal listenRequested()
 
@@ -67,8 +90,10 @@ Item {
         coverUrl: root.coverUrl
         coverIsSquare: root.coverIsSquare
         stacked: root.stacked
-        // The title of a generated cover starts below the state label.
-        titleInset: root.workState !== WorkState.Normal ? Theme.badgeSize + Theme.spacingXs : 0
+        // The title of a generated cover starts below the label.
+        titleInset: root.hasLabel ? Theme.badgeSize + Theme.spacingXs : 0
+        // The author of a generated cover makes room for the selection circle.
+        authorInset: root.showSelectCircle ? Theme.selectCircleSize + Theme.spacingXs : 0
 
         // A missing file: the whole cover turns grey and darker.
         layer.enabled: root.fileMissing
@@ -130,18 +155,56 @@ Item {
         color: Theme.coverHoverScrim
     }
 
-    // State label at the top left. Outside the cover, so the label of a
-    // missing file keeps its color.
+    // Label at the top left: the volumes of a stack, or the state. Outside
+    // the cover, so the label of a missing file keeps its color.
     Badge {
         x: Theme.spacingS
         y: art.stackInset + Theme.spacingS
-        visible: root.workState !== WorkState.Normal
-        text: root.workState === WorkState.New ? qsTr("NEU")
+        visible: root.hasLabel
+        text: root.stackLabel !== "" ? root.stackLabel
+              : root.workState === WorkState.New ? qsTr("NEU")
               : root.workState === WorkState.Finished ? qsTr("✓ FERTIG") : qsTr("DATEI FEHLT")
-        color: root.workState === WorkState.New ? Theme.accentForeground
+        color: root.stackLabel !== "" ? Theme.textPrimary
+               : root.workState === WorkState.New ? Theme.accentForeground
                : root.workState === WorkState.Finished ? Theme.finishedForeground : Theme.dangerForeground
-        backgroundColor: root.workState === WorkState.New ? Theme.accent
+        backgroundColor: root.stackLabel !== "" ? Theme.coverOverlay
+                         : root.workState === WorkState.New ? Theme.accent
                          : root.workState === WorkState.Finished ? Theme.finished : Theme.danger
+    }
+
+    // Selection circle at the bottom left, above the progress lines: a ring
+    // while hovering or selecting, filled with a check mark when selected.
+    T.AbstractButton {
+        id: selectButton
+
+        x: Theme.spacingS
+        y: art.height - height - Theme.spacingS - Theme.progressHeight
+        width: Theme.selectCircleSize
+        height: width
+        visible: root.showSelectCircle
+        text: root.selected ? qsTr("Auswahl aufheben") : qsTr("Auswählen")
+
+        Accessible.name: selectButton.text
+
+        onClicked: root.selectToggled()
+
+        contentItem: Item {
+            Icon {
+                anchors.centerIn: parent
+                visible: root.selected
+                name: "check"
+                size: Theme.iconSizeSmall + Theme.spacingXxs
+                strokeWidth: Theme.badgeIconStrokeWidth
+                color: Theme.accentForeground
+            }
+        }
+
+        background: Rectangle {
+            radius: width / 2
+            color: root.selected ? Theme.accent : Theme.coverOverlay
+            border.width: root.selected ? 0 : Theme.focusWidth
+            border.color: selectButton.hovered ? Theme.accent : Theme.textPrimary
+        }
     }
 
     // Hover actions: continue directly. Both are also in the detail view.
@@ -184,11 +247,12 @@ Item {
         y: art.stackInset - Theme.spacingXxs
         width: art.width - art.stackInset + 2 * Theme.spacingXxs
         height: art.height - art.stackInset + 2 * Theme.spacingXxs
-        visible: root.hovered && !root.dropTarget
+        visible: (root.hovered || root.selected) && !root.dropTarget
         color: "transparent"
         radius: Theme.radiusS + Theme.spacingXxs
         border.width: Theme.focusWidth
-        border.color: Theme.textPrimary
+        // Selected: accent frame, also without hovering.
+        border.color: root.selected ? Theme.accent : Theme.textPrimary
     }
 
     // Drop target: accent outline with a soft glow and what will happen.
@@ -264,9 +328,23 @@ Item {
         cursorShape: Qt.PointingHandCursor
     }
 
+    // A click on a hover action or the circle is not a click on the cover.
     TapHandler {
-        // A click on a hover action is not a click on the cover.
-        enabled: !readButton.hovered && !listenButton.hovered
+        acceptedModifiers: Qt.NoModifier
+        enabled: !readButton.hovered && !listenButton.hovered && !selectButton.hovered
         onTapped: root.clicked()
+    }
+    // Right click: the context menu.
+    TapHandler {
+        acceptedButtons: Qt.RightButton
+        onTapped: function(eventPoint) {
+            root.menuRequested(eventPoint.position.x, eventPoint.position.y)
+        }
+    }
+    // Ctrl + click selects.
+    TapHandler {
+        acceptedModifiers: Qt.ControlModifier
+        enabled: root.selectable && !readButton.hovered && !listenButton.hovered && !selectButton.hovered
+        onTapped: root.selectToggled()
     }
 }

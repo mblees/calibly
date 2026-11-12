@@ -59,6 +59,12 @@ bool MockBackend::saveWork(const Work &work)
     return true;
 }
 
+bool MockBackend::removeWork(const QString &workId)
+{
+    const qsizetype removed = m_works.removeIf([&workId](const Work &work) { return work.id == workId; });
+    return removed > 0;
+}
+
 QList<Work> MockBackend::readJson() const
 {
     QFile file(m_jsonPath);

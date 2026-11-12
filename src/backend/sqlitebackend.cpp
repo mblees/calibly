@@ -274,6 +274,30 @@ QList<Work> SqliteBackend::loadWorks()
     return works;
 }
 
+bool SqliteBackend::removeWork(const QString &workId)
+{
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    if (!db.isOpen() || workId.isEmpty())
+        return false;
+
+    db.transaction();
+    QSqlQuery query(db);
+    // Explicitly, not only by ON DELETE CASCADE: that needs the foreign key
+    // pragma, which is set per connection.
+    query.prepare(QStringLiteral("DELETE FROM formats WHERE work_id = ?"));
+    query.addBindValue(workId);
+    bool ok = exec(query, nullptr);
+    if (ok) {
+        query.prepare(QStringLiteral("DELETE FROM works WHERE id = ?"));
+        query.addBindValue(workId);
+        ok = exec(query, nullptr) && query.numRowsAffected() > 0;
+    }
+    if (ok)
+        return db.commit();
+    db.rollback();
+    return false;
+}
+
 bool SqliteBackend::saveWork(const Work &work)
 {
     QSqlDatabase db = QSqlDatabase::database(m_connectionName);

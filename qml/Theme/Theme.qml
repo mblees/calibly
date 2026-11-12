@@ -123,6 +123,8 @@ QtObject {
     readonly property int progressHeight: 3
     readonly property int continueCardWidth: 300
     readonly property int continueCoverWidth: 46  // cover in a "Continue" card (2:3)
+    readonly property int confirmDialogWidth: 440
+    readonly property int selectCircleSize: 22    // selection circle on a cover
     readonly property int importQueueWidth: 340
     readonly property int importQueueMaxHeight: 320
     readonly property int importThumbWidth: 26    // cover thumbnail in the import queue (2:3)

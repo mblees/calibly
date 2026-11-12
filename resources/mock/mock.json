@@ -15,6 +15,16 @@
       "formats": [
         { "kind": "ebook", "file": "baskervilles.epub", "progress": 0.45, "pages": 236, "size": 795600 },
         { "kind": "audiobook", "publisher": "Beispiel Audio", "file": "baskervilles.m4b", "progress": 0.58, "duration": 22800, "size": 364800000 } ] },
+    { "id": "studie-in-scharlachrot", "title": "Eine Studie in Scharlachrot", "authors": ["Arthur Conan Doyle"], "series": "Sherlock Holmes", "seriesIndex": 1, "lastOpened": "2026-08-02T20:10:00", "description": "Dr. Watson sucht eine Wohnung in London und findet einen Mitbewohner, der aus kleinsten Spuren ganze Lebensläufe liest.", "tags": ["Krimi", "Klassiker"], "rating": 4, "language": "de", "published": 1887, "publisher": "Beispielverlag", "added": "2026-03-08T10:00:00",
+      "formats": [
+        { "kind": "ebook", "file": "studie-in-scharlachrot.epub", "progress": 1.0, "pages": 176, "size": 512000 } ] },
+    { "id": "zeichen-der-vier", "title": "Das Zeichen der Vier", "authors": ["Arthur Conan Doyle"], "narrators": ["Maren Brandt"], "series": "Sherlock Holmes", "seriesIndex": 2, "description": "Eine junge Frau erhält jedes Jahr eine kostbare Perle von einem Unbekannten – und nun eine Einladung.", "tags": ["Krimi", "Klassiker"], "language": "de", "published": 1890, "publisher": "Beispielverlag", "added": "2026-03-08T10:00:00",
+      "formats": [
+        { "kind": "ebook", "file": "zeichen-der-vier.epub", "pages": 168, "size": 498000 },
+        { "kind": "audiobook", "publisher": "Beispiel Audio", "file": "zeichen-der-vier.m4b", "duration": 16200, "size": 259200000 } ] },
+    { "id": "tal-der-angst", "title": "Das Tal der Angst", "authors": ["Arthur Conan Doyle"], "series": "Sherlock Holmes", "seriesIndex": 4, "description": "Eine verschlüsselte Warnung erreicht Holmes zu spät: Auf einem Landsitz in Sussex ist ein Mann ermordet worden.", "tags": ["Krimi", "Klassiker"], "language": "de", "published": 1915, "publisher": "Beispielverlag", "added": "2026-03-09T10:00:00",
+      "formats": [
+        { "kind": "ebook", "file": "tal-der-angst.epub", "pages": 224, "size": 610000 } ] },
     { "id": "effi-briest", "title": "Effi Briest", "authors": ["Theodor Fontane"], "lastOpened": "2026-10-28T20:00:00", "description": "Die junge Effi heiratet den viel älteren Baron von Innstetten. Eine alte Affäre wird Jahre später zum Verhängnis.", "tags": ["Klassiker", "Gesellschaft"], "rating": 4, "language": "de", "published": 1896, "publisher": "Beispielverlag", "added": "2026-03-30T10:00:00",
       "formats": [
         { "kind": "ebook", "file": "effi-briest.epub", "progress": 1.0, "cover": "effi-briest.jpg", "pages": 344, "size": 1022400 } ] },

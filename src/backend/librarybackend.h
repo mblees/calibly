@@ -20,6 +20,10 @@ public:
     // backend cannot store it.
     virtual bool saveWork(const Work &work) = 0;
 
+    // Removes the work with all its formats from the library (not its
+    // files). Returns false if the backend cannot remove it.
+    virtual bool removeWork(const QString &) { return false; }
+
     // Folder that holds the library files; empty if files cannot be imported.
     virtual QString libraryRoot() const { return QString(); }
 };

@@ -16,6 +16,8 @@ qt_add_qml_module(calibly_components
         DropHint.qml
         ImportQueue.qml
         ContinueCard.qml
+        BulkActionBar.qml
+        WorkMenu.qml
 )
 
 # calibly_models: only for the enum WorkState (the state of a cover).

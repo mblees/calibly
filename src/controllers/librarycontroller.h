@@ -26,6 +26,18 @@ class LibraryBackend;
 //                     importing itself is done by ImportController
 //   fileNameFilters   patterns for a file dialog, e.g. ["*.epub", "*.m4b", ...]
 //
+//   LibraryController.mergeWorks(workIds)
+//       "Zu einem Werk verbinden": joins the works into one (see
+//       mergeWorks() in core) and removes the others; their files stay where
+//       they are. Returns the id of the work that is left, "" on failure.
+//       One id joins the audiobook files of that work into one audiobook.
+//   LibraryController.mergeTitle(workIds)   title of the work that would be left
+//   LibraryController.removeWorks(workIds)
+//       removes the works from the library and moves their files in the
+//       library folder to the recycle bin; returns how many were removed
+//   worksAboutToChange(workIds)   emitted before works are merged or removed,
+//       so whoever uses one of them (the player) can let go of it first
+//
 //   Editing metadata: see WorkEditor, which saves through saveWork().
 class LibraryController : public QObject
 {
@@ -63,14 +75,27 @@ public:
     Q_INVOKABLE void reload();
     Q_INVOKABLE bool openFormat(const QString &workId, const QString &kind);
     Q_INVOKABLE bool setFinished(const QString &workId, const QString &kind, bool finished);
+    Q_INVOKABLE QString mergeWorks(const QStringList &workIds);
+    Q_INVOKABLE QString mergeTitle(const QStringList &workIds) const;
+    Q_INVOKABLE int removeWorks(const QStringList &workIds);
+
+    // Removed files are deleted instead of moved to the recycle bin (tests).
+    void setDeleteFilesPermanently(bool permanently) { m_trashFiles = !permanently; }
 
     // A file of this format was (not) found, e.g. when it was opened. Only
     // changes what the views show; it is checked again when the library is
     // loaded. Ignored for sample data, whose files never exist.
     void setFileMissing(const QString &workId, int formatIndex, bool missing);
 
+signals:
+    void worksAboutToChange(const QStringList &workIds);
+
 private:
+    // The works with these ids, in this order; unknown ids are left out.
+    QList<Work> worksById(const QStringList &workIds) const;
+
     LibraryBackend &m_backend;
+    bool m_trashFiles = true;
     QQmlEngine *m_engine = nullptr;
     WorkModel m_works;
 
