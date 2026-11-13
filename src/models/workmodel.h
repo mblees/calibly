@@ -46,6 +46,7 @@ public:
         EbookStateRole,     // the state when only the ebook / the audiobook is looked at
         AudiobookStateRole,
         CanSplitRole,       // "Kombination auflösen" is possible, see Work::canSplit()
+        AddedRole,          // when the work was added to the library
     };
     Q_ENUM(Role)
 

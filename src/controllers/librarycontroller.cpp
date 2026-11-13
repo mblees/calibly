@@ -50,6 +50,13 @@ bool markFinished(Format &format, bool finished)
     } else {
         format.progress = std::clamp(progress, 0.0, 1.0);
     }
+    // Back at the start (the reader too): not "started" any more, so it does
+    // not show under "Weitermachen" at 0 %. The work keeps its lastOpened
+    // (not "NEU").
+    if (format.progress <= 0.0 && format.positionMs <= 0) {
+        format.readingPosition.clear();
+        format.lastOpened = QDateTime();
+    }
     return true;
 }
 

@@ -12,6 +12,7 @@
 #include <QSet>
 #include <QSortFilterProxyModel>
 #include <QStringList>
+#include <QTimer>
 
 // Filtered and sorted view on a WorkModel. All filter and sort logic lives
 // here, the QML views only set the properties (UI Development Plan, rule 6).
@@ -53,6 +54,18 @@
 //   seriesOnly    only works that belong to a series; with groupSeries every
 //                 series is a stack then, also one with a single volume.
 //   workCount     the works behind the shown rows (count counts a stack once)
+//   stackName     role: the name of a stack (its series or author), "" for a work
+//
+// Authors (the view "Autoren"):
+//   groupAuthors  only works with an author; every (first) author is a stack,
+//                 also one with a single work. Without volume numbers.
+//   authorFilter  only the works of this (first) author ("" = all): an
+//                 opened author stack. groupSeries then stacks their series.
+//
+// New works (the view "Neu"):
+//   addedWithin   only works added less than this many seconds ago (0 = all).
+//                 Works leave on their own when the time is up; changing a
+//                 work does not make it new again (see Work::added).
 //
 // Selection (phase 9): shown works can be selected. A series stack too
 // (phase 13): selecting it selects all its volumes, and it counts as
@@ -80,6 +93,9 @@ class WorkFilterModel : public QSortFilterProxyModel
     Q_PROPERTY(bool groupSeries READ groupSeries WRITE setGroupSeries NOTIFY groupSeriesChanged)
     Q_PROPERTY(QString seriesFilter READ seriesFilter WRITE setSeriesFilter NOTIFY seriesFilterChanged)
     Q_PROPERTY(bool seriesOnly READ seriesOnly WRITE setSeriesOnly NOTIFY seriesOnlyChanged)
+    Q_PROPERTY(bool groupAuthors READ groupAuthors WRITE setGroupAuthors NOTIFY groupAuthorsChanged)
+    Q_PROPERTY(QString authorFilter READ authorFilter WRITE setAuthorFilter NOTIFY authorFilterChanged)
+    Q_PROPERTY(int addedWithin READ addedWithin WRITE setAddedWithin NOTIFY addedWithinChanged)
     Q_PROPERTY(QStringList onlyIds READ onlyIds WRITE setOnlyIds NOTIFY onlyIdsChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(int workCount READ workCount NOTIFY workCountChanged)
@@ -99,6 +115,7 @@ public:
         LastOpened, // most recently opened first, never opened at the end
         Title,      // A–Z
         Author,     // by last name of the first author
+        Added,      // most recently added first
     };
     Q_ENUM(SortOrder)
 
@@ -108,6 +125,7 @@ public:
         SeriesCountRole,
         SeriesFirstRole,
         SeriesLastRole,
+        StackNameRole,
     };
     Q_ENUM(Role)
 
@@ -134,6 +152,15 @@ public:
 
     bool seriesOnly() const { return m_seriesOnly; }
     void setSeriesOnly(bool only);
+
+    bool groupAuthors() const { return m_groupAuthors; }
+    void setGroupAuthors(bool group);
+
+    QString authorFilter() const { return m_authorFilter; }
+    void setAuthorFilter(const QString &author);
+
+    int addedWithin() const { return m_addedWithin; }
+    void setAddedWithin(int seconds);
 
     QStringList onlyIds() const { return m_onlyIds; }
     void setOnlyIds(const QStringList &ids);
@@ -165,6 +192,9 @@ signals:
     void groupSeriesChanged();
     void seriesFilterChanged();
     void seriesOnlyChanged();
+    void groupAuthorsChanged();
+    void authorFilterChanged();
+    void addedWithinChanged();
     void onlyIdsChanged();
     void countChanged();
     void workCountChanged();
@@ -198,9 +228,14 @@ private:
     bool matchesSearch(const QModelIndex &sourceIndex) const;
     bool matchesFormat(const QModelIndex &sourceIndex) const;
     bool matchesSeries(const QModelIndex &sourceIndex) const;
+    bool matchesAuthor(const QModelIndex &sourceIndex) const;
+    bool matchesAdded(const QModelIndex &sourceIndex) const;
+    // Starts the timer for the next work that is no longer new.
+    void scheduleAddedCheck();
     // Everything but stacking: the work is shown, as itself or in a stack.
     bool matchesFilters(const QModelIndex &sourceIndex) const;
     bool stacking() const;
+    bool authorStacking() const;
     // The stack this source row stands for, nullptr if it is a plain work.
     const Stack *stackOf(int sourceRow) const;
     int compareText(const QString &left, const QString &right) const;
@@ -226,6 +261,11 @@ private:
     QString m_seriesFilter;
     QString m_seriesFilterKey;  // folded, see seriesKey()
     bool m_seriesOnly = false;
+    bool m_groupAuthors = false;
+    QString m_authorFilter;
+    QString m_authorFilterKey;  // folded, see seriesKey()
+    int m_addedWithin = 0;
+    QTimer m_addedTimer;
     QStringList m_onlyIds;
     QCollator m_collator;
     QList<QMetaObject::Connection> m_sourceConnections;

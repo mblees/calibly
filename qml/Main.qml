@@ -33,7 +33,9 @@ Window {
 
         ListElement { title: qsTr("Bibliothek"); iconName: "library"; count: 0; view: "LibraryView" }
         ListElement { title: qsTr("Weitermachen"); iconName: "clock"; count: 0; view: "ContinueView" }
+        ListElement { title: qsTr("Neu"); iconName: "star"; count: 0; view: "NewView" }
         ListElement { title: qsTr("Serien"); iconName: "layers"; count: 0; view: "SeriesView" }
+        ListElement { title: qsTr("Autoren"); iconName: "user"; count: 0; view: "AuthorsView" }
     }
 
     // Entries at the bottom of the sidebar; their indices follow navigation's.
@@ -44,12 +46,15 @@ Window {
     }
 
     // The library entry shows the number of works, "Weitermachen" the
-    // number of titles that were started and are not finished, "Serien" the
-    // number of series.
+    // number of titles that were started and are not finished, "Neu" the
+    // titles added in the last minutes, "Serien" the number of series,
+    // "Autoren" the number of authors.
     function updateCounts() {
         navigation.setProperty(0, "count", LibraryController.works.count)
         navigation.setProperty(1, "count", continueWorks.count)
-        navigation.setProperty(2, "count", seriesStacks.count)
+        navigation.setProperty(2, "count", newWorks.count)
+        navigation.setProperty(3, "count", seriesStacks.count)
+        navigation.setProperty(4, "count", authorStacks.count)
     }
 
     Component.onCompleted: root.updateCounts()
@@ -81,6 +86,26 @@ Window {
         sourceModel: LibraryController.works
         groupSeries: true
         seriesOnly: true
+
+        onCountChanged: root.updateCounts()
+    }
+
+    // One row per author, like the view "Autoren".
+    WorkFilterModel {
+        id: authorStacks
+
+        sourceModel: LibraryController.works
+        groupAuthors: true
+
+        onCountChanged: root.updateCounts()
+    }
+
+    // The titles of the view "Neu" (see LibraryView.newMinutes).
+    WorkFilterModel {
+        id: newWorks
+
+        sourceModel: LibraryController.works
+        addedWithin: 10 * 60
 
         onCountChanged: root.updateCounts()
     }

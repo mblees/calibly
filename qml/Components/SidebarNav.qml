@@ -103,11 +103,12 @@ Rectangle {
         anchors.topMargin: Theme.spacingL
         spacing: Theme.spacingL
 
-        // Wordmark: one color and weight, the color is in the icon
-        // (mockups/calibly-logo-ideen.html, idea 4).
+        // Wordmark: one weight; "cal" in the accent color.
         Text {
             Layout.leftMargin: Theme.spacingS
-            text: "calibly"
+            textFormat: Text.StyledText
+            text: "<font color=\"" + Theme.accent + "\">cal</font>ibly"
+            Accessible.name: "calibly"
             color: Theme.textPrimary
             font.pixelSize: Theme.fontTitle
             font.weight: Font.DemiBold

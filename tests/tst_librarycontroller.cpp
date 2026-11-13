@@ -366,16 +366,6 @@ private slots:
         QSettings().remove(QStringLiteral("library/path"));
     }
 
-private:
-    std::unique_ptr<QTemporaryDir> m_dir;
-    QString m_root;
-    QString m_epub;
-    QString m_part1;
-    QString m_part2;
-    QString m_faust;
-    std::unique_ptr<MemoryBackend> m_backend;
-    std::unique_ptr<LibraryController> m_library;
-
     // Phase 12: all selected titles as finished, then as new again.
     void marksWorks()
     {
@@ -485,6 +475,38 @@ private:
         QCOMPARE(m_library->removeSeries(QString()), 0);
     }
 
+    // Taking back "finished" at the end: back at the start, and no longer
+    // "started", so it does not show under "Weitermachen" at 0 %. The work
+    // stays opened (not "NEU").
+    void unfinishedAtStartIsNotStarted()
+    {
+        const WorkModel *works = m_library->works();
+        const auto work = [works](const char *id) { return works->workAt(works->rowOf(QLatin1String(id))); };
+        Work faust = *work("faust");
+        faust.markOpened(0, QDateTime::currentDateTime());
+        faust.formats[0].readingPosition = QStringLiteral("end");
+        QVERIFY(m_library->saveWork(faust));
+
+        QVERIFY(m_library->setFinished(QStringLiteral("faust"), QStringLiteral("ebook"), true));
+        QVERIFY(m_library->setFinished(QStringLiteral("faust"), QStringLiteral("ebook"), false));
+        QCOMPARE(work("faust")->formats.first().progress, 0.0);
+        QVERIFY(!work("faust")->formats.first().lastOpened.isValid());
+        QVERIFY(work("faust")->formats.first().readingPosition.isEmpty());
+        QVERIFY(work("faust")->lastOpened.isValid());
+        QCOMPARE(work("faust")->state(), Work::State::Normal);
+
+        // An audiobook stopped in the middle goes back there and stays started.
+        Work audio = *work("audio");
+        audio.markOpened(0, QDateTime::currentDateTime());
+        audio.formats[0].positionMs = 1000;
+        audio.formats[0].progress = 0.25;
+        QVERIFY(m_library->saveWork(audio));
+        QVERIFY(m_library->setFinished(QStringLiteral("audio"), QStringLiteral("audiobook"), true));
+        QVERIFY(m_library->setFinished(QStringLiteral("audio"), QStringLiteral("audiobook"), false));
+        QCOMPARE(work("audio")->formats.first().progress, 0.25);
+        QVERIFY(work("audio")->formats.first().lastOpened.isValid());
+    }
+
     // "Kombinieren" two books into volumes, mark one volume, and dissolve
     // the combination again.
     void combinesAndSplits()
@@ -525,6 +547,16 @@ private:
         QVERIFY(m_backend->has(QStringLiteral("book")));
         QCOMPARE(m_library->splitWork(QStringLiteral("book")), 0); // nothing to dissolve
     }
+
+private:
+    std::unique_ptr<QTemporaryDir> m_dir;
+    QString m_root;
+    QString m_epub;
+    QString m_part1;
+    QString m_part2;
+    QString m_faust;
+    std::unique_ptr<MemoryBackend> m_backend;
+    std::unique_ptr<LibraryController> m_library;
 };
 
 QTEST_GUILESS_MAIN(TestLibraryController)

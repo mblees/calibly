@@ -16,6 +16,8 @@ import Calibly.Controls
 //
 // Properties:
 //   stack              the cover is a series stack
+//   authorStack        the stack stands for an author ("Autoren"): it can
+//                      be opened, but is no series to dissolve
 //   hasEbook, hasAudiobook   the formats the title has
 //   readsInApp         the ebook opens in calibly's reader: the menu also
 //                      offers "Mit Standardprogramm öffnen"
@@ -50,6 +52,7 @@ AppMenu {
     id: root
 
     property bool stack: false
+    property bool authorStack: false
     property bool hasEbook: false
     property bool hasAudiobook: false
     property bool readsInApp: false
@@ -90,12 +93,12 @@ AppMenu {
     // --- a series stack --------------------------------------------------------
     AppMenuItem {
         visible: root.stackOnly
-        iconName: "layers"
-        text: qsTr("Serie öffnen")
+        iconName: root.authorStack ? "user" : "layers"
+        text: root.authorStack ? qsTr("Autor öffnen") : qsTr("Serie öffnen")
         onTriggered: root.openRequested()
     }
     AppMenuItem {
-        visible: root.stackOnly
+        visible: root.stackOnly && !root.authorStack
         enabled: !root.busy
         iconName: "split"
         text: qsTr("Serie auflösen …")

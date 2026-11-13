@@ -90,8 +90,83 @@ private slots:
         m_filter.setSeriesFilter(QString());
         m_filter.setSeriesOnly(false);
         m_filter.setOnlyIds({});
+        m_filter.setGroupAuthors(false);
+        m_filter.setAuthorFilter(QString());
+        m_filter.setAddedWithin(0);
         m_filter.clearSelection();
         m_filter.setSortOrder(WorkFilterModel::LastOpened);
+    }
+
+    // The view "Autoren": every (first) author is a stack, also one with a
+    // single work; an opened author shows its works with their series as
+    // stacks.
+    void groupsAuthors()
+    {
+        m_filter.setGroupAuthors(true);
+        m_filter.setSortOrder(WorkFilterModel::Title);
+        QCOMPARE(m_filter.count(), 5); // Kafka has two works
+        QCOMPARE(m_filter.workCount(), 6);
+        for (int row = 0; row < m_filter.count(); ++row)
+            QVERIFY(m_filter.isStack(row));
+        const int kafka = m_filter.rowOf(QStringLiteral("Der Prozess")); // the first title of Kafka
+        QVERIFY(kafka >= 0);
+        QCOMPARE(m_filter.index(kafka, 0).data(WorkFilterModel::StackNameRole).toString(), QStringLiteral("Franz Kafka"));
+        QCOMPARE(m_filter.index(kafka, 0).data(WorkFilterModel::SeriesCountRole).toInt(), 2);
+        QCOMPARE(m_filter.index(kafka, 0).data(WorkFilterModel::SeriesFirstRole).toInt(), 0);
+
+        // A work without an author is not listed.
+        Work anonymous = makeWork(QStringLiteral("Nibelungenlied"), {}, true, false);
+        m_works.updateWork(anonymous);
+        QCOMPARE(m_filter.workCount(), 6);
+
+        // Opened: only the works of that author (compared without case and
+        // accents), and their series stack again.
+        m_filter.setGroupSeries(true);
+        m_filter.setAuthorFilter(QStringLiteral("FRANZ KAFKA"));
+        QCOMPARE(titles(m_filter), (QStringList{ QStringLiteral("Der Prozess"), QStringLiteral("Die Verwandlung") }));
+        QVERIFY(!m_filter.isStack(0));
+        Work trial = *m_works.workAt(m_works.rowOf(QStringLiteral("Der Prozess")));
+        Work metamorphosis = *m_works.workAt(m_works.rowOf(QStringLiteral("Die Verwandlung")));
+        trial.series = metamorphosis.series = QStringLiteral("Erzählungen");
+        m_works.updateWork(trial);
+        m_works.updateWork(metamorphosis);
+        QCOMPARE(m_filter.count(), 1);
+        QVERIFY(m_filter.isStack(0));
+        QCOMPARE(m_filter.index(0, 0).data(WorkFilterModel::StackNameRole).toString(), QStringLiteral("Erzählungen"));
+        QCOMPARE(m_filter.selectedCount(), 0);
+        m_filter.toggleSelected(m_filter.workIdAt(0));
+        QCOMPARE(m_filter.selectedCount(), 2);
+    }
+
+    // The view "Neu": only works added in the last minutes, newest first;
+    // changing a work does not make it new.
+    void showsNewWorks()
+    {
+        const QDateTime now = QDateTime::currentDateTime();
+        Work grimm = *m_works.workAt(m_works.rowOf(QStringLiteral("Grimms Märchen")));
+        grimm.added = now.addSecs(-60);
+        m_works.updateWork(grimm);
+        Work kafka = *m_works.workAt(m_works.rowOf(QStringLiteral("Der Prozess")));
+        kafka.added = now.addSecs(-5);
+        m_works.updateWork(kafka);
+        Work faust = *m_works.workAt(m_works.rowOf(QStringLiteral("Faust I")));
+        faust.added = now.addSecs(-3600); // an hour ago, edited just now
+        faust.lastOpened = now;
+        m_works.updateWork(faust);
+
+        m_filter.setAddedWithin(10 * 60);
+        m_filter.setSortOrder(WorkFilterModel::Added);
+        QCOMPARE(titles(m_filter), (QStringList{ QStringLiteral("Der Prozess"), QStringLiteral("Grimms Märchen") }));
+        QCOMPARE(m_filter.countAll(), 2);
+
+        // Leaves on its own when the time is up.
+        m_filter.setAddedWithin(30);
+        QCOMPARE(titles(m_filter), QStringList{ QStringLiteral("Der Prozess") });
+        m_filter.setAddedWithin(6);
+        QTRY_COMPARE_WITH_TIMEOUT(m_filter.count(), 0, 5000);
+
+        m_filter.setAddedWithin(0);
+        QCOMPARE(m_filter.count(), 6);
     }
 
     void foldForSearch()

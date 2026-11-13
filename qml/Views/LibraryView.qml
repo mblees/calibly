@@ -30,14 +30,24 @@ import Calibly.Models
 // for the selection if the title is one of several selected ones.
 //
 // Properties:
-//   seriesOnly  show only the series, each as a stack: the view "Serien" of
-//               the sidebar (see SeriesView)
+//   seriesOnly   show only the series, each as a stack: the view "Serien" of
+//                the sidebar (see SeriesView)
+//   authorsOnly  every author as a stack: the view "Autoren" (AuthorsView).
+//                An opened author shows the works with their series as
+//                stacks, an opened series of it its volumes.
+//   newOnly      only works added in the last newMinutes minutes, newest
+//                first: the view "Neu" (NewView)
 ViewBase {
     id: root
 
     property bool seriesOnly: false
+    property bool authorsOnly: false
+    property bool newOnly: false
+    readonly property int newMinutes: 10
     // The series whose volumes are shown, "" = all works: an opened stack.
     property string openedSeries: ""
+    // The author whose works are shown (view "Autoren"), "" = all authors.
+    property string openedAuthor: ""
     // The works the question of mergeDialog, removeDialog, seriesDialog or
     // markNewDialog is about: the
     // selection (bar, menu of a selected title) or the title of the menu.
@@ -53,15 +63,24 @@ ViewBase {
     // "Weitermachen" shows at most this many titles, and none while searching.
     readonly property int continueLimit: 12
     readonly property bool showContinue: continueWorks.count > 0 && search.text === ""
-                                         && !root.seriesOnly && root.openedSeries === ""
-    // The list of all series has only stacks, which cannot be selected.
+                                         && !root.seriesOnly && !root.authorsOnly && !root.newOnly
+                                         && root.openedSeries === ""
+    // The list of all authors has only author stacks.
+    readonly property bool authorList: root.authorsOnly && root.openedAuthor === ""
+    // The list of all series (or authors) has only stacks, which cannot be selected.
     readonly property bool canSelect: works.count > 0 && !(root.seriesOnly && root.openedSeries === "")
+                                      && !root.authorList
     readonly property bool popupOpen: detail.visible || metadataEditor.visible
                                       || mergeDialog.visible || removeDialog.visible || workMenu.visible
                                       || seriesOrderDialog.visible
     // The view "Serien" without any series (and without a filter that hides them).
     readonly property bool noSeries: root.seriesOnly && root.openedSeries === "" && search.text === ""
                                      && settings.formatFilter === WorkFilterModel.AllFormats
+    // The same for the views "Autoren" and "Neu".
+    readonly property bool noAuthors: root.authorList && search.text === ""
+                                      && settings.formatFilter === WorkFilterModel.AllFormats
+    readonly property bool noNew: root.newOnly && search.text === ""
+                                  && settings.formatFilter === WorkFilterModel.AllFormats
 
     // Back to the top of the grid, including its header.
     function scrollToTop() {
@@ -92,6 +111,26 @@ ViewBase {
     function closeSeries() {
         works.clearSelection()
         root.openedSeries = ""
+    }
+
+    function openAuthor(author: string) {
+        works.clearSelection()
+        root.openedSeries = ""
+        root.openedAuthor = author
+    }
+
+    function closeAuthor() {
+        works.clearSelection()
+        root.openedSeries = ""
+        root.openedAuthor = ""
+    }
+
+    // "‹" and Esc: out of the opened series, then out of the opened author.
+    function goBack() {
+        if (root.openedSeries !== "")
+            root.closeSeries()
+        else
+            root.closeAuthor()
     }
 
     // "Metadaten" of the bar: possible with one selected work only.
@@ -160,21 +199,24 @@ ViewBase {
 
         sourceModel: LibraryController.works
         formatFilter: settings.formatFilter
-        sortOrder: settings.sortOrder
+        sortOrder: root.newOnly ? WorkFilterModel.Added : settings.sortOrder
         searchText: search.text
-        groupSeries: root.seriesOnly || settings.groupSeries
+        groupSeries: root.seriesOnly || root.authorsOnly || (!root.newOnly && settings.groupSeries)
         seriesOnly: root.seriesOnly
         seriesFilter: root.openedSeries
+        groupAuthors: root.authorsOnly
+        authorFilter: root.openedAuthor
+        addedWithin: root.newOnly ? root.newMinutes * 60 : 0
 
         // Deferred: countChanged arrives while the GridView is still applying
         // the row changes; scrolling right away would create duplicate tiles.
         onCountChanged: Qt.callLater(root.scrollToTop)
-        // The opened series is gone (its volumes were removed, merged or
-        // renamed): back to where it was opened from.
+        // The opened series (or author) is gone (its volumes were removed,
+        // merged or renamed): back to where it was opened from.
         onWorkCountChanged: {
-            if (root.openedSeries !== "" && works.workCount === 0 && search.text === ""
-                    && settings.formatFilter === WorkFilterModel.AllFormats)
-                Qt.callLater(root.closeSeries)
+            if ((root.openedSeries !== "" || root.openedAuthor !== "") && works.workCount === 0
+                    && search.text === "" && settings.formatFilter === WorkFilterModel.AllFormats)
+                Qt.callLater(root.goBack)
         }
     }
 
@@ -195,12 +237,12 @@ ViewBase {
     Shortcut {
         sequence: "Esc"
         enabled: !root.popupOpen && !search.activeFocus
-                 && (works.selectedCount > 0 || root.openedSeries !== "")
+                 && (works.selectedCount > 0 || root.openedSeries !== "" || root.openedAuthor !== "")
         onActivated: {
             if (works.selectedCount > 0)
                 works.clearSelection()
             else
-                root.closeSeries()
+                root.goBack()
         }
     }
 
@@ -312,7 +354,7 @@ ViewBase {
         anchors.right: sortMenu.left
         anchors.rightMargin: Theme.spacingS
         anchors.verticalCenter: formats.verticalCenter
-        visible: !root.seriesOnly && root.openedSeries === ""
+        visible: !root.seriesOnly && !root.authorsOnly && !root.newOnly && root.openedSeries === ""
         iconName: "layers"
         label: qsTr("Gruppieren")
         options: [qsTr("Keine"), qsTr("Serien")]
@@ -330,6 +372,8 @@ ViewBase {
         anchors.right: parent.right
         anchors.rightMargin: Theme.spacingXl
         anchors.verticalCenter: formats.verticalCenter
+        // "Neu" is always newest first.
+        visible: !root.newOnly
         iconName: "sort"
         label: qsTr("Sortieren")
         options: [qsTr("Zuletzt geöffnet"), qsTr("Titel"), qsTr("Autor")]
@@ -395,24 +439,26 @@ ViewBase {
                 width: parent.width
                 height: Math.max(heading.implicitHeight, selectAll.implicitHeight)
 
-                // Back from an opened series to the library (or all series).
+                // Back from an opened series to the library (or all series,
+                // or its author), from an opened author to all authors.
                 LinkButton {
                     id: back
 
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: root.openedSeries !== ""
+                    visible: root.openedSeries !== "" || root.openedAuthor !== ""
                     width: visible ? implicitWidth + Theme.spacingM : 0
                     iconName: "chevronLeft"
-                    text: root.title
+                    text: root.openedSeries !== "" && root.openedAuthor !== "" ? root.openedAuthor : root.title
                     font.pixelSize: Theme.fontBody
-                    onClicked: root.closeSeries()
+                    onClicked: root.goBack()
                 }
                 Text {
                     id: heading
 
                     anchors.left: back.right
                     anchors.verticalCenter: parent.verticalCenter
-                    text: root.openedSeries !== "" ? root.openedSeries : root.title
+                    text: root.openedSeries !== "" ? root.openedSeries
+                          : root.openedAuthor !== "" ? root.openedAuthor : root.title
                     color: Theme.textPrimary
                     font.pixelSize: Theme.fontLarge
                     font.weight: Font.Bold
@@ -427,6 +473,9 @@ ViewBase {
                     text: {
                         const count = root.openedSeries !== "" ? qsTr("%Ln Bände", "", works.count)
                                     : root.seriesOnly ? qsTr("%Ln Serien", "", works.count)
+                                    : root.authorList ? qsTr("%Ln Autoren", "", works.count)
+                                    : root.openedAuthor !== "" || root.newOnly
+                                      ? qsTr("%Ln Titel", "", works.workCount)
                                     : root.filtered ? qsTr("%L1 von %Ln Titeln", "", root.total).arg(works.workCount)
                                                     : qsTr("%Ln Titel", "", root.total)
                         return works.selectedCount > 0
@@ -477,9 +526,11 @@ ViewBase {
             required property int seriesCount
             required property int seriesFirst
             required property int seriesLast
+            required property string stackName
 
-            // The volumes of a series as one tile.
+            // The volumes of a series (or the works of an author) as one tile.
             readonly property bool stack: cell.seriesCount > 0
+            readonly property bool authorStack: cell.stack && root.authorList
 
             width: grid.cellWidth
             height: grid.cellHeight
@@ -490,8 +541,9 @@ ViewBase {
                 dropLabel: drop.containsDrag && drop.targetWorkId === cell.workId
                            ? drop.labelFor(cell.title) : ""
                 width: grid.tileWidth
-                title: cell.stack ? cell.series : cell.title
-                author: cell.stack ? qsTr("%Ln Bände · Serie", "", cell.seriesCount) : cell.authorText
+                title: cell.stack ? cell.stackName : cell.title
+                author: cell.authorStack ? qsTr("%Ln Titel · Autor", "", cell.seriesCount)
+                        : cell.stack ? qsTr("%Ln Bände · Serie", "", cell.seriesCount) : cell.authorText
                 stacked: cell.stack
                 stackLabel: !cell.stack || cell.seriesFirst === 0 ? ""
                             : cell.seriesFirst === cell.seriesLast ? qsTr("Band %1").arg(cell.seriesFirst)
@@ -511,8 +563,10 @@ ViewBase {
                 onClicked: {
                     if (works.selectedCount > 0)
                         works.toggleSelected(cell.workId)
+                    else if (cell.authorStack)
+                        root.openAuthor(cell.stackName)
                     else if (cell.stack)
-                        root.openSeries(cell.series)
+                        root.openSeries(cell.stackName)
                     else
                         detail.openFor(cell.workId, cell.coverUrl, cell.coverIsSquare)
                 }
@@ -520,10 +574,11 @@ ViewBase {
                 onMenuRequested: function(x, y) {
                     workMenu.workId = cell.workId
                     workMenu.title = cell.title
-                    workMenu.series = cell.series
+                    workMenu.series = cell.stack ? cell.stackName : cell.series
                     workMenu.coverUrl = cell.coverUrl
                     workMenu.coverIsSquare = cell.coverIsSquare
                     workMenu.stack = cell.stack
+                    workMenu.authorStack = cell.authorStack
                     workMenu.hasEbook = cell.hasEbook
                     workMenu.readsInApp = cell.hasEbook && ReaderController.canRead(cell.workId)
                     workMenu.hasAudiobook = cell.hasAudiobook
@@ -593,6 +648,7 @@ ViewBase {
 
         // The title that was clicked (its name is the "title" of the menu).
         property string workId
+        // Its series, or the name of the stack (series or author).
         property string series
         property url coverUrl
         property bool coverIsSquare: false
@@ -603,7 +659,9 @@ ViewBase {
         exporting: ExportController.running
 
         onOpenRequested: {
-            if (workMenu.stack)
+            if (workMenu.authorStack)
+                root.openAuthor(workMenu.series)
+            else if (workMenu.stack)
                 root.openSeries(workMenu.series)
             else
                 detail.openFor(workMenu.workId, workMenu.coverUrl, workMenu.coverIsSquare)
@@ -758,13 +816,15 @@ ViewBase {
             text: root.total === 0 ? qsTr("Noch keine Titel in der Bibliothek.")
                   : search.text !== "" ? qsTr("Keine Treffer für „%1“.").arg(search.text)
                   : root.noSeries ? qsTr("Noch keine Serien. Eine Serie entsteht, sobald sie in den Metadaten eines Titels steht.")
-                                  : qsTr("Keine Titel in dieser Auswahl.")
+                  : root.noAuthors ? qsTr("Noch keine Autoren. Ein Autor erscheint, sobald er in den Metadaten eines Titels steht.")
+                  : root.noNew ? qsTr("Keine neuen Titel. Hier erscheint, was in den letzten %Ln Minuten hinzugefügt wurde.", "", root.newMinutes)
+                               : qsTr("Keine Titel in dieser Auswahl.")
             color: Theme.textMuted
             font.pixelSize: Theme.fontBody
         }
         AppButton {
             anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.total > 0 && !root.noSeries
+            visible: root.total > 0 && !root.noSeries && !root.noAuthors && !root.noNew
             text: qsTr("Filter zurücksetzen")
             iconName: "x"
             onClicked: root.resetFilters()

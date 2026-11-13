@@ -14,10 +14,18 @@
 
 namespace {
 
-// Series names that differ only in case or accents are one series.
+// Series names that differ only in case or accents are one series; the
+// same for authors.
 QString seriesKey(const QString &name)
 {
     return TextUtils::foldForSearch(name).simplified();
+}
+
+// The author a work is grouped by: its first one.
+QString firstAuthor(const QModelIndex &index)
+{
+    const QStringList authors = index.data(WorkModel::AuthorsRole).toStringList();
+    return authors.isEmpty() ? QString() : authors.first().simplified();
 }
 
 } // namespace
@@ -35,6 +43,10 @@ WorkFilterModel::WorkFilterModel(QObject *parent)
     connect(this, &QAbstractItemModel::layoutChanged, this, &WorkFilterModel::onRowsChanged);
 
     sort(0);
+
+    // New works: the filter is looked at again when one is no longer new.
+    m_addedTimer.setSingleShot(true);
+    connect(&m_addedTimer, &QTimer::timeout, this, &WorkFilterModel::filtersChanged);
 }
 
 void WorkFilterModel::setSourceModel(QAbstractItemModel *model)
@@ -73,6 +85,7 @@ QHash<int, QByteArray> WorkFilterModel::roleNames() const
     names.insert(SeriesCountRole, "seriesCount");
     names.insert(SeriesFirstRole, "seriesFirst");
     names.insert(SeriesLastRole, "seriesLast");
+    names.insert(StackNameRole, "stackName");
     return names;
 }
 
@@ -130,6 +143,10 @@ QVariant WorkFilterModel::data(const QModelIndex &index, int role) const
         if (!stack)
             return 0;
         return role == SeriesCountRole ? stack->count : role == SeriesFirstRole ? stack->first : stack->last;
+    }
+    case StackNameRole: {
+        const Stack *stack = stackOf(mapToSource(index).row());
+        return stack ? stack->name : QString();
     }
     // Present the works as the selected format only.
     case WorkModel::CoverUrlRole:
@@ -227,6 +244,36 @@ void WorkFilterModel::setSeriesOnly(bool only)
     emit seriesOnlyChanged();
 }
 
+void WorkFilterModel::setGroupAuthors(bool group)
+{
+    if (group == m_groupAuthors)
+        return;
+    m_groupAuthors = group;
+    filtersChanged();
+    emit groupAuthorsChanged();
+}
+
+void WorkFilterModel::setAuthorFilter(const QString &author)
+{
+    if (author == m_authorFilter)
+        return;
+    m_authorFilter = author;
+    m_authorFilterKey = seriesKey(author);
+    filtersChanged();
+    invalidate(); // the stacks of the author's series sort differently
+    emit authorFilterChanged();
+}
+
+void WorkFilterModel::setAddedWithin(int seconds)
+{
+    seconds = std::max(0, seconds);
+    if (seconds == m_addedWithin)
+        return;
+    m_addedWithin = seconds;
+    filtersChanged();
+    emit addedWithinChanged();
+}
+
 void WorkFilterModel::setOnlyIds(const QStringList &ids)
 {
     if (ids == m_onlyIds)
@@ -270,6 +317,27 @@ void WorkFilterModel::onRowsChanged()
 {
     updateCount();
     pruneSelection();
+    scheduleAddedCheck();
+}
+
+void WorkFilterModel::scheduleAddedCheck()
+{
+    m_addedTimer.stop();
+    const QAbstractItemModel *model = sourceModel();
+    if (m_addedWithin <= 0 || !model)
+        return;
+    const QDateTime now = QDateTime::currentDateTime();
+    qint64 next = -1;
+    for (int row = 0; row < model->rowCount(); ++row) {
+        const QDateTime added = model->index(row, 0).data(WorkModel::AddedRole).toDateTime();
+        if (!added.isValid())
+            continue;
+        const qint64 left = now.msecsTo(added.addSecs(m_addedWithin));
+        if (left > 0 && (next < 0 || left < next))
+            next = left;
+    }
+    if (next >= 0)
+        m_addedTimer.start(int(std::min<qint64>(next + 500, std::numeric_limits<int>::max())));
 }
 
 void WorkFilterModel::updateCount()
@@ -286,6 +354,11 @@ bool WorkFilterModel::stacking() const
     return m_groupSeries && m_seriesFilterKey.isEmpty() && m_onlyIds.isEmpty();
 }
 
+bool WorkFilterModel::authorStacking() const
+{
+    return m_groupAuthors && m_authorFilterKey.isEmpty() && m_onlyIds.isEmpty();
+}
+
 const WorkFilterModel::Stack *WorkFilterModel::stackOf(int sourceRow) const
 {
     const auto it = m_stacks.constFind(sourceRow);
@@ -300,6 +373,9 @@ bool WorkFilterModel::rebuildStacks()
     QHash<int, Stack> stacks;
     int workCount = 0;
 
+    // Stacks of authors, or (also within an opened author) of series.
+    const bool byAuthor = authorStacking();
+    const bool bySeries = !byAuthor && stacking();
     QHash<QString, QList<int>> rowsOfSeries;
     QStringList seriesInOrder; // so the result does not depend on hashing
     for (int row = 0; row < rows; ++row) {
@@ -307,9 +383,9 @@ bool WorkFilterModel::rebuildStacks()
         if (!matchesFilters(index))
             continue;
         ++workCount;
-        if (!stacking())
+        if (!byAuthor && !bySeries)
             continue;
-        const QString key = seriesKey(index.data(WorkModel::SeriesRole).toString());
+        const QString key = seriesKey(byAuthor ? firstAuthor(index) : index.data(WorkModel::SeriesRole).toString());
         if (key.isEmpty())
             continue;
         if (!rowsOfSeries.contains(key))
@@ -317,16 +393,18 @@ bool WorkFilterModel::rebuildStacks()
         rowsOfSeries[key].append(row);
     }
 
-    // A single volume is only a stack where everything is a series.
-    const int smallest = m_seriesOnly ? 1 : 2;
+    // A single volume is only a stack where everything is a series (or an
+    // author).
+    const int smallest = byAuthor || m_seriesOnly ? 1 : 2;
     for (const QString &key : std::as_const(seriesInOrder)) {
         const QList<int> members = rowsOfSeries.value(key);
         if (members.size() < smallest)
             continue;
 
-        // The first volume stands for the series: lowest number, unnumbered last.
-        const auto number = [model](int row) {
-            const int index = model->index(row, 0).data(WorkModel::SeriesIndexRole).toInt();
+        // The first volume stands for the series: lowest number, unnumbered
+        // last. For an author: the first title.
+        const auto number = [model, byAuthor](int row) {
+            const int index = byAuthor ? 0 : model->index(row, 0).data(WorkModel::SeriesIndexRole).toInt();
             return index > 0 ? index : std::numeric_limits<int>::max();
         };
         const int lead = *std::min_element(members.cbegin(), members.cend(), [&](int a, int b) {
@@ -337,11 +415,12 @@ bool WorkFilterModel::rebuildStacks()
         });
 
         Stack stack;
-        stack.name = model->index(lead, 0).data(WorkModel::SeriesRole).toString();
+        stack.name = byAuthor ? firstAuthor(model->index(lead, 0))
+                              : model->index(lead, 0).data(WorkModel::SeriesRole).toString();
         stack.count = int(members.size());
         for (int row : members) {
             const QModelIndex index = model->index(row, 0);
-            const int volume = index.data(WorkModel::SeriesIndexRole).toInt();
+            const int volume = byAuthor ? 0 : index.data(WorkModel::SeriesIndexRole).toInt();
             if (volume > 0) {
                 stack.first = stack.first == 0 ? volume : std::min(stack.first, volume);
                 stack.last = std::max(stack.last, volume);
@@ -382,7 +461,8 @@ bool WorkFilterModel::matchesFilters(const QModelIndex &sourceIndex) const
 {
     if (!m_onlyIds.isEmpty())
         return m_onlyIds.contains(sourceIndex.data(WorkModel::WorkIdRole).toString());
-    return matchesFormat(sourceIndex) && matchesSearch(sourceIndex) && matchesSeries(sourceIndex);
+    return matchesFormat(sourceIndex) && matchesSearch(sourceIndex) && matchesSeries(sourceIndex)
+        && matchesAuthor(sourceIndex) && matchesAdded(sourceIndex);
 }
 
 bool WorkFilterModel::matchesSearch(const QModelIndex &sourceIndex) const
@@ -420,6 +500,22 @@ bool WorkFilterModel::matchesSeries(const QModelIndex &sourceIndex) const
         return true;
     const QString key = seriesKey(sourceIndex.data(WorkModel::SeriesRole).toString());
     return m_seriesFilterKey.isEmpty() ? !key.isEmpty() : key == m_seriesFilterKey;
+}
+
+bool WorkFilterModel::matchesAuthor(const QModelIndex &sourceIndex) const
+{
+    if (m_authorFilterKey.isEmpty() && !m_groupAuthors)
+        return true;
+    const QString key = seriesKey(firstAuthor(sourceIndex));
+    return m_authorFilterKey.isEmpty() ? !key.isEmpty() : key == m_authorFilterKey;
+}
+
+bool WorkFilterModel::matchesAdded(const QModelIndex &sourceIndex) const
+{
+    if (m_addedWithin <= 0)
+        return true;
+    const QDateTime added = sourceIndex.data(WorkModel::AddedRole).toDateTime();
+    return added.isValid() && added.addSecs(m_addedWithin) > QDateTime::currentDateTime();
 }
 
 int WorkFilterModel::compareText(const QString &left, const QString &right) const
@@ -467,6 +563,15 @@ bool WorkFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right
             return byAuthor < 0;
         break;
     }
+    case Added: {
+        const QDateTime a = left.data(WorkModel::AddedRole).toDateTime();
+        const QDateTime b = right.data(WorkModel::AddedRole).toDateTime();
+        if (a.isValid() != b.isValid())
+            return a.isValid();
+        if (a != b)
+            return a > b;       // most recent first
+        break;
+    }
     case Title:
         break;
     }
@@ -486,7 +591,7 @@ void WorkFilterModel::updateFormatCounts()
         const int rows = model->rowCount();
         for (int row = 0; row < rows; ++row) {
             const QModelIndex index = model->index(row, 0);
-            if (!matchesSearch(index) || !matchesSeries(index))
+            if (!matchesSearch(index) || !matchesSeries(index) || !matchesAuthor(index) || !matchesAdded(index))
                 continue;
             const bool hasEbook = index.data(WorkModel::HasEbookRole).toBool();
             const bool hasAudiobook = index.data(WorkModel::HasAudiobookRole).toBool();
