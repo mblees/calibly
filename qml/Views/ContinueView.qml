@@ -92,6 +92,7 @@ ViewBase {
             required page
             required pages
             required chapterTitle
+            required volumeNumber
             required hasOtherFormat
             required available
             required lastOpened

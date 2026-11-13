@@ -5,18 +5,21 @@ import Calibly.Theme
 import Calibly.Controls
 
 // Bar at the bottom of the library while works are selected (view A): how
-// many, and the few things that can be done with them. Presentation only.
+// many, and the things that can be done with them. Presentation only.
 //
 // Properties:
 //   count     number of selected works
-//   canMerge  "Zu einem Werk verbinden" is possible with this selection
+//   canMerge  "Kombinieren" is possible with this selection
 //   busy      the actions that change the library are disabled, e.g. while
 //             an import is running
 //   exporting an export is running: "Exportieren …" is disabled
 // Signals:
-//   metadataRequested()  edit the metadata of the selected works
-//   mergeRequested()     join them into one work
+//   metadataRequested()  edit the metadata (only with one selected work)
+//   mergeRequested()     "Kombinieren": join them into one entry
+//   seriesRequested()    "Als Serie …": give them one series
 //   exportRequested()    copy their files into a folder
+//   finishedRequested()  "⋯" → mark all as finished
+//   newRequested()       "⋯" → mark all as new
 //   removeRequested()    remove them from the library
 //   closeRequested()     ✕: end the selection
 Rectangle {
@@ -29,7 +32,10 @@ Rectangle {
 
     signal metadataRequested()
     signal mergeRequested()
+    signal seriesRequested()
     signal exportRequested()
+    signal finishedRequested()
+    signal newRequested()
     signal removeRequested()
     signal closeRequested()
 
@@ -62,6 +68,7 @@ Rectangle {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
+                    visible: button.text !== ""
                     text: button.text
                     color: button.color
                     font.pixelSize: Theme.fontBody
@@ -110,22 +117,38 @@ Rectangle {
             height: Theme.iconSize
             color: Theme.inputBorder
         }
+        // Metadata are edited for one title at a time.
         BarButton {
             iconName: "edit"
             text: qsTr("Metadaten")
+            enabled: root.count === 1
             onClicked: root.metadataRequested()
         }
         BarButton {
             iconName: "link"
-            text: qsTr("Zu einem Werk verbinden")
+            text: qsTr("Kombinieren")
             enabled: root.canMerge && !root.busy
             onClicked: root.mergeRequested()
+        }
+        BarButton {
+            iconName: "layers"
+            text: qsTr("Als Serie …")
+            enabled: root.count > 1 && !root.busy
+            onClicked: root.seriesRequested()
         }
         BarButton {
             iconName: "upload"
             text: qsTr("Exportieren …")
             enabled: !root.exporting
             onClicked: root.exportRequested()
+        }
+        BarButton {
+            id: moreButton
+
+            iconName: "more"
+            enabled: !root.busy
+            Accessible.name: qsTr("Weitere Aktionen")
+            onClicked: moreMenu.popup(moreButton, 0, -moreMenu.implicitHeight - Theme.spacingXs)
         }
         BarButton {
             iconName: "trash"
@@ -140,6 +163,21 @@ Rectangle {
             iconSize: Theme.iconSizeSmall + Theme.spacingXxs
             text: qsTr("Auswahl aufheben")
             onClicked: root.closeRequested()
+        }
+    }
+
+    AppMenu {
+        id: moreMenu
+
+        AppMenuItem {
+            iconName: "check"
+            text: qsTr("Alle als fertig markieren")
+            onTriggered: root.finishedRequested()
+        }
+        AppMenuItem {
+            iconName: "reset"
+            text: qsTr("Alle als neu markieren …")
+            onTriggered: root.newRequested()
         }
     }
 }

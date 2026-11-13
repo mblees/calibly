@@ -59,9 +59,11 @@ Item {
     readonly property bool hovered: hover.hovered
     readonly property bool dropTarget: root.dropLabel !== ""
     readonly property bool fileMissing: root.workState === WorkState.FileMissing
-    // Not while files are dragged over the cover, not for missing files and
-    // not for a stack (it stands for several works).
+    // Not while files are dragged over the cover, not for missing files,
+    // not for a stack (it stands for several works) and not while titles are
+    // selected (a click there is meant for the selection).
     readonly property bool showActions: root.hovered && !root.dropTarget && !root.fileMissing && !root.stacked
+                                        && !root.selecting && !root.selected
                                         && (root.hasEbook || root.hasAudiobook)
     readonly property bool showSelectCircle: root.selectable && !root.dropTarget
                                              && (root.selected || root.selecting || root.hovered)

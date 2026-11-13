@@ -22,7 +22,9 @@
 // formats is a list with one entry per format:
 //   { kind: "ebook" | "audiobook", fileName, fileType ("EPUB", "M4B" …),
 //     fileSize (bytes), pages, durationSeconds, progress (0–1),
-//     publisher, isbn, available (the file exists) }
+//     publisher, isbn, available (the file exists),
+//     index (in the work's formats), volumeNumber (1-based for the volumes
+//     of a combined work, else 0), volumeTitle }
 // chapters: the chapters of the (first) audiobook on one time axis, see
 //   AudioTimeline: [{ title ("" = untitled), start, duration }] in ms;
 //   empty for works without audiobook.
@@ -59,6 +61,8 @@ class WorkDetails : public QObject
     Q_PROPERTY(bool audiobookCoverIsSquare READ audiobookCoverIsSquare NOTIFY changed)
     Q_PROPERTY(QVariantList formats READ formats NOTIFY changed)
     Q_PROPERTY(QVariantList chapters READ chapters NOTIFY changed)
+    // "Kombination auflösen" is possible, see Work::canSplit().
+    Q_PROPERTY(bool canSplit READ canSplit NOTIFY changed)
 
 public:
     explicit WorkDetails(QObject *parent = nullptr);
@@ -91,6 +95,7 @@ public:
     bool audiobookCoverIsSquare() const;
     QVariantList formats() const;
     QVariantList chapters() const;
+    bool canSplit() const { return m_work && m_work->canSplit(); }
 
 signals:
     void modelChanged();

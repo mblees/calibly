@@ -19,6 +19,8 @@ import Calibly.Controls
 //   page, pages       ebooks: current page of pages, 0 = unknown
 //   chapterTitle      ebooks: the chapter where the user stopped, shown as
 //                     "Kapitel 4 · 42 %" instead of the page; "" = none
+//   volumeNumber      ebooks of a combined work: the current volume, shown as
+//                     "Band 2 · …"; 0 = a single book
 //   hasOtherFormat    adds "auch als E-Book" / "auch als Hörbuch"
 //   available         the file exists; otherwise the button is disabled
 // Signals:
@@ -34,6 +36,7 @@ Rectangle {
     required property real progress
     property date lastOpened: new Date(NaN)
     property int chapterNumber: 0
+    property int volumeNumber: 0
     property int remainingSeconds: 0
     property int page: 0
     property int pages: 0
@@ -67,11 +70,13 @@ Rectangle {
                 parts.push(qsTr("noch %1").arg(root.durationText(root.remainingSeconds)))
             return parts.length > 0 ? parts.join(" · ") : qsTr("Hörbuch")
         }
+        // A volume of a combined work: "Band 2 · Kapitel 4 · 42 %".
+        const volume = root.volumeNumber > 0 ? qsTr("Band %1").arg(root.volumeNumber) + " · " : ""
         if (root.chapterTitle !== "")
-            return qsTr("%1 · %2 %").arg(root.chapterTitle).arg(Math.round(root.progress * 100))
+            return volume + qsTr("%1 · %2 %").arg(root.chapterTitle).arg(Math.round(root.progress * 100))
         if (root.page > 0 && root.pages > 0)
-            return qsTr("Seite %1 von %2").arg(root.page).arg(root.pages)
-        return root.pages > 0 ? qsTr("%Ln Seiten", "", root.pages) : qsTr("E-Book")
+            return volume + qsTr("Seite %1 von %2").arg(root.page).arg(root.pages)
+        return volume + (root.pages > 0 ? qsTr("%Ln Seiten", "", root.pages) : qsTr("E-Book"))
     }
 
     // "heute, 08:14", "gestern, 22:40", "So., 19:30" (last week), else the date.

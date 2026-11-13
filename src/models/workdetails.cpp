@@ -133,9 +133,16 @@ QVariantList WorkDetails::formats() const
     QVariantList list;
     if (!m_work)
         return list;
-    for (const Format &format : m_work->formats) {
+    const bool volumes = m_work->isCombined() && m_work->formatCount(Format::Kind::Ebook) > 1;
+    int volume = 0;
+    for (int index = 0; index < m_work->formats.size(); ++index) {
+        const Format &format = m_work->formats.at(index);
         const QFileInfo file(format.filePath);
+        const bool isVolume = volumes && format.kind == Format::Kind::Ebook;
         list.append(QVariantMap{
+            { QStringLiteral("index"), index },
+            { QStringLiteral("volumeNumber"), isVolume ? ++volume : 0 },
+            { QStringLiteral("volumeTitle"), isVolume ? m_work->formatTitle(index) : QString() },
             { QStringLiteral("kind"), format.kind == Format::Kind::Audiobook ? QStringLiteral("audiobook")
                                                                              : QStringLiteral("ebook") },
             { QStringLiteral("fileName"), file.fileName() },

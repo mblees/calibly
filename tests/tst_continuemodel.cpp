@@ -120,6 +120,42 @@ private slots:
         QVERIFY(!known.formats.at(0).lastOpened.isValid());
     }
 
+    // Phase 12: a combined work continues with its current volume, also when
+    // the volume read last is finished and the next one was never opened.
+    void currentVolume()
+    {
+        Format one = ebook(1.0, QStringLiteral("2026-11-05T10:00:00"));
+        one.filePath = QStringLiteral("1.epub");
+        Format two = ebook();
+        two.filePath = QStringLiteral("2.epub");
+        Format three = ebook();
+        three.filePath = QStringLiteral("3.epub");
+        Work work = makeWork(QStringLiteral("Trilogie"), { one, two, three });
+        for (const QString &file : { QStringLiteral("1.epub"), QStringLiteral("2.epub"), QStringLiteral("3.epub") }) {
+            WorkPart part;
+            part.title = file;
+            part.files = { file };
+            work.parts.append(part);
+        }
+        WorkModel source;
+        source.setWorks({ work });
+        ContinueModel model;
+        model.setSourceModel(&source);
+        QCOMPARE(rows(model), QStringList{ QStringLiteral("Trilogie/ebook") });
+        const QModelIndex index = model.index(0);
+        QCOMPARE(index.data(ContinueModel::VolumeNumberRole).toInt(), 2);
+        QCOMPARE(index.data(ContinueModel::ProgressRole).toDouble(), 0.0); // of that volume
+        QCOMPARE(index.data(ContinueModel::LastOpenedRole).toDateTime(), one.lastOpened);
+        QCOMPARE(model.roleNames().value(ContinueModel::VolumeNumberRole), QByteArray("volumeNumber"));
+
+        // A single book is no volume; all volumes finished: gone.
+        for (Format &format : work.formats)
+            format.progress = 1.0;
+        source.setWorks({ work, makeWork(QStringLiteral("Einzeln"), { ebook(0.3, QStringLiteral("2026-11-06T10:00:00")) }) });
+        QCOMPARE(rows(model), QStringList{ QStringLiteral("Einzeln/ebook") });
+        QCOMPARE(model.index(0).data(ContinueModel::VolumeNumberRole).toInt(), 0);
+    }
+
     void stateRoles()
     {
         WorkModel source;

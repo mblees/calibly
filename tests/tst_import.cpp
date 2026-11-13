@@ -746,6 +746,8 @@ private slots:
                      qPrintable(query.lastError().text()));
             QVERIFY2(query.exec(QStringLiteral("ALTER TABLE formats DROP COLUMN reading_position")),
                      qPrintable(query.lastError().text()));
+            QVERIFY2(query.exec(QStringLiteral("ALTER TABLE works DROP COLUMN parts")),
+                     qPrintable(query.lastError().text()));
             QVERIFY(query.exec(QStringLiteral("PRAGMA user_version = 3")));
             db.close();
         }
@@ -790,6 +792,8 @@ private slots:
             QSqlQuery query(db);
             QVERIFY2(query.exec(QStringLiteral("ALTER TABLE formats DROP COLUMN reading_position")),
                      qPrintable(query.lastError().text()));
+            QVERIFY2(query.exec(QStringLiteral("ALTER TABLE works DROP COLUMN parts")),
+                     qPrintable(query.lastError().text()));
             QVERIFY(query.exec(QStringLiteral("PRAGMA user_version = 4")));
             db.close();
         }
@@ -826,6 +830,66 @@ private slots:
         QSqlDatabase::removeDatabase(QStringLiteral("backup"));
     }
 
+    // Version 5 (phase 10) gets the parts of combined works; they are stored
+    // with paths relative to the library and read back.
+    void sqliteMigratesVersion5()
+    {
+        QTemporaryDir dir;
+        const QString root = dir.path();
+        Work work;
+        work.id = QStringLiteral("w1");
+        work.title = QStringLiteral("Die Gefährten");
+        Format ebook;
+        ebook.kind = Format::Kind::Ebook;
+        ebook.filePath = root + QStringLiteral("/1.epub");
+        work.formats = { ebook };
+        {
+            SqliteBackend backend(root);
+            QVERIFY(backend.open());
+            QVERIFY(backend.saveWork(work));
+        }
+        {
+            QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), QStringLiteral("v5"));
+            db.setDatabaseName(root + QStringLiteral("/calibly.db"));
+            QVERIFY(db.open());
+            QSqlQuery query(db);
+            QVERIFY2(query.exec(QStringLiteral("ALTER TABLE works DROP COLUMN parts")),
+                     qPrintable(query.lastError().text()));
+            QVERIFY(query.exec(QStringLiteral("PRAGMA user_version = 5")));
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(QStringLiteral("v5"));
+
+        SqliteBackend backend(root);
+        QString error;
+        QVERIFY2(backend.open(&error), qPrintable(error));
+        QList<Work> works = backend.loadWorks();
+        QCOMPARE(works.size(), 1);
+        QVERIFY(works.first().parts.isEmpty());
+
+        WorkPart one;
+        one.id = QStringLiteral("w1");
+        one.title = QStringLiteral("Die Gefährten");
+        one.seriesIndex = 1;
+        one.tags = { QStringLiteral("Fantasy") };
+        one.added = QDateTime(QDate(2026, 1, 2), QTime(10, 0));
+        one.files = { root + QStringLiteral("/1.epub") };
+        WorkPart two;
+        two.id = QStringLiteral("w2");
+        two.title = QStringLiteral("Die zwei Türme");
+        two.authors = { QStringLiteral("J. R. R. Tolkien") };
+        two.files = { root + QStringLiteral("/Band 2/2.epub"), root + QStringLiteral("/Band 2/2.mp3") };
+        works.first().parts = { one, two };
+        QVERIFY(backend.saveWork(works.first()));
+        const Work loaded = backend.loadWorks().first();
+        QCOMPARE(loaded.parts.size(), 2);
+        QCOMPARE(loaded.parts.at(0).seriesIndex, 1);
+        QCOMPARE(loaded.parts.at(0).tags, one.tags);
+        QCOMPARE(loaded.parts.at(0).added, one.added);
+        QCOMPARE(loaded.parts.at(1).authors, two.authors);
+        QCOMPARE(loaded.parts.at(1).files, two.files);
+    }
+
     // Only the newest three backups are kept.
     void sqliteKeepsThreeBackups()
     {
@@ -848,6 +912,8 @@ private slots:
             QVERIFY(db.open());
             QSqlQuery query(db);
             QVERIFY(query.exec(QStringLiteral("ALTER TABLE formats DROP COLUMN reading_position")));
+            QVERIFY2(query.exec(QStringLiteral("ALTER TABLE works DROP COLUMN parts")),
+                     qPrintable(query.lastError().text()));
             QVERIFY(query.exec(QStringLiteral("PRAGMA user_version = 4")));
             db.close();
         }

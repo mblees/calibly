@@ -415,7 +415,11 @@ Item {
         visible: opacity > 0
         backText: root.backText
         title: ReaderController.title
-        author: ReaderController.author
+        // A volume of a combined work: "Band 2 von 3 · Autor".
+        author: ReaderController.volumeCount > 1
+                ? [qsTr("Band %1 von %2").arg(ReaderController.volumeNumber).arg(ReaderController.volumeCount),
+                   ReaderController.author].filter(part => part !== "").join(" · ")
+                : ReaderController.author
         chapterTitle: ReaderController.chapterTitle
         pdf: root.isPdf
         fullscreen: root.inFullscreen

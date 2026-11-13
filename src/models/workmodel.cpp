@@ -78,6 +78,8 @@ QVariant WorkModel::data(const QModelIndex &index, int role) const
         return int(work.state(Format::Kind::Ebook));
     case AudiobookStateRole:
         return int(work.state(Format::Kind::Audiobook));
+    case CanSplitRole:
+        return work.canSplit();
     case AuthorSortRole:
         return work.authors.isEmpty() ? QString() : TextUtils::nameSortKey(work.authors.first());
     case SearchTextRole:
@@ -113,6 +115,7 @@ QHash<int, QByteArray> WorkModel::roleNames() const
         { WorkStateRole, "workState" },
         { EbookStateRole, "ebookState" },
         { AudiobookStateRole, "audiobookState" },
+        { CanSplitRole, "canSplit" },
     };
 }
 

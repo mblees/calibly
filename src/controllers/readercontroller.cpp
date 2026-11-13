@@ -96,7 +96,12 @@ int ReaderController::readableFormat(const QString &workId) const
     const Work *work = works->workAt(works->rowOf(workId));
     if (!work)
         return -1;
-    // EPUB before PDF before text, if a work has several.
+    // Volumes of a combined work: the current one, if calibly can read it.
+    if (work->isCombined() && work->formatCount(Format::Kind::Ebook) > 1) {
+        const int current = work->currentFormat(Format::Kind::Ebook);
+        return current >= 0 && kindOf(work->formats.at(current).filePath) != Kind::None ? current : -1;
+    }
+    // The same book in several files: EPUB before PDF before text.
     int best = -1;
     int bestRank = 99;
     for (int i = 0; i < work->formats.size(); ++i) {
@@ -113,6 +118,15 @@ int ReaderController::readableFormat(const QString &workId) const
     return best;
 }
 
+bool ReaderController::canReadFormat(const QString &workId, int formatIndex) const
+{
+    const WorkModel *works = m_library.works();
+    const Work *work = works->workAt(works->rowOf(workId));
+    return work && formatIndex >= 0 && formatIndex < work->formats.size()
+        && work->formats.at(formatIndex).kind == Format::Kind::Ebook
+        && kindOf(work->formats.at(formatIndex).filePath) != Kind::None;
+}
+
 bool ReaderController::read(const QString &workId)
 {
     if (canRead(workId))
@@ -123,17 +137,80 @@ bool ReaderController::read(const QString &workId)
 
 bool ReaderController::open(const QString &workId)
 {
-    close();
+    return openAt(workId, readableFormat(workId), Placement::Stored);
+}
+
+bool ReaderController::openFormat(const QString &workId, int formatIndex)
+{
+    return openAt(workId, formatIndex, Placement::Stored);
+}
+
+QList<int> ReaderController::volumes() const
+{
+    QList<int> list;
+    const WorkModel *works = m_library.works();
+    const Work *work = works->workAt(works->rowOf(m_workId));
+    if (!work || !work->isCombined())
+        return m_formatIndex >= 0 ? QList<int>{ m_formatIndex } : list;
+    for (int i = 0; i < work->formats.size(); ++i) {
+        if (work->formats.at(i).kind == Format::Kind::Ebook)
+            list.append(i);
+    }
+    return list;
+}
+
+int ReaderController::volumePosition() const
+{
+    return int(volumes().indexOf(m_formatIndex));
+}
+
+int ReaderController::volumeCount() const
+{
+    return isOpen() ? int(volumes().size()) : 0;
+}
+
+int ReaderController::volumeNumber() const
+{
+    return volumePosition() + 1;
+}
+
+bool ReaderController::openVolume(int position, Placement placement)
+{
+    const QList<int> list = volumes();
+    if (position < 0 || position >= list.size())
+        return false;
+    return openAt(m_workId, list.at(position), placement);
+}
+
+bool ReaderController::openAt(QString workId, int formatIndex, Placement placement)
+{
+    // Another book or volume: store where this one was, without closing the
+    // view in between.
+    const bool wasOpen = isOpen();
+    if (wasOpen) {
+        savePosition();
+        reset();
+    }
     const WorkModel *works = m_library.works();
     const Work *work = works->workAt(works->rowOf(workId));
-    const int formatIndex = readableFormat(workId);
-    if (!work || formatIndex < 0)
+    if (!work || formatIndex < 0 || formatIndex >= work->formats.size()
+        || work->formats.at(formatIndex).kind != Format::Kind::Ebook
+        || kindOf(work->formats.at(formatIndex).filePath) == Kind::None) {
+        if (wasOpen) {
+            emit openChanged();
+            emit contentsChanged();
+            emit positionChanged();
+            emit layoutChanged();
+        }
         return false;
+    }
 
     const Format &format = work->formats.at(formatIndex);
     m_workId = workId;
     m_formatIndex = formatIndex;
-    m_title = work->title;
+    // A volume shows its own title.
+    m_title = work->isCombined() && work->formatCount(Format::Kind::Ebook) > 1 ? work->formatTitle(formatIndex)
+                                                                              : work->title;
     m_author = work->authors.join(QStringLiteral(", "));
     const QString path = format.filePath;
     const Kind kind = kindOf(path);
@@ -148,9 +225,11 @@ bool ReaderController::open(const QString &workId)
         return true; // the view shows the message
     }
 
-    // A finished book starts again from the beginning.
-    const ReadingPosition position = format.finished() ? ReadingPosition()
-                                                       : ReadingPosition::fromString(format.readingPosition);
+    // A finished book starts again from the beginning; turning into a
+    // volume starts at its start (or end, see below).
+    const ReadingPosition position = format.finished() || placement != Placement::Stored
+                                         ? ReadingPosition()
+                                         : ReadingPosition::fromString(format.readingPosition);
     bool readable = false;
     if (kind == Kind::Pdf) {
 #ifdef CALIBLY_HAS_QTPDF
@@ -221,6 +300,13 @@ bool ReaderController::open(const QString &workId)
 
     emit openChanged();
     applyLayout();
+    if (placement == Placement::End) {
+        // Turned back from the next volume: its last page. Not stored until
+        // the user turns a page here.
+        goToEnd();
+        m_moved = false;
+        m_saveTimer.stop();
+    }
     emit contentsChanged();
     return true;
 }
@@ -275,8 +361,9 @@ bool ReaderController::openExternally()
     if (!isOpen())
         return false;
     const QString workId = m_workId;
+    const int formatIndex = m_formatIndex;
     close();
-    return m_library.openFormat(workId, QStringLiteral("ebook"));
+    return m_library.openFormatAt(workId, formatIndex);
 }
 
 void ReaderController::savePosition()
@@ -441,21 +528,47 @@ int ReaderController::chapterStartPage(int chapter) const
 
 QVariantList ReaderController::contents() const
 {
-    QVariantList list;
+    QVariantList chapters;
+    // Volumes indent the chapters of the open one below its title.
+    const QList<int> list = volumes();
+    const int indent = list.size() > 1 ? 1 : 0;
     for (const Contents &entry : m_contents) {
         int page = entry.page;
         if (m_type == Text) {
             const int start = chapterStartPage(entry.chapter);
             page = pageCount() > 0 ? start : -1; // fragments: the page the chapter starts on
         }
-        list.append(QVariantMap{ { QStringLiteral("title"), entry.title },
-                                 { QStringLiteral("level"), entry.level },
-                                 { QStringLiteral("page"), page } });
+        chapters.append(QVariantMap{ { QStringLiteral("title"), entry.title },
+                                     { QStringLiteral("level"), entry.level + indent },
+                                     { QStringLiteral("page"), page } });
     }
-    return list;
+    if (list.size() <= 1)
+        return chapters;
+
+    const WorkModel *works = m_library.works();
+    const Work *work = works->workAt(works->rowOf(m_workId));
+    QVariantList result;
+    for (int formatIndex : list) {
+        result.append(QVariantMap{ { QStringLiteral("title"), work ? work->formatTitle(formatIndex) : QString() },
+                                   { QStringLiteral("level"), 0 },
+                                   { QStringLiteral("page"), -1 } });
+        if (formatIndex == m_formatIndex)
+            result += chapters;
+    }
+    return result;
 }
 
 int ReaderController::contentsIndex() const
+{
+    const int chapter = chapterIndex();
+    const int volume = volumePosition();
+    if (volumes().size() <= 1 || volume < 0)
+        return chapter;
+    // The title of the open volume, then its chapters.
+    return chapter < 0 ? volume : volume + 1 + chapter;
+}
+
+int ReaderController::chapterIndex() const
 {
     int found = -1;
     for (int i = 0; i < m_contents.size(); ++i) {
@@ -479,7 +592,7 @@ int ReaderController::contentsIndex() const
 
 QString ReaderController::chapterTitle() const
 {
-    const int index = contentsIndex();
+    const int index = chapterIndex();
     return index >= 0 ? m_contents.at(index).title : QString();
 }
 
@@ -510,12 +623,22 @@ int ReaderController::lastPage() const
 
 bool ReaderController::atStart() const
 {
+    return bookAtStart() && volumePosition() <= 0;
+}
+
+bool ReaderController::atEnd() const
+{
+    return bookAtEnd() && volumePosition() >= volumes().size() - 1;
+}
+
+bool ReaderController::bookAtStart() const
+{
     if (m_type == Pdf)
         return m_pdfPage == 0;
     return m_chapter == 0 && m_page == 0;
 }
 
-bool ReaderController::atEnd() const
+bool ReaderController::bookAtEnd() const
 {
     if (m_type == Pdf)
         return !m_pdf || m_pdfPage + pagesShown() >= pdfPageCount();
@@ -528,7 +651,7 @@ double ReaderController::progress() const
 {
     if (!isOpen() || m_error != NoError)
         return 0.0;
-    if (atEnd())
+    if (bookAtEnd())
         return 1.0;
     if (m_type == Pdf)
         return m_pdf ? double(m_pdfPage + 1) / pdfPageCount() : 0.0;
@@ -587,8 +710,14 @@ int ReaderController::lastSpreadStart(int count) const
 
 void ReaderController::nextPage()
 {
-    if (!isOpen() || m_error != NoError || atEnd())
+    if (!isOpen())
         return;
+    // At the end of a volume (or one that cannot be shown): the next volume.
+    if (m_error != NoError || bookAtEnd()) {
+        if (const int volume = volumePosition(); volume >= 0 && volume + 1 < volumes().size())
+            openVolume(volume + 1, Placement::Start);
+        return;
+    }
     if (m_type == Pdf) {
         movePdfTo(m_pdfPage + pagesShown());
         return;
@@ -601,8 +730,13 @@ void ReaderController::nextPage()
 
 void ReaderController::previousPage()
 {
-    if (!isOpen() || m_error != NoError || atStart())
+    if (!isOpen())
         return;
+    if (m_error != NoError || bookAtStart()) {
+        if (const int volume = volumePosition(); volume > 0)
+            openVolume(volume - 1, Placement::End);
+        return;
+    }
     if (m_type == Pdf) {
         movePdfTo(m_pdfPage - pagesShown());
         return;
@@ -671,6 +805,22 @@ void ReaderController::seek(double value)
 
 void ReaderController::goToContents(int index)
 {
+    // With volumes: their titles, and the chapters of the open one after its title.
+    if (const int volume = volumePosition(); volumes().size() > 1 && volume >= 0) {
+        if (index < volume) {
+            openVolume(index, Placement::Stored);
+            return;
+        }
+        if (index == volume) {
+            goToStart();
+            return;
+        }
+        if (index > volume + m_contents.size()) {
+            openVolume(int(index - m_contents.size()), Placement::Stored);
+            return;
+        }
+        index -= volume + 1;
+    }
     if (index < 0 || index >= m_contents.size())
         return;
     const Contents &entry = m_contents.at(index);

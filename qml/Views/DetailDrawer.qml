@@ -103,6 +103,19 @@ SideDrawer {
                         text: qsTr("Metadaten bearbeiten")
                         onClicked: root.editRequested(root.workId)
                     }
+                    // A combined work becomes its titles again; the drawer
+                    // closes, they are in the grid.
+                    IconButton {
+                        visible: details.canSplit
+                        iconName: "split"
+                        iconColor: Theme.textPrimary
+                        text: qsTr("Kombination auflösen")
+                        onClicked: {
+                            const workId = root.workId
+                            root.close()
+                            LibraryController.splitWork(workId)
+                        }
+                    }
                 }
 
                 CoverArt {
@@ -225,9 +238,12 @@ SideDrawer {
                             durationSeconds: modelData.durationSeconds
                             progress: modelData.progress
                             available: modelData.available
-                            readsInApp: card.kind === "ebook" && ReaderController.canRead(root.workId)
+                            volumeNumber: modelData.volumeNumber
+                            volumeTitle: modelData.volumeTitle
+                            readsInApp: card.kind === "ebook" && ReaderController.canReadFormat(root.workId, card.modelData.index)
 
-                            onFinishedToggled: LibraryController.setFinished(root.workId, card.kind, !card.finished)
+                            // Each card acts on its own format (a volume).
+                            onFinishedToggled: LibraryController.setFormatFinished(root.workId, card.modelData.index, !card.finished)
 
                             // Audiobooks play in calibly, EPUB, PDF and text books open in
                             // the reader (the drawer closes), other ebooks in the default
@@ -237,13 +253,13 @@ SideDrawer {
                                     card.openFailed = !PlayerController.play(root.workId)
                                 } else if (card.readsInApp) {
                                     root.close()
-                                    ReaderController.open(root.workId)
+                                    ReaderController.openFormat(root.workId, card.modelData.index)
                                 } else {
-                                    card.openFailed = !LibraryController.openFormat(root.workId, card.kind)
+                                    card.openFailed = !LibraryController.openFormatAt(root.workId, card.modelData.index)
                                 }
                             }
                             onOpenExternallyRequested: {
-                                card.openFailed = !LibraryController.openFormat(root.workId, card.kind)
+                                card.openFailed = !LibraryController.openFormatAt(root.workId, card.modelData.index)
                             }
                         }
                     }

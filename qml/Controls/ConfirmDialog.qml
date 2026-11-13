@@ -11,6 +11,8 @@ import Calibly.Theme
 //   message      what will happen
 //   confirmText  text of the button that goes ahead
 //   destructive  the button is red (removing, deleting)
+//   confirmEnabled  the button can be pressed, e.g. once a field is filled
+//   (default)    items between the message and the buttons, e.g. a field
 // Signals:
 //   accepted()   the user went ahead; the dialog is already closed
 T.Popup {
@@ -20,6 +22,16 @@ T.Popup {
     property string message
     property string confirmText
     property bool destructive: false
+    property bool confirmEnabled: true
+    default property alias content: extra.data
+
+    // Goes ahead, if it may (e.g. Enter in a field of the content).
+    function confirm() {
+        if (!control.confirmEnabled)
+            return
+        control.close()
+        control.accepted()
+    }
 
     signal accepted()
 
@@ -70,6 +82,13 @@ T.Popup {
             color: Theme.textSecondary
             font.pixelSize: Theme.fontBody
         }
+        Column {
+            id: extra
+
+            width: parent.width
+            visible: children.length > 0
+            spacing: Theme.spacingS
+        }
         Item {
             width: parent.width
             height: buttons.height + Theme.spacingS
@@ -88,10 +107,8 @@ T.Popup {
                 AppButton {
                     text: control.confirmText
                     variant: control.destructive ? AppButton.Danger : AppButton.Primary
-                    onClicked: {
-                        control.close()
-                        control.accepted()
-                    }
+                    enabled: control.confirmEnabled
+                    onClicked: control.confirm()
                 }
             }
         }

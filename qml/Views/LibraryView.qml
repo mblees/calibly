@@ -34,9 +34,8 @@ ViewBase {
     property bool seriesOnly: false
     // The series whose volumes are shown, "" = all works: an opened stack.
     property string openedSeries: ""
-    // The metadata editor steps through the selection instead of the grid.
-    property bool editingSelection: false
-    // The works the question of mergeDialog / removeDialog is about: the
+    // The works the question of mergeDialog, removeDialog, seriesDialog or
+    // markNewDialog is about: the
     // selection (bar, menu of a selected title) or the title of the menu.
     property list<string> actionIds: []
     property string actionTitle
@@ -87,18 +86,29 @@ ViewBase {
         root.openedSeries = ""
     }
 
-    // "Metadaten" of the bar: the editor with the first selected work;
-    // ‹ / › there step through the selection.
+    // "Metadaten" of the bar: possible with one selected work only.
     function editSelection() {
         const ids = works.selectedIds
-        if (ids.length === 0)
-            return
-        selectedWorks.onlyIds = ids
-        root.editingSelection = true
-        metadataEditor.openFor(ids[0])
+        if (ids.length === 1)
+            metadataEditor.openFor(ids[0])
     }
 
-    // Asks before the selected works are joined into one.
+    // "Als Serie …": asks for the name, filled with a series the selected
+    // works have.
+    function askSeries() {
+        root.actionIds = works.selectedIds
+        seriesDialog.count = root.actionIds.length
+        seriesDialog.name = LibraryController.suggestedSeries(root.actionIds)
+        seriesDialog.open()
+    }
+
+    // "Alle als neu markieren" clears positions: asked first.
+    function askMarkNew() {
+        root.actionIds = works.selectedIds
+        markNewDialog.open()
+    }
+
+    // Asks before the selected works are combined into one.
     function askMerge() {
         root.actionIds = works.selectedIds
         root.actionOnSelection = true
@@ -164,13 +174,6 @@ ViewBase {
         sourceModel: LibraryController.works
         formatFilter: settings.formatFilter
         limit: root.continueLimit
-    }
-
-    // The selected works in the shown order, for the metadata editor.
-    WorkFilterModel {
-        id: selectedWorks
-
-        sourceModel: LibraryController.works
     }
 
     Shortcut {
@@ -458,6 +461,7 @@ ViewBase {
             required property real listenProgress
             required property int workState
             required property bool selected
+            required property bool canSplit
             required property string series
             required property int seriesCount
             required property int seriesFirst
@@ -513,6 +517,7 @@ ViewBase {
                     workMenu.audiobookFinished = cell.listenProgress >= 1
                     workMenu.fileMissing = cell.workState === WorkState.FileMissing
                     workMenu.selected = cell.selected
+                    workMenu.canSplit = cell.canSplit
                     workMenu.popup(tile, x, y)
                 }
                 onReadRequested: root.continueWith(cell.workId, "ebook")
@@ -532,9 +537,7 @@ ViewBase {
     MetadataEditor {
         id: metadataEditor
 
-        navigationModel: root.editingSelection ? selectedWorks : works
-
-        onClosed: root.editingSelection = false
+        navigationModel: works
     }
 
     // --- selection: bar and questions ----------------------------------------
@@ -551,7 +554,10 @@ ViewBase {
 
         onMetadataRequested: root.editSelection()
         onMergeRequested: root.askMerge()
+        onSeriesRequested: root.askSeries()
         onExportRequested: root.askExport()
+        onFinishedRequested: LibraryController.markWorks(works.selectedIds, true)
+        onNewRequested: root.askMarkNew()
         onRemoveRequested: root.askRemove(works.selectedIds, "")
         onCloseRequested: works.clearSelection()
     }
@@ -591,12 +597,7 @@ ViewBase {
         onReadRequested: root.continueWith(workMenu.workId, "ebook")
         onOpenExternallyRequested: LibraryController.openFormat(workMenu.workId, "ebook")
         onListenRequested: root.continueWith(workMenu.workId, "audiobook")
-        onEditRequested: {
-            if (workMenu.bulk)
-                root.editSelection()
-            else
-                metadataEditor.openFor(workMenu.workId)
-        }
+        onEditRequested: metadataEditor.openFor(workMenu.workId)
         onFinishedToggled: function(kind) {
             const finished = kind === "audiobook" ? workMenu.audiobookFinished : workMenu.ebookFinished
             LibraryController.setFinished(workMenu.workId, kind, !finished)
@@ -604,6 +605,14 @@ ViewBase {
         onSelectToggled: works.toggleSelected(workMenu.workId)
         onClearSelectionRequested: works.clearSelection()
         onMergeRequested: root.askMerge()
+        onSeriesRequested: root.askSeries()
+        onMarkRequested: function(finished) {
+            if (finished)
+                LibraryController.markWorks(works.selectedIds, true)
+            else
+                root.askMarkNew()
+        }
+        onSplitRequested: LibraryController.splitWork(workMenu.workId)
         onExportRequested: root.askExport()
         onRemoveRequested: {
             if (workMenu.bulk)
@@ -617,17 +626,36 @@ ViewBase {
     ConfirmDialog {
         id: mergeDialog
 
-        title: root.actionIds.length > 1 ? qsTr("%Ln Titel zu einem Werk verbinden?", "", root.actionIds.length)
+        title: root.actionIds.length > 1 ? qsTr("%Ln Titel kombinieren?", "", root.actionIds.length)
                                          : qsTr("Hörbuch-Dateien verbinden?")
         message: root.actionIds.length > 1
-                 ? qsTr("Alle Formate kommen zu „%1“. Mehrere Hörbuch-Dateien werden dabei zu einem Hörbuch. Das lässt sich nicht rückgängig machen.").arg(root.actionTitle)
+                 ? qsTr("Sie werden ein Eintrag „%1“, der sich am Stück lesen und hören lässt: E-Books als Bände nach ihrer Bandnummer, Hörbücher nacheinander. Mit „Kombination auflösen“ (Rechtsklick) werden es wieder einzelne Titel.").arg(root.actionTitle)
                  : qsTr("Die Hörbuch-Dateien von „%1“ werden zu einem Hörbuch mit einem Kapitel pro Datei. Das lässt sich nicht rückgängig machen.").arg(root.actionTitle)
-        confirmText: qsTr("Verbinden")
+        confirmText: root.actionIds.length > 1 ? qsTr("Kombinieren") : qsTr("Verbinden")
 
         onAccepted: {
             works.clearSelection()
             LibraryController.mergeWorks(root.actionIds)
         }
+    }
+
+    SeriesDialog {
+        id: seriesDialog
+
+        suggestions: LibraryController.seriesNames
+
+        onAccepted: LibraryController.setSeries(root.actionIds, seriesDialog.name)
+    }
+
+    ConfirmDialog {
+        id: markNewDialog
+
+        title: qsTr("%Ln Titel als neu markieren?", "", root.actionIds.length)
+        message: qsTr("Fortschritt, Lese- und Hörpositionen gehen verloren. Die Titel erscheinen wieder als „Neu“ und nicht mehr unter „Weitermachen“.")
+        confirmText: qsTr("Als neu markieren")
+        destructive: true
+
+        onAccepted: LibraryController.markWorks(root.actionIds, false)
     }
 
     // actionTitle: the one title that is removed, "" for the selection.

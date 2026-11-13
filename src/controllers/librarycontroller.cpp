@@ -15,6 +15,41 @@
 #include "sqlitebackend.h"
 #include "workmerge.h"
 
+#include <QCollator>
+#include <QSet>
+#include <QUuid>
+
+namespace {
+
+Format::Kind kindOf(const QString &kind)
+{
+    return kind == QLatin1String("audiobook") ? Format::Kind::Audiobook : Format::Kind::Ebook;
+}
+
+// One format marked as finished or not; false if nothing changes.
+bool markFinished(Format &format, bool finished)
+{
+    if (format.finished() == finished)
+        return false;
+    if (finished) {
+        format.progress = 1.0;
+        return true;
+    }
+    // Back to where it was: the listening position, or the start if the
+    // position is the end (or unknown, as for ebooks).
+    const qint64 durationMs = qint64(format.durationSeconds) * 1000;
+    const double progress = durationMs > 0 ? double(format.positionMs) / double(durationMs) : 0.0;
+    if (progress >= 0.999) {
+        format.progress = 0.0;
+        format.positionMs = 0;
+    } else {
+        format.progress = std::clamp(progress, 0.0, 1.0);
+    }
+    return true;
+}
+
+} // namespace
+
 LibraryController::LibraryController(LibraryBackend &backend, QQmlEngine *engine, QObject *parent)
     : QObject(parent)
     , m_backend(&backend)
@@ -24,6 +59,7 @@ LibraryController::LibraryController(LibraryBackend &backend, QQmlEngine *engine
     s_instance = this;
     m_libraryPath = backend.libraryRoot();
     reload();
+    connectModel();
 }
 
 LibraryController::LibraryController(QQmlEngine *engine, QObject *parent)
@@ -32,6 +68,17 @@ LibraryController::LibraryController(QQmlEngine *engine, QObject *parent)
 {
     Q_ASSERT(!s_instance);
     s_instance = this;
+    connectModel();
+}
+
+void LibraryController::connectModel()
+{
+    // Any change of the works may change the series.
+    const auto changed = [this] { emit seriesNamesChanged(); };
+    connect(&m_works, &QAbstractItemModel::dataChanged, this, changed);
+    connect(&m_works, &QAbstractItemModel::rowsInserted, this, changed);
+    connect(&m_works, &QAbstractItemModel::rowsRemoved, this, changed);
+    connect(&m_works, &QAbstractItemModel::modelReset, this, changed);
 }
 
 LibraryController::~LibraryController()
@@ -151,11 +198,13 @@ void LibraryController::reload()
 bool LibraryController::openFormat(const QString &workId, const QString &kind)
 {
     const Work *work = m_works.workAt(m_works.rowOf(workId));
-    if (!work)
-        return false;
-    const int index = work->formatIndex(kind == QLatin1String("audiobook") ? Format::Kind::Audiobook
-                                                                           : Format::Kind::Ebook);
-    if (index < 0)
+    return work && openFormatAt(workId, work->currentFormat(kindOf(kind)));
+}
+
+bool LibraryController::openFormatAt(const QString &workId, int index)
+{
+    const Work *work = m_works.workAt(m_works.rowOf(workId));
+    if (!work || index < 0 || index >= work->formats.size())
         return false;
     const QString filePath = work->formats.at(index).filePath;
     if (!QFileInfo::exists(filePath)) {
@@ -176,31 +225,161 @@ bool LibraryController::openFormat(const QString &workId, const QString &kind)
 bool LibraryController::setFinished(const QString &workId, const QString &kind, bool finished)
 {
     const Work *work = m_works.workAt(m_works.rowOf(workId));
-    const int index = work ? work->formatIndex(kind == QLatin1String("audiobook") ? Format::Kind::Audiobook
-                                                                                  : Format::Kind::Ebook)
-                           : -1;
-    if (index < 0)
+    if (!work || !work->hasFormat(kindOf(kind)))
         return false;
-    if (work->formats.at(index).finished() == finished)
-        return true;
-
     Work changed = *work;
-    Format &format = changed.formats[index];
-    if (finished) {
-        format.progress = 1.0;
-    } else {
-        // Back to where it was: the listening position, or the start if
-        // the position is the end (or unknown, as for ebooks).
-        const qint64 durationMs = qint64(format.durationSeconds) * 1000;
-        const double progress = durationMs > 0 ? double(format.positionMs) / double(durationMs) : 0.0;
-        if (progress >= 0.999) {
-            format.progress = 0.0;
-            format.positionMs = 0;
-        } else {
-            format.progress = std::clamp(progress, 0.0, 1.0);
-        }
+    bool any = false;
+    for (Format &format : changed.formats) {
+        if (format.kind == kindOf(kind))
+            any = markFinished(format, finished) || any;
     }
-    return saveWork(changed);
+    return !any || saveWork(changed);
+}
+
+bool LibraryController::setFormatFinished(const QString &workId, int formatIndex, bool finished)
+{
+    const Work *work = m_works.workAt(m_works.rowOf(workId));
+    if (!work || formatIndex < 0 || formatIndex >= work->formats.size())
+        return false;
+    Work changed = *work;
+    return !markFinished(changed.formats[formatIndex], finished) || saveWork(changed);
+}
+
+int LibraryController::markWorks(const QStringList &workIds, bool finished)
+{
+    if (worksById(workIds).isEmpty())
+        return 0;
+    // The player and the reader let go of these works first.
+    emit worksAboutToChange(workIds);
+    int changed = 0;
+    for (Work work : worksById(workIds)) {
+        for (Format &format : work.formats) {
+            if (finished) {
+                markFinished(format, true);
+            } else {
+                format.progress = 0.0;
+                format.positionMs = 0;
+                format.readingPosition.clear();
+                format.lastOpened = QDateTime();
+            }
+        }
+        if (!finished)
+            work.lastOpened = QDateTime();
+        if (saveWork(work))
+            ++changed;
+    }
+    return changed;
+}
+
+int LibraryController::setSeries(const QStringList &workIds, const QString &name)
+{
+    const QString series = name.simplified();
+    const QList<Work> works = worksById(workIds);
+    if (series.isEmpty() || works.isEmpty())
+        return 0;
+    // Numbers that volumes of this series which are not selected have.
+    QSet<int> taken;
+    for (const Work &work : m_works.works()) {
+        if (work.seriesIndex > 0 && !workIds.contains(work.id)
+            && work.series.compare(series, Qt::CaseInsensitive) == 0)
+            taken.insert(work.seriesIndex);
+    }
+    // First the selected works keep their numbers, unless another volume
+    // has it; then the others get the free numbers in the given order.
+    QList<bool> keeps;
+    for (const Work &work : works) {
+        const bool keep = work.seriesIndex > 0 && !taken.contains(work.seriesIndex);
+        keeps.append(keep);
+        if (keep)
+            taken.insert(work.seriesIndex);
+    }
+    int next = 1;
+    int changed = 0;
+    for (int i = 0; i < works.size(); ++i) {
+        Work work = works.at(i);
+        if (!keeps.at(i)) {
+            while (taken.contains(next))
+                ++next;
+            work.seriesIndex = next;
+            taken.insert(next);
+        }
+        work.series = series;
+        if (saveWork(work))
+            ++changed;
+    }
+    return changed;
+}
+
+QStringList LibraryController::seriesNames() const
+{
+    QStringList names;
+    for (const Work &work : m_works.works()) {
+        if (!work.series.isEmpty() && !names.contains(work.series, Qt::CaseInsensitive))
+            names.append(work.series);
+    }
+    QCollator collator;
+    collator.setNumericMode(true);
+    collator.setCaseSensitivity(Qt::CaseInsensitive);
+    std::sort(names.begin(), names.end(), [&collator](const QString &a, const QString &b) {
+        return collator.compare(a, b) < 0;
+    });
+    return names;
+}
+
+QString LibraryController::suggestedSeries(const QStringList &workIds) const
+{
+    for (const Work &work : worksById(workIds)) {
+        if (!work.series.isEmpty())
+            return work.series;
+    }
+    return QString();
+}
+
+int LibraryController::splitWork(const QString &workId)
+{
+    const Work *found = m_works.workAt(m_works.rowOf(workId));
+    if (!found || !found->canSplit())
+        return 0;
+    emit worksAboutToChange({ workId });
+
+    const Work work = *m_works.workAt(m_works.rowOf(workId));
+    const bool storedParts = work.parts.size() > 1;
+    QList<Work> works = ::splitWork(work, [] { return QUuid::createUuid().toString(QUuid::WithoutBraces); });
+    for (int i = 0; i < works.size(); ++i) {
+        Work &single = works[i];
+        // Works merged before the parts were stored: the title (and what
+        // else the file knows) from the file, as the import does.
+        if (!storedParts && i > 0) {
+            const FileMetadata metadata = readMetadata(single.formats.first().filePath);
+            if (!metadata.title.isEmpty())
+                single.title = metadata.title;
+            if (metadata.seriesIndex > 0)
+                single.seriesIndex = metadata.seriesIndex;
+            if (!metadata.description.isEmpty())
+                single.description = metadata.description;
+            if (metadata.publishedYear > 0)
+                single.publishedYear = metadata.publishedYear;
+        }
+        // Sizes of cut audiobooks: their files.
+        for (Format &format : single.formats) {
+            if (format.fileSize > 0)
+                continue;
+            QSet<QString> files{ format.filePath };
+            for (const Chapter &chapter : std::as_const(format.chapters)) {
+                if (!chapter.filePath.isEmpty())
+                    files.insert(chapter.filePath);
+            }
+            for (const QString &file : std::as_const(files))
+                format.fileSize += QFileInfo(file).size();
+        }
+        single.parts.clear();
+    }
+    int saved = 0;
+    for (const Work &single : std::as_const(works)) {
+        if (saveWork(single))
+            ++saved;
+    }
+    return saved;
 }
 
 QList<Work> LibraryController::worksById(const QStringList &workIds) const

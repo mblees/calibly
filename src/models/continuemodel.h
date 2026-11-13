@@ -34,6 +34,8 @@
 //   coverUrl, coverIsSquare   cover of that format
 //   progress           0.0 – 1.0
 //   lastOpened         when that format was opened
+//   volumeNumber       ebooks of a combined work: the current volume, 1-based;
+//                      0 = a single book
 //   chapterNumber      audiobooks: current chapter, 1-based; 0 = no chapters
 //   chapterTitle       its title, "" = untitled; ebooks read in calibly: the
 //                      chapter where the user stopped (EPUB, text)
@@ -70,6 +72,7 @@ public:
         PagesRole,
         HasOtherFormatRole,
         AvailableRole,
+        VolumeNumberRole,
     };
     Q_ENUM(Role)
 
@@ -114,6 +117,7 @@ private:
         int pages = 0;
         bool hasOtherFormat = false;
         bool available = true;
+        int volumeNumber = 0;
     };
 
     void rebuild();

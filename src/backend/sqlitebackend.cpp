@@ -24,7 +24,8 @@ namespace {
 // 3: chapters and listening position per format (phase 6)
 // 4: last opened per format, for "Continue" (phase 8)
 // 5: reading position per format, for the ebook reader (phase 10)
-constexpr int kSchemaVersion = 5;
+// 6: the parts of a combined work, so it can be dissolved (phase 12)
+constexpr int kSchemaVersion = 6;
 
 QString toJson(const QStringList &list)
 {
@@ -188,6 +189,10 @@ bool SqliteBackend::open(QString *error, bool create)
         // JSON, see ReadingPosition.
         statements += { QStringLiteral("ALTER TABLE formats ADD COLUMN reading_position TEXT") };
     }
+    if (version < 6) {
+        // JSON, see partsToJson(); empty for works that were never combined.
+        statements += { QStringLiteral("ALTER TABLE works ADD COLUMN parts TEXT") };
+    }
     if (statements.isEmpty())
         return true;
 
@@ -256,6 +261,67 @@ QList<Chapter> SqliteBackend::chaptersFromJson(const QString &json) const
     return chapters;
 }
 
+// [{ "id", "title", "authors": [], "narrators": [], "series", "seriesIndex",
+//    "description", "tags": [], "rating", "language", "year", "added",
+//    "files": [relative paths] }]
+QString SqliteBackend::partsToJson(const QList<WorkPart> &parts) const
+{
+    if (parts.isEmpty())
+        return QString();
+    QJsonArray array;
+    for (const WorkPart &part : parts) {
+        QStringList files;
+        for (const QString &file : part.files)
+            files.append(relative(file));
+        array.append(QJsonObject{ { QStringLiteral("id"), part.id },
+                                  { QStringLiteral("title"), part.title },
+                                  { QStringLiteral("authors"), QJsonArray::fromStringList(part.authors) },
+                                  { QStringLiteral("narrators"), QJsonArray::fromStringList(part.narrators) },
+                                  { QStringLiteral("series"), part.series },
+                                  { QStringLiteral("seriesIndex"), part.seriesIndex },
+                                  { QStringLiteral("description"), part.description },
+                                  { QStringLiteral("tags"), QJsonArray::fromStringList(part.tags) },
+                                  { QStringLiteral("rating"), part.rating },
+                                  { QStringLiteral("language"), part.language },
+                                  { QStringLiteral("year"), part.publishedYear },
+                                  { QStringLiteral("added"), toText(part.added) },
+                                  { QStringLiteral("files"), QJsonArray::fromStringList(files) } });
+    }
+    return QString::fromUtf8(QJsonDocument(array).toJson(QJsonDocument::Compact));
+}
+
+QList<WorkPart> SqliteBackend::partsFromJson(const QString &json) const
+{
+    QList<WorkPart> parts;
+    const auto strings = [](const QJsonValue &value) {
+        QStringList list;
+        for (const QJsonValue &item : value.toArray())
+            list.append(item.toString());
+        return list;
+    };
+    const QJsonArray array = QJsonDocument::fromJson(json.toUtf8()).array();
+    for (const QJsonValue &value : array) {
+        const QJsonObject object = value.toObject();
+        WorkPart part;
+        part.id = object.value(QStringLiteral("id")).toString();
+        part.title = object.value(QStringLiteral("title")).toString();
+        part.authors = strings(object.value(QStringLiteral("authors")));
+        part.narrators = strings(object.value(QStringLiteral("narrators")));
+        part.series = object.value(QStringLiteral("series")).toString();
+        part.seriesIndex = object.value(QStringLiteral("seriesIndex")).toInt();
+        part.description = object.value(QStringLiteral("description")).toString();
+        part.tags = strings(object.value(QStringLiteral("tags")));
+        part.rating = object.value(QStringLiteral("rating")).toInt();
+        part.language = object.value(QStringLiteral("language")).toString();
+        part.publishedYear = object.value(QStringLiteral("year")).toInt();
+        part.added = QDateTime::fromString(object.value(QStringLiteral("added")).toString(), Qt::ISODate);
+        for (const QString &file : strings(object.value(QStringLiteral("files"))))
+            part.files.append(absolute(file));
+        parts.append(part);
+    }
+    return parts;
+}
+
 QString SqliteBackend::absolute(const QString &relativePath) const
 {
     return relativePath.isEmpty() ? QString() : QDir::cleanPath(QDir(m_root).filePath(relativePath));
@@ -276,7 +342,7 @@ QList<Work> SqliteBackend::loadWorks()
     QHash<QString, int> indexById;
     QSqlQuery query(db);
     query.prepare(QStringLiteral("SELECT id, title, authors, narrators, series, series_index, description, tags,"
-                                 " rating, language, published_year, added, last_opened FROM works"));
+                                 " rating, language, published_year, added, last_opened, parts FROM works"));
     if (!exec(query, nullptr))
         return works;
     while (query.next()) {
@@ -294,6 +360,7 @@ QList<Work> SqliteBackend::loadWorks()
         work.publishedYear = query.value(10).toInt();
         work.added = QDateTime::fromString(query.value(11).toString(), Qt::ISODate);
         work.lastOpened = QDateTime::fromString(query.value(12).toString(), Qt::ISODate);
+        work.parts = partsFromJson(query.value(13).toString());
         indexById.insert(work.id, int(works.size()));
         works.append(work);
     }
@@ -365,17 +432,18 @@ bool SqliteBackend::saveWork(const Work &work)
     db.transaction();
     QSqlQuery query(db);
     query.prepare(QStringLiteral("INSERT INTO works (id, title, authors, narrators, series, series_index,"
-                                 " description, tags, rating, language, published_year, added, last_opened)"
-                                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                                 " description, tags, rating, language, published_year, added, last_opened, parts)"
+                                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                                  " ON CONFLICT(id) DO UPDATE SET title = excluded.title, authors = excluded.authors,"
                                  " narrators = excluded.narrators, series = excluded.series,"
                                  " series_index = excluded.series_index, description = excluded.description,"
                                  " tags = excluded.tags, rating = excluded.rating, language = excluded.language,"
                                  " published_year = excluded.published_year,"
-                                 " added = excluded.added, last_opened = excluded.last_opened"));
+                                 " added = excluded.added, last_opened = excluded.last_opened, parts = excluded.parts"));
     const QVariantList values = { work.id, work.title, toJson(work.authors), toJson(work.narrators), work.series,
                                   work.seriesIndex, work.description, toJson(work.tags), work.rating, work.language,
-                                  work.publishedYear, toText(work.added), toText(work.lastOpened) };
+                                  work.publishedYear, toText(work.added), toText(work.lastOpened),
+                                  partsToJson(work.parts) };
     for (const QVariant &value : values)
         query.addBindValue(value);
     bool ok = exec(query, nullptr);

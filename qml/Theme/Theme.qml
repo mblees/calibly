@@ -202,6 +202,7 @@ QtObject {
 
     // Accent color in the settings: color wheel and quick choices. The first
     // swatch is calibly's orange.
+    readonly property int seriesSuggestionCount: 6     // existing series offered in "Als Serie zusammenfassen"
     readonly property int colorWheelSize: 200
     readonly property int colorWheelHandleSize: 18
     readonly property color colorWheelHandleBorder: "#ffffff"

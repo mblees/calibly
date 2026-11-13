@@ -180,6 +180,189 @@ private slots:
         QCOMPARE(merged.formats.first().filePath, QStringLiteral("c:/lib/CD 1/01.mp3"));
         QCOMPARE(merged.formats.first().chapters.size(), 2);
     }
+
+    // "Kombinieren" (phase 12): three volumes become one entry that keeps
+    // them as parts in volume order; the ebooks follow that order.
+    void combinesVolumes()
+    {
+        const auto volume = [](const QString &id, const QString &title, int number, const QString &file) {
+            Work work;
+            work.id = id;
+            work.title = title;
+            work.authors = { QStringLiteral("J. R. R. Tolkien") };
+            work.series = QStringLiteral("Der Herr der Ringe");
+            work.seriesIndex = number;
+            work.description = title + QStringLiteral(" …");
+            work.added = at(QStringLiteral("2026-01-0%1T10:00:00").arg(number));
+            work.formats = { ebook(file) };
+            work.formats.first().pages = 100 * number;
+            return work;
+        };
+        const Work two = volume(QStringLiteral("two"), QStringLiteral("Die zwei Türme"), 2, QStringLiteral("c:/lib/2.epub"));
+        const Work one = volume(QStringLiteral("one"), QStringLiteral("Die Gefährten"), 1, QStringLiteral("c:/lib/1.epub"));
+        const Work three = volume(QStringLiteral("three"), QStringLiteral("Die Rückkehr des Königs"), 3,
+                                  QStringLiteral("c:/lib/3.epub"));
+
+        Work combined = mergeWorks({ two, one, three });
+        QCOMPARE(combined.id, QStringLiteral("two")); // the first with an ebook, as before
+        QVERIFY(combined.isCombined());
+        QCOMPARE(combined.parts.size(), 3);
+        QCOMPARE(combined.parts.at(0).id, QStringLiteral("one"));
+        QCOMPARE(combined.parts.at(1).title, QStringLiteral("Die zwei Türme"));
+        QCOMPARE(combined.parts.at(2).files, QStringList{ QStringLiteral("c:/lib/3.epub") });
+        QCOMPARE(combined.formats.at(0).filePath, QStringLiteral("c:/lib/1.epub"));
+        QCOMPARE(combined.formats.at(2).filePath, QStringLiteral("c:/lib/3.epub"));
+        QCOMPARE(combined.formatTitle(1), QStringLiteral("Die zwei Türme"));
+        QVERIFY(combined.canSplit());
+
+        // Progress by pages (100 + 200 + 300): volume 1 read, volume 2 half.
+        combined.formats[0].progress = 1.0;
+        combined.formats[1].progress = 0.5;
+        QCOMPARE(combined.readProgress(), (100.0 + 100.0) / 600.0);
+        QCOMPARE(combined.state(), Work::State::Normal); // not all volumes finished
+        // Without pages: the average.
+        combined.formats[2].pages = 0;
+        QCOMPARE(combined.readProgress(), 1.5 / 3.0);
+
+        // Combining it with one more passes on its parts (one level).
+        Work four = volume(QStringLiteral("four"), QStringLiteral("Anhänge"), 4, QStringLiteral("c:/lib/4.epub"));
+        const Work bigger = mergeWorks({ combined, four });
+        QCOMPARE(bigger.parts.size(), 4);
+        QCOMPARE(bigger.parts.at(3).id, QStringLiteral("four"));
+
+        // All volumes finished: the work is finished.
+        for (Format &format : combined.formats)
+            format.progress = 1.0;
+        QCOMPARE(combined.state(), Work::State::Finished);
+    }
+
+    // Several ebooks of a work that was not combined are the same book: the
+    // furthest one counts, and one finished is enough (as before).
+    void sameBookInSeveralFiles()
+    {
+        Work work;
+        work.id = QStringLiteral("w");
+        work.formats = { ebook(QStringLiteral("c:/lib/a.epub")), ebook(QStringLiteral("c:/lib/a.pdf")) };
+        work.formats[0].progress = 1.0;
+        QCOMPARE(work.readProgress(), 1.0);
+        QCOMPARE(work.state(), Work::State::Finished);
+    }
+
+    // The volume to continue with.
+    void currentFormat()
+    {
+        Work work;
+        work.formats = { ebook(QStringLiteral("1.epub")), audiobook(QStringLiteral("a.m4b"), 60),
+                         ebook(QStringLiteral("2.epub")), ebook(QStringLiteral("3.epub")) };
+        // Nothing opened: the first.
+        QCOMPARE(work.currentFormat(Format::Kind::Ebook), 0);
+        QCOMPARE(work.currentFormat(Format::Kind::Audiobook), 1);
+        // Volume 1 finished, nothing else opened: the first unfinished one.
+        work.formats[0].progress = 1.0;
+        QCOMPARE(work.currentFormat(Format::Kind::Ebook), 2);
+        // Volume 3 opened last and not finished: volume 3.
+        work.formats[3].lastOpened = at(QStringLiteral("2026-11-10T10:00:00"));
+        work.formats[3].progress = 0.2;
+        QCOMPARE(work.currentFormat(Format::Kind::Ebook), 3);
+        // Volume 1 was read to the end last: the next unfinished after it.
+        work.formats[0].lastOpened = at(QStringLiteral("2026-11-12T10:00:00"));
+        QCOMPARE(work.currentFormat(Format::Kind::Ebook), 2);
+        // All finished: the first.
+        for (Format &format : work.formats)
+            format.progress = 1.0;
+        QCOMPARE(work.currentFormat(Format::Kind::Ebook), 0);
+        QCOMPARE(Work().currentFormat(Format::Kind::Ebook), -1);
+    }
+
+    // "Kombination auflösen": the works come back with their ids, metadata
+    // and formats; the joined audiobook is cut into the files of each part
+    // and the listening position goes to the part it is in.
+    void splitsCombinedWork()
+    {
+        Work a;
+        a.id = QStringLiteral("a");
+        a.title = QStringLiteral("Band A");
+        a.seriesIndex = 1;
+        a.description = QStringLiteral("Erster Band");
+        a.formats = { ebook(QStringLiteral("c:/lib/a.epub")), audiobook(QStringLiteral("c:/lib/a.mp3"), 100) };
+        a.formats[0].readingPosition = QStringLiteral("{\"chapter\":3}");
+        a.formats[0].progress = 0.4;
+        Work b;
+        b.id = QStringLiteral("b");
+        b.title = QStringLiteral("Band B");
+        b.seriesIndex = 2;
+        b.formats = { audiobook(QStringLiteral("c:/lib/b.mp3"), 200) };
+        // b's audiobook has two chapters of its own.
+        b.formats[0].chapters = { { QStringLiteral("B1"), QString(), 0, 120000 },
+                                  { QStringLiteral("B2"), QString(), 120000, 80000 } };
+
+        Work combined = mergeWorks({ a, b });
+        QCOMPARE(combined.formats.size(), 2); // a's ebook, one joined audiobook
+        Format &joined = combined.formats[1];
+        QCOMPARE(joined.chapters.size(), 3);
+        QCOMPARE(joined.chapters.at(0).title, QStringLiteral("Band A")); // a file without chapters: its part's title
+        // Listened into the first chapter of b: 100 s of a + 30 s.
+        joined.positionMs = 130000;
+        joined.lastOpened = at(QStringLiteral("2026-11-11T20:00:00"));
+        combined.title = QStringLiteral("Band A (bearbeitet)"); // changed after combining
+
+        int created = 0;
+        const QList<Work> works = splitWork(combined, [&created] { return QStringLiteral("new%1").arg(++created); });
+        QCOMPARE(created, 0); // stored parts keep their ids
+        QCOMPARE(works.size(), 2);
+        const Work &backA = works.at(0);
+        const Work &backB = works.at(1);
+        QCOMPARE(backA.id, QStringLiteral("a"));
+        QCOMPARE(backA.title, QStringLiteral("Band A (bearbeitet)")); // the work's id: keeps the changes
+        QCOMPARE(backB.id, QStringLiteral("b"));
+        QCOMPARE(backB.title, QStringLiteral("Band B"));
+        QCOMPARE(backB.seriesIndex, 2);
+        QVERIFY(backA.parts.isEmpty() || !backA.isCombined());
+
+        QCOMPARE(backA.formats.size(), 2);
+        QCOMPARE(backA.formats.at(0).readingPosition, QStringLiteral("{\"chapter\":3}"));
+        const Format &audioA = backA.formats.at(1);
+        QCOMPARE(audioA.filePath, QStringLiteral("c:/lib/a.mp3"));
+        QVERIFY(audioA.chapters.isEmpty()); // as it was: a file without chapters
+        QVERIFY(audioA.finished());         // listened past it
+        QCOMPARE(audioA.durationSeconds, 100);
+
+        QCOMPARE(backB.formats.size(), 1);
+        const Format &audioB = backB.formats.first();
+        QCOMPARE(audioB.filePath, QStringLiteral("c:/lib/b.mp3"));
+        QCOMPARE(audioB.chapters.size(), 2);
+        QCOMPARE(audioB.chapters.first().filePath, QString()); // its own file
+        QCOMPARE(audioB.positionMs, qint64(30000));
+        QCOMPARE(audioB.progress, 30.0 / 200.0);
+        QCOMPARE(audioB.lastOpened, joined.lastOpened);
+        QCOMPARE(backB.lastOpened, joined.lastOpened);
+
+        // A work that is no combination stays as it is.
+        QCOMPARE(splitWork(a, [] { return QString(); }).size(), 1 + 1); // two formats: split (merged earlier)
+        Work single = b;
+        QCOMPARE(splitWork(single, [] { return QString(); }).first().id, QStringLiteral("b"));
+    }
+
+    // Merged before phase 12 (no parts): one work per format, the first
+    // keeps the id, the others get new ids and the name of their file.
+    void splitsWorkWithoutParts()
+    {
+        Work work;
+        work.id = QStringLiteral("old");
+        work.title = QStringLiteral("Alt");
+        work.authors = { QStringLiteral("Autorin") };
+        work.formats = { ebook(QStringLiteral("c:/lib/Band 1.epub")), ebook(QStringLiteral("c:/lib/Band 2.epub")),
+                         audiobook(QStringLiteral("c:/lib/hoerbuch.m4b"), 60) };
+        int created = 0;
+        const QList<Work> works = splitWork(work, [&created] { return QStringLiteral("new%1").arg(++created); });
+        QCOMPARE(works.size(), 3);
+        QCOMPARE(works.at(0).id, QStringLiteral("old"));
+        QCOMPARE(works.at(0).title, QStringLiteral("Alt"));
+        QCOMPARE(works.at(1).id, QStringLiteral("new1"));
+        QCOMPARE(works.at(1).title, QStringLiteral("Band 2"));
+        QCOMPARE(works.at(1).authors, work.authors);
+        QCOMPARE(works.at(2).formats.first().kind, Format::Kind::Audiobook);
+    }
 };
 
 QTEST_GUILESS_MAIN(TestWorkMerge)

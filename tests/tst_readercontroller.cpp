@@ -17,6 +17,7 @@
 #include "readercontroller.h"
 #include "readersettings.h"
 #include "readingposition.h"
+#include "workmerge.h"
 
 namespace {
 
@@ -155,6 +156,7 @@ private slots:
                              ebookWork(QStringLiteral("fehlt"), m_dir.filePath(QStringLiteral("fehlt.epub"))),
                              ebookWork(QStringLiteral("mobi"), m_dir.filePath(QStringLiteral("alt.mobi"))) };
         m_library = std::make_unique<LibraryController>(*m_backend, nullptr);
+        m_library->setDeleteFilesPermanently(true); // not into the recycle bin of whoever runs the tests
         m_settings = std::make_unique<ReaderSettings>(nullptr);
         m_reader = std::make_unique<ReaderController>(*m_library, *m_settings, nullptr);
     }
@@ -432,6 +434,71 @@ private slots:
         QVERIFY(m_reader->open(QStringLiteral("epub")));
         QCOMPARE(m_library->removeWorks({ QStringLiteral("epub") }), 1);
         QVERIFY(!m_reader->isOpen());
+    }
+
+    // Phase 12: a combined work of two volumes opens at the current volume
+    // and its place; pages turn across the border in both directions; the
+    // contents list the volumes.
+    void volumes()
+    {
+        const QString second = m_dir.filePath(QStringLiteral("band2.epub"));
+        // Own files: an earlier test removes buch.epub with its work.
+        const QString first = m_dir.filePath(QStringLiteral("band1.epub"));
+        writeEpub(first);
+        writeEpub(second);
+        Work one = ebookWork(QStringLiteral("v1"), first);
+        one.title = QStringLiteral("Band Eins");
+        one.seriesIndex = 1;
+        one.formats[0].progress = 1.0;
+        one.formats[0].lastOpened = QDateTime(QDate(2026, 11, 1), QTime(20, 0));
+        Work two = ebookWork(QStringLiteral("v2"), second);
+        two.title = QStringLiteral("Band Zwei");
+        two.seriesIndex = 2;
+        two.formats[0].readingPosition = ReadingPosition::inChapter(1, 0, QStringLiteral("II")).toString();
+        two.formats[0].progress = 0.4;
+        two.formats[0].lastOpened = QDateTime(QDate(2026, 11, 2), QTime(20, 0));
+        m_backend->works = { mergeWorks({ two, one }) };
+        m_reader.reset();
+        m_library.reset();
+        m_library = std::make_unique<LibraryController>(*m_backend, nullptr);
+        m_reader = std::make_unique<ReaderController>(*m_library, *m_settings, nullptr);
+        const QString id = QStringLiteral("v2");
+
+        QCOMPARE(m_reader->readableFormat(id), 1); // the second volume
+        QVERIFY(m_reader->canReadFormat(id, 0));
+        QVERIFY(m_reader->open(id));
+        m_reader->setViewSize(QSizeF(600, 800));
+        QCOMPARE(m_reader->volumeCount(), 2);
+        QCOMPARE(m_reader->volumeNumber(), 2);
+        QCOMPARE(m_reader->title(), QStringLiteral("Band Zwei"));
+        QCOMPARE(m_reader->chapterTitle(), QStringLiteral("Kapitel Eins")); // where the reader stopped
+        QVERIFY(!m_reader->atStart());
+
+        // Contents: both volumes, the chapters of the open one below it.
+        const QVariantList contents = m_reader->contents();
+        QCOMPARE(contents.first().toMap().value(QStringLiteral("title")).toString(), QStringLiteral("Band Eins"));
+        QCOMPARE(contents.at(1).toMap().value(QStringLiteral("title")).toString(), QStringLiteral("Band Zwei"));
+        QCOMPARE(contents.at(2).toMap().value(QStringLiteral("level")).toInt(), 1);
+        QVERIFY(m_reader->contentsIndex() > 1);
+
+        // Back from the first page of volume 2: the end of volume 1.
+        m_reader->goToStart();
+        QVERIFY(!m_reader->atStart()); // volume 1 is before it
+        m_reader->previousPage();
+        QCOMPARE(m_reader->volumeNumber(), 1);
+        QCOMPARE(m_reader->progress(), 1.0);
+        QVERIFY(!m_reader->atEnd()); // volume 2 follows
+        // On again: volume 2 at its start.
+        m_reader->nextPage();
+        QCOMPARE(m_reader->volumeNumber(), 2);
+        QCOMPARE(m_reader->progress() < 0.1, true);
+        QVERIFY(m_reader->isOpen());
+
+        // A volume from the contents.
+        m_reader->goToContents(0);
+        QCOMPARE(m_reader->volumeNumber(), 1);
+        m_reader->close();
+        QVERIFY(m_backend->works.first().formats.at(0).finished()); // looking did not undo it
     }
 
 private:

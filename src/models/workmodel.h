@@ -41,6 +41,7 @@ public:
         WorkStateRole,      // WorkState.State: New, Finished, FileMissing … (see Work::state())
         EbookStateRole,     // the state when only the ebook / the audiobook is looked at
         AudiobookStateRole,
+        CanSplitRole,       // "Kombination auflösen" is possible, see Work::canSplit()
     };
     Q_ENUM(Role)
 

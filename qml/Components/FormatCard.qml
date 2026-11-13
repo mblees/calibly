@@ -16,6 +16,9 @@ import Calibly.Controls
 //   openFailed       show that the system could not open the file
 //   readsInApp       the ebook opens in calibly's reader: the card also
 //                    offers "Mit Standardprogramm öffnen"
+//   volumeNumber     a volume of a combined work: "Band 2" instead of
+//                    "E-Book"; 0 = a single book
+//   volumeTitle      its title, shown below
 // Signals:
 //   openRequested()     the user wants to read / listen
 //   openExternallyRequested()   the file in the default application
@@ -32,6 +35,8 @@ Rectangle {
     required property bool available
     property bool openFailed: false
     property bool readsInApp: false
+    property int volumeNumber: 0
+    property string volumeTitle
 
     signal openRequested()
     signal openExternallyRequested()
@@ -104,7 +109,9 @@ Rectangle {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: root.isAudiobook ? qsTr("Hörbuch") : qsTr("E-Book")
+                    text: root.isAudiobook ? qsTr("Hörbuch")
+                                           : root.volumeNumber > 0 ? qsTr("Band %1").arg(root.volumeNumber)
+                                                                   : qsTr("E-Book")
                     color: Theme.textPrimary
                     font.pixelSize: Theme.fontBody
                     font.weight: Font.DemiBold
@@ -121,6 +128,14 @@ Rectangle {
             }
         }
 
+        Text {
+            width: parent.width
+            visible: root.volumeTitle !== ""
+            text: root.volumeTitle
+            elide: Text.ElideRight
+            color: Theme.textSecondary
+            font.pixelSize: Theme.fontBody
+        }
         Text {
             width: parent.width
             visible: text !== ""

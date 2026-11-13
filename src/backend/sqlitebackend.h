@@ -62,6 +62,8 @@ private:
     QString relative(const QString &absolutePath) const;
     QString chaptersToJson(const QList<Chapter> &chapters) const;
     QList<Chapter> chaptersFromJson(const QString &json) const;
+    QString partsToJson(const QList<WorkPart> &parts) const;
+    QList<WorkPart> partsFromJson(const QString &json) const;
 
     QString m_root;
     QString m_connectionName;

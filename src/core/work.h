@@ -69,6 +69,27 @@ struct Format
     bool finished() const { return progress >= 1.0; }
 };
 
+// One of the works a combined work was made of ("Kombinieren", phase 12):
+// its own metadata and the files of its formats, so "Kombination auflösen"
+// can give it back.
+struct WorkPart
+{
+    QString id;
+    QString title;
+    QStringList authors;
+    QStringList narrators;
+    QString series;
+    int seriesIndex = 0;
+    QString description;
+    QStringList tags;
+    int rating = 0;
+    QString language;
+    int publishedYear = 0;
+    QDateTime added;
+    QStringList files;          // its format files and the files of their chapters
+
+};
+
 struct Work
 {
     // What the cover says about the work besides formats and progress
@@ -92,6 +113,9 @@ struct Work
     QDateTime added;            // when the work was added to the library
     QDateTime lastOpened;
     QList<Format> formats;
+    // A combined work: the works it was made of, in volume order. Empty for
+    // works that were never combined (and for works merged before phase 12).
+    QList<WorkPart> parts;
 
     // First format of this kind, nullptr if there is none.
     const Format *format(Format::Kind kind) const;
@@ -103,7 +127,10 @@ struct Work
     bool hasEbook() const { return hasFormat(Format::Kind::Ebook); }
     bool hasAudiobook() const { return hasFormat(Format::Kind::Audiobook); }
 
-    // Highest progress of all formats of this kind, 0 if there is none.
+    // Progress of all formats of this kind, 0 if there is none. The volumes
+    // of a combined work: by pages if all know them, otherwise the average.
+    // Several formats of a work that was not combined are the same book in
+    // other files (e.g. EPUB and PDF): the highest progress.
     double progress(Format::Kind kind) const;
     double readProgress() const { return progress(Format::Kind::Ebook); }
     double listenProgress() const { return progress(Format::Kind::Audiobook); }
@@ -118,7 +145,27 @@ struct Work
     QString coverPath(Format::Kind kind) const;
     bool coverIsSquare(Format::Kind kind) const;
 
-    // State of the work, looking at all its formats.
+    // Made of several works with "Kombinieren": its ebook formats are
+    // volumes, in their order.
+    bool isCombined() const { return parts.size() > 1; }
+    // Formats of this kind.
+    int formatCount(Format::Kind kind) const;
+    // The format of this kind to continue with: the most recently opened
+    // one if it is not finished; if it is, the next unfinished one after it,
+    // else the first unfinished one; if none was opened, the first
+    // unfinished one; if all are finished, the first. -1 if there is none.
+    int currentFormat(Format::Kind kind) const;
+    // The part a file belongs to, -1 if none.
+    int partOf(const QString &filePath) const;
+    // Title of the format as a volume: the title of its part, else its file
+    // name without extension.
+    QString formatTitle(int formatIndex) const;
+    // The work can be dissolved: it was combined, or has several formats
+    // (merged before phase 12).
+    bool canSplit() const { return parts.size() > 1 || formats.size() > 1; }
+
+    // State of the work, looking at all its formats. A kind counts as
+    // finished when all its formats are.
     State state() const;
     // State of the work presented as this format only (format selection
     // "Ebooks" / "Audiobooks"): the other format is ignored.

@@ -3,8 +3,8 @@ import Calibly.Controls
 
 // Context menu of a title in the gallery (right click on a cover). What it
 // offers depends on what was clicked:
-//   * a title: details, read / listen, metadata, mark as finished, select,
-//     remove
+//   * a title: details, read / listen, metadata, mark as finished,
+//     dissolve a combination, select, remove
 //   * one of several selected titles: the actions for all of them, as in
 //     the BulkActionBar
 //   * a series stack: open the series
@@ -19,7 +19,8 @@ import Calibly.Controls
 //   fileMissing        a file is missing: reading / listening is disabled
 //   selected           the title is selected
 //   selectionCount     number of selected titles
-//   canMerge           "Zu einem Werk verbinden" is possible with the selection
+//   canMerge           "Kombinieren" is possible with the selection
+//   canSplit           the title is combined: "Kombination auflösen"
 //   busy               actions that change the library are disabled, e.g.
 //                      while an import is running
 //   exporting          an export is running: exporting is disabled
@@ -29,11 +30,14 @@ import Calibly.Controls
 //   openRequested()    the details of the title, or the series of a stack
 //   readRequested(), listenRequested()
 //   openExternallyRequested()   the ebook in the default application
-//   editRequested()    metadata of the title, or of the selection (bulk)
+//   editRequested()    metadata of the title (disabled for a selection)
 //   finishedToggled(string kind)   "ebook" or "audiobook"
 //   selectToggled()    select the title / take it out of the selection
 //   clearSelectionRequested()   bulk: end the selection
-//   mergeRequested()   bulk: join the selected titles into one work
+//   mergeRequested()   bulk: "Kombinieren", the selected titles into one entry
+//   seriesRequested()  bulk: "Als Serie zusammenfassen …"
+//   markRequested(bool finished)   bulk: all as finished / as new
+//   splitRequested()   "Kombination auflösen"
 //   exportRequested()  bulk: copy the files of the selected titles into a folder
 //   removeRequested()  remove the title, or the selection (bulk)
 AppMenu {
@@ -49,6 +53,7 @@ AppMenu {
     property bool selected: false
     property int selectionCount: 0
     property bool canMerge: false
+    property bool canSplit: false
     property bool busy: false
     property bool exporting: false
 
@@ -66,6 +71,9 @@ AppMenu {
     signal selectToggled()
     signal clearSelectionRequested()
     signal mergeRequested()
+    signal seriesRequested()
+    signal markRequested(bool finished)
+    signal splitRequested()
     signal exportRequested()
     signal removeRequested()
 
@@ -110,11 +118,12 @@ AppMenu {
     }
 
     // --- one title or the selection ------------------------------------------------
+    // Metadata are edited for one title at a time.
     AppMenuItem {
         visible: !root.stack
+        enabled: !root.bulk
         iconName: "edit"
-        text: root.bulk ? qsTr("Metadaten der %Ln Titel bearbeiten", "", root.selectionCount)
-                        : qsTr("Metadaten bearbeiten")
+        text: qsTr("Metadaten bearbeiten")
         onTriggered: root.editRequested()
     }
     AppMenuItem {
@@ -137,10 +146,38 @@ AppMenu {
     }
     AppMenuItem {
         visible: root.bulk
+        iconName: "check"
+        text: qsTr("Alle als fertig markieren")
+        enabled: !root.busy
+        onTriggered: root.markRequested(true)
+    }
+    AppMenuItem {
+        visible: root.bulk
+        iconName: "reset"
+        text: qsTr("Alle als neu markieren …")
+        enabled: !root.busy
+        onTriggered: root.markRequested(false)
+    }
+    AppMenuItem {
+        visible: root.bulk
         enabled: root.canMerge && !root.busy
         iconName: "link"
-        text: qsTr("Zu einem Werk verbinden")
+        text: qsTr("Kombinieren")
         onTriggered: root.mergeRequested()
+    }
+    AppMenuItem {
+        visible: root.bulk
+        enabled: !root.busy
+        iconName: "layers"
+        text: qsTr("Als Serie zusammenfassen …")
+        onTriggered: root.seriesRequested()
+    }
+    AppMenuItem {
+        visible: root.single && root.canSplit
+        enabled: !root.busy
+        iconName: "split"
+        text: qsTr("Kombination auflösen")
+        onTriggered: root.splitRequested()
     }
     AppMenuItem {
         visible: root.bulk

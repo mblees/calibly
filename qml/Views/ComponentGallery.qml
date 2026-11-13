@@ -571,9 +571,22 @@ ViewBase {
                         progress: 1
                         available: true
                     }
+                    FormatCard {
+                        width: Theme.formatCardWidth
+                        kind: "ebook"
+                        fileType: "EPUB"
+                        fileSize: 912000
+                        pages: 416
+                        durationSeconds: 0
+                        progress: 0.12
+                        available: true
+                        readsInApp: true
+                        volumeNumber: 2
+                        volumeTitle: "Die zwei Türme"
+                    }
                 }
                 Caption {
-                    text: qsTr("Format-Karten: angefangen (liest in calibly), Öffnen fehlgeschlagen, Datei fehlt, fertig")
+                    text: qsTr("Format-Karten: angefangen (liest in calibly), Öffnen fehlgeschlagen, Datei fehlt, fertig, Band 2 eines kombinierten Werks")
                 }
 
                 Row {
@@ -897,7 +910,7 @@ ViewBase {
                     exporting: true
                 }
                 Caption {
-                    text: qsTr("Aktionsleiste: zwei Titel, ein Titel (Verbinden nicht möglich, ein Export läuft schon). „Entfernen“ öffnet die Rückfrage.")
+                    text: qsTr("Aktionsleiste: zwei Titel (Metadaten nur bei einem Titel), ein Titel (Kombinieren nicht möglich, ein Export läuft schon). „⋯“ öffnet „Alle als fertig / neu markieren“, „Entfernen“ die Rückfrage.")
                 }
 
                 Row {
@@ -921,9 +934,22 @@ ViewBase {
                         text: qsTr("Menü eines Serien-Stapels")
                         onClicked: stackMenuSample.popup(stackMenuSampleButton, 0, stackMenuSampleButton.height)
                     }
+                    AppButton {
+                        id: combinedMenuSampleButton
+
+                        text: qsTr("Menü eines kombinierten Titels")
+                        onClicked: combinedMenuSample.popup(combinedMenuSampleButton, 0, combinedMenuSampleButton.height)
+                    }
+                    AppButton {
+                        text: qsTr("Als Serie zusammenfassen …")
+                        onClicked: {
+                            seriesDialogSample.name = "Der Herr der Ringe"
+                            seriesDialogSample.open()
+                        }
+                    }
                 }
                 Caption {
-                    text: qsTr("Kontextmenü (Rechtsklick auf ein Cover): ein Titel mit beiden Formaten, eine Auswahl, ein Serien-Stapel")
+                    text: qsTr("Kontextmenü (Rechtsklick auf ein Cover): ein Titel mit beiden Formaten, eine Auswahl, ein Serien-Stapel, ein kombinierter Titel; die Frage nach dem Seriennamen")
                 }
 
                 WorkMenu {
@@ -946,6 +972,19 @@ ViewBase {
                     id: stackMenuSample
 
                     stack: true
+                }
+                WorkMenu {
+                    id: combinedMenuSample
+
+                    hasEbook: true
+                    readsInApp: true
+                    canSplit: true
+                }
+                SeriesDialog {
+                    id: seriesDialogSample
+
+                    count: 3
+                    suggestions: ["Der Herr der Ringe", "Der Hobbit", "Die Chroniken von Narnia", "Sherlock Holmes"]
                 }
 
                 ConfirmDialog {

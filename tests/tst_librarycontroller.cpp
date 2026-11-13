@@ -341,6 +341,90 @@ private:
     QString m_faust;
     std::unique_ptr<MemoryBackend> m_backend;
     std::unique_ptr<LibraryController> m_library;
+
+    // Phase 12: all selected titles as finished, then as new again.
+    void marksWorks()
+    {
+        const QStringList ids = { QStringLiteral("book"), QStringLiteral("faust") };
+        QSignalSpy aboutToChange(m_library.get(), &LibraryController::worksAboutToChange);
+        QCOMPARE(m_library->markWorks(ids, true), 2);
+        QCOMPARE(aboutToChange.count(), 1);
+        const WorkModel *works = m_library->works();
+        for (const QString &id : ids)
+            QCOMPARE(works->workAt(works->rowOf(id))->state(), Work::State::Finished);
+
+        QCOMPARE(m_library->markWorks(ids, false), 2);
+        for (const QString &id : ids) {
+            const Work *work = works->workAt(works->rowOf(id));
+            QCOMPARE(work->state(), Work::State::New);
+            QCOMPARE(work->formats.first().progress, 0.0);
+            QVERIFY(!work->lastOpened.isValid());
+        }
+        QCOMPARE(m_library->markWorks({ QStringLiteral("unknown") }, true), 0);
+    }
+
+    // "Als Serie zusammenfassen": the name for all, numbers kept or given.
+    void setsSeries()
+    {
+        Work audio = *m_library->works()->workAt(m_library->works()->rowOf(QStringLiteral("audio")));
+        audio.seriesIndex = 2;
+        QVERIFY(m_library->saveWork(audio));
+        QSignalSpy namesChanged(m_library.get(), &LibraryController::seriesNamesChanged);
+
+        const QStringList ids = { QStringLiteral("book"), QStringLiteral("faust"), QStringLiteral("audio") };
+        QCOMPARE(m_library->setSeries(ids, QStringLiteral("  Klassiker ")), 3);
+        const WorkModel *works = m_library->works();
+        const auto work = [works](const char *id) { return works->workAt(works->rowOf(QLatin1String(id))); };
+        QCOMPARE(work("book")->series, QStringLiteral("Klassiker"));
+        QCOMPARE(work("audio")->seriesIndex, 2); // kept
+        QCOMPARE(work("book")->seriesIndex, 1);  // the free numbers in the given order
+        QCOMPARE(work("faust")->seriesIndex, 3);
+        QVERIFY(namesChanged.count() > 0);
+        QCOMPARE(m_library->seriesNames(), QStringList{ QStringLiteral("Klassiker") });
+        QCOMPARE(m_library->suggestedSeries({ QStringLiteral("faust") }), QStringLiteral("Klassiker"));
+        QCOMPARE(m_library->setSeries(ids, QStringLiteral("   ")), 0); // no name
+    }
+
+    // "Kombinieren" two books into volumes, mark one volume, and dissolve
+    // the combination again.
+    void combinesAndSplits()
+    {
+        const QString id = m_library->mergeWorks({ QStringLiteral("faust"), QStringLiteral("book") });
+        QCOMPARE(id, QStringLiteral("faust"));
+        const WorkModel *works = m_library->works();
+        const auto combined = [works, &id] { return works->workAt(works->rowOf(id)); };
+        QCOMPARE(works->count(), 2);
+        QVERIFY(combined()->isCombined());
+        // Volumes in title order (no numbers): Dracula, then Faust.
+        QCOMPARE(combined()->formats.at(0).filePath, m_epub);
+        QCOMPARE(combined()->formats.at(1).filePath, m_faust);
+
+        // One volume: only that one changes.
+        QVERIFY(m_library->setFormatFinished(id, 1, true));
+        QCOMPARE(combined()->formats.at(0).progress, 0.0);
+        QCOMPARE(combined()->formats.at(1).progress, 1.0);
+        QVERIFY(combined()->state() != Work::State::Finished);
+        QCOMPARE(combined()->currentFormat(Format::Kind::Ebook), 0);
+        // The kind: all volumes.
+        QVERIFY(m_library->setFinished(id, QStringLiteral("ebook"), true));
+        QCOMPARE(combined()->formats.at(0).progress, 1.0);
+        QCOMPARE(combined()->state(), Work::State::Finished);
+
+        QSignalSpy aboutToChange(m_library.get(), &LibraryController::worksAboutToChange);
+        QCOMPARE(m_library->splitWork(id), 2);
+        QCOMPARE(aboutToChange.count(), 1);
+        QCOMPARE(works->count(), 3);
+        const Work *book = works->workAt(works->rowOf(QStringLiteral("book")));
+        const Work *faust = works->workAt(works->rowOf(QStringLiteral("faust")));
+        QVERIFY(book && faust);
+        QCOMPARE(book->title, QStringLiteral("Dracula"));
+        QCOMPARE(book->formats.size(), 1);
+        QCOMPARE(book->formats.first().progress, 1.0); // its progress stays with it
+        QCOMPARE(faust->title, QStringLiteral("Faust"));
+        QVERIFY(!faust->isCombined());
+        QVERIFY(m_backend->has(QStringLiteral("book")));
+        QCOMPARE(m_library->splitWork(QStringLiteral("book")), 0); // nothing to dissolve
+    }
 };
 
 QTEST_GUILESS_MAIN(TestLibraryController)

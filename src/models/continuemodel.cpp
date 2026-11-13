@@ -45,6 +45,8 @@ QVariant ContinueModel::data(const QModelIndex &index, int role) const
         return entry.chapterNumber;
     case ChapterTitleRole:
         return entry.chapterTitle;
+    case VolumeNumberRole:
+        return entry.volumeNumber;
     case RemainingSecondsRole:
         return entry.remainingSeconds;
     case PageRole:
@@ -73,6 +75,7 @@ QHash<int, QByteArray> ContinueModel::roleNames() const
         { LastOpenedRole, "lastOpened" },
         { ChapterNumberRole, "chapterNumber" },
         { ChapterTitleRole, "chapterTitle" },
+        { VolumeNumberRole, "volumeNumber" },
         { RemainingSecondsRole, "remainingSeconds" },
         { PageRole, "page" },
         { PagesRole, "pages" },
@@ -126,6 +129,25 @@ int ContinueModel::formatToContinue(const Work &work) const
 {
     if (m_formatFilter == WorkFilterModel::BothFormats && !(work.hasEbook() && work.hasAudiobook()))
         return -1;
+    // The volumes of a combined work count as one book: it is started when
+    // one of them is, and continues with the current one.
+    const bool volumes = work.isCombined() && work.formatCount(Format::Kind::Ebook) > 1;
+    const int currentVolume = volumes ? work.currentFormat(Format::Kind::Ebook) : -1;
+    QDateTime volumesOpened;
+    bool volumesStarted = false;
+    if (volumes) {
+        for (const Format &format : work.formats) {
+            if (format.kind != Format::Kind::Ebook)
+                continue;
+            volumesStarted = volumesStarted || format.lastOpened.isValid() || format.progress > 0.0;
+            if (format.lastOpened > volumesOpened)
+                volumesOpened = format.lastOpened;
+        }
+    }
+    const auto openedAt = [&](int i) {
+        return volumes && work.formats.at(i).kind == Format::Kind::Ebook ? volumesOpened : work.formats.at(i).lastOpened;
+    };
+
     int best = -1;
     for (int i = 0; i < work.formats.size(); ++i) {
         const Format &format = work.formats.at(i);
@@ -133,9 +155,14 @@ int ContinueModel::formatToContinue(const Work &work) const
             continue;
         if (m_formatFilter == WorkFilterModel::Audiobook && format.kind != Format::Kind::Audiobook)
             continue;
-        const bool started = format.lastOpened.isValid() || format.progress > 0.0;
-        if (!started || format.finished())
-            continue;
+        if (volumes && format.kind == Format::Kind::Ebook) {
+            if (i != currentVolume || !volumesStarted || format.finished())
+                continue;
+        } else {
+            const bool started = format.lastOpened.isValid() || format.progress > 0.0;
+            if (!started || format.finished())
+                continue;
+        }
         if (best < 0) {
             best = i;
             continue;
@@ -143,8 +170,8 @@ int ContinueModel::formatToContinue(const Work &work) const
         const Format &current = work.formats.at(best);
         // Opened at the same time (e.g. taken over from the work): the
         // audiobook, because its position is known exactly.
-        if (format.lastOpened > current.lastOpened
-            || (format.lastOpened == current.lastOpened && format.kind == Format::Kind::Audiobook
+        if (openedAt(i) > openedAt(best)
+            || (openedAt(i) == openedAt(best) && format.kind == Format::Kind::Audiobook
                 && current.kind != Format::Kind::Audiobook)) {
             best = i;
         }
@@ -178,6 +205,17 @@ QList<ContinueModel::Entry> ContinueModel::entries() const
         entry.lastOpened = format.lastOpened;
         entry.hasOtherFormat = audiobook ? work.hasEbook() : work.hasAudiobook();
         entry.available = !format.fileMissing;
+        if (!audiobook && work.isCombined() && work.formatCount(Format::Kind::Ebook) > 1) {
+            for (int i = 0; i <= formatIndex; ++i) {
+                if (work.formats.at(i).kind == Format::Kind::Ebook)
+                    ++entry.volumeNumber;
+            }
+            // The list is sorted by when the book was read, not the volume.
+            for (const Format &other : work.formats) {
+                if (other.kind == Format::Kind::Ebook && other.lastOpened > entry.lastOpened)
+                    entry.lastOpened = other.lastOpened;
+            }
+        }
         if (audiobook) {
             const AudioTimeline timeline(format);
             const qint64 durationMs = timeline.durationMs() > 0 ? timeline.durationMs()

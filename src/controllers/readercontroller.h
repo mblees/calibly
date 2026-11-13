@@ -27,7 +27,18 @@ class ReaderSettings;
 //   ReaderController.read(workId)   opens the ebook in calibly if it can
 //                                   (EPUB, PDF, TXT, Markdown), otherwise
 //                                   with the default application; true = in calibly
+//   ReaderController.open(workId)   opens it in calibly
+//   ReaderController.openFormat(workId, formatIndex)   that ebook format,
+//                                   e.g. one volume of a combined work
 //   ReaderController.close()        stores the position and closes the book
+//
+// A combined work (phase 12) has its volumes as ebook formats: read() and
+// open() take the current one (Work::currentFormat()) at its position;
+// turning past the last page of a volume opens the next one at its start,
+// back from the first page the previous one at its end. The contents list
+// the volumes, with the chapters of the open one below it.
+//   volumeCount     ebook formats (volumes) of the work, 1 for a single book
+//   volumeNumber    the open one, 1-based
 //   nextPage(), previousPage(), goToStart(), goToEnd(), seek(progress),
 //   goToContents(index), linkAt(x, y) / followLink(href), openExternally()
 //   PDF: fitPage(), fitWidth(), zoomIn(), zoomOut()
@@ -43,8 +54,8 @@ class ReaderSettings;
 //   pageCount       pages of the book, 0 = still being counted (EPUB pages
 //                   depend on window and text settings and are counted in
 //                   the background)
-//   progress        0 – 1 through the book; 1 = the last page is shown
-//   atStart, atEnd
+//   progress        0 – 1 through the book (the volume); 1 = the last page is shown
+//   atStart, atEnd  the first / last page of the first / last volume
 //   viewSize        the area the pages may use (set by the view)
 //   twoPagesWanted  show two pages side by side if the area is wide enough
 //   twoPages        two pages are shown
@@ -79,6 +90,8 @@ class ReaderController : public QObject
     Q_PROPERTY(double progress READ progress NOTIFY positionChanged)
     Q_PROPERTY(bool atStart READ atStart NOTIFY positionChanged)
     Q_PROPERTY(bool atEnd READ atEnd NOTIFY positionChanged)
+    Q_PROPERTY(int volumeCount READ volumeCount NOTIFY openChanged)
+    Q_PROPERTY(int volumeNumber READ volumeNumber NOTIFY openChanged)
     Q_PROPERTY(QSizeF viewSize READ viewSize WRITE setViewSize NOTIFY layoutChanged)
     Q_PROPERTY(bool twoPagesWanted READ twoPagesWanted WRITE setTwoPagesWanted NOTIFY layoutChanged)
     Q_PROPERTY(bool twoPages READ twoPages NOTIFY layoutChanged)
@@ -119,6 +132,8 @@ public:
     double progress() const;
     bool atStart() const;
     bool atEnd() const;
+    int volumeCount() const;
+    int volumeNumber() const;
     QSizeF viewSize() const { return m_viewSize; }
     void setViewSize(const QSizeF &size);
     bool twoPagesWanted() const { return m_twoPagesWanted; }
@@ -137,8 +152,11 @@ public:
     // The format of the work calibly can read itself, -1 if there is none.
     int readableFormat(const QString &workId) const;
     Q_INVOKABLE bool canRead(const QString &workId) const { return readableFormat(workId) >= 0; }
+    // That ebook format (e.g. one volume) can be read in calibly.
+    Q_INVOKABLE bool canReadFormat(const QString &workId, int formatIndex) const;
     Q_INVOKABLE bool read(const QString &workId);
     Q_INVOKABLE bool open(const QString &workId);
+    Q_INVOKABLE bool openFormat(const QString &workId, int formatIndex);
     Q_INVOKABLE void close();
     Q_INVOKABLE void nextPage();
     Q_INVOKABLE void previousPage();
@@ -175,8 +193,17 @@ private:
         int page = -1;      // PDF
     };
 
+    // Where a volume opens: its stored position, its start or its end.
+    enum class Placement { Stored, Start, End };
+    bool openAt(QString workId, int formatIndex, Placement placement); // a copy: may be m_workId
+    QList<int> volumes() const;  // the ebook formats of the open work
+    int volumePosition() const;  // the open one in volumes(), -1 = none
+    bool openVolume(int position, Placement placement);
+    int chapterIndex() const;    // the entry of m_contents the shown page belongs to
+    bool bookAtStart() const;    // first / last page of the open volume
+    bool bookAtEnd() const;
     void reset();
-    void applyLayout();          // page size and style changed: lay out again, keep the place
+    void applyLayout();         // page size and style changed: lay out again, keep the place
     void startCounting();
     void countNextChapter();
     void moveTo(int chapter, int page);
