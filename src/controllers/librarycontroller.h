@@ -125,15 +125,15 @@ public:
     // loaded. Ignored for sample data, whose files never exist.
     void setFileMissing(const QString &workId, int formatIndex, bool missing);
 
+    // The works with these ids, in this order; unknown ids are left out.
+    QList<Work> worksById(const QStringList &workIds) const;
+
 signals:
     void worksAboutToChange(const QStringList &workIds);
     void libraryChanged();
     void activationRequested();
 
 private:
-    // The works with these ids, in this order; unknown ids are left out.
-    QList<Work> worksById(const QStringList &workIds) const;
-
     LibraryBackend *m_backend = nullptr;
     std::unique_ptr<LibraryBackend> m_ownedBackend;
     std::unique_ptr<LibraryLock> m_lock;

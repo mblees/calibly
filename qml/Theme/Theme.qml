@@ -32,8 +32,10 @@ QtObject {
 
     // Semantic colors: blue = reading / ebook, orange = listening / audiobook
     // and accent, green = finished.
-    readonly property color accent: "#ff8a3d"
-    readonly property color accentForeground: "#1a0d03"
+    // The accent can be chosen in the settings (AppearanceSettings); Main.qml
+    // sets these two from there. The values here are the defaults.
+    property color accent: "#ff8a3d"
+    property color accentForeground: "#1a0d03"
     readonly property color read: "#6ea8ff"
     readonly property color readForeground: "#06152b"
     readonly property color listen: accent
@@ -197,6 +199,19 @@ QtObject {
     readonly property int toggleKnobSize: 16
     readonly property color toggleOff: "#4a4b55"
     readonly property color toggleKnob: "#ffffff"
+
+    // Accent color in the settings: color wheel and quick choices. The first
+    // swatch is calibly's orange.
+    readonly property int colorWheelSize: 200
+    readonly property int colorWheelHandleSize: 18
+    readonly property color colorWheelHandleBorder: "#ffffff"
+    readonly property color colorWheelShade: "#000000"   // darkens the wheel with lower brightness
+    readonly property color colorWheelCenter: "#ffffff"  // no saturation in the middle
+    readonly property int colorSwatchSize: 28
+    readonly property int colorPreviewSize: 56
+    // Away from blue (reading), green (finished) and red (danger).
+    readonly property var accentSwatches: ["#ff8a3d", "#ffb340", "#ff6f61", "#e0609f",
+                                           "#a77bf0", "#4fc3c9", "#9bd45a", "#c8c8d0"]
     readonly property int readerBarHideDelay: 3000      // bars over the page hide after this
     readonly property int readerHintDuration: 2000
 

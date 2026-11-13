@@ -28,6 +28,8 @@ qt_add_qml_module(calibly_controls
         AppMenuItem.qml
         AppMenuSeparator.qml
         ToggleSwitch.qml
+        ColorWheel.qml
+        ColorSwatch.qml
         TimeFormat.js
 )
 

@@ -29,6 +29,10 @@ qt_add_qml_module(calibly_controllers
         readercontroller.cpp
         bookpage.h
         bookpage.cpp
+        appearancesettings.h
+        appearancesettings.cpp
+        exportcontroller.h
+        exportcontroller.cpp
 )
 
 target_include_directories(calibly_controllers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -12,6 +12,8 @@ qt_add_library(calibly_core STATIC
     readingposition.cpp
     logfile.h
     logfile.cpp
+    libraryexport.h
+    libraryexport.cpp
 )
 
 target_include_directories(calibly_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -52,6 +52,18 @@ Window {
 
     Component.onCompleted: root.updateCounts()
 
+    // The accent chosen in the settings colors the whole app.
+    Binding {
+        target: Theme
+        property: "accent"
+        value: AppearanceSettings.accentColor
+    }
+    Binding {
+        target: Theme
+        property: "accentForeground"
+        value: AppearanceSettings.accentForeground
+    }
+
     ContinueModel {
         id: continueWorks
 
@@ -197,6 +209,8 @@ Window {
     // A newer calibly can be downloaded (release step 4): a quiet hint at the
     // bottom left of the content area (the import queue is at the right).
     UpdateHint {
+        id: updateHint
+
         x: sidebar.width + Theme.spacingL
         y: parent.height - height - Theme.spacingL - (PlayerController.hasWork ? Theme.playerBarHeight : 0)
         visible: !root.galleryMode && UpdateChecker.hintVisible && !reader.fullscreen
@@ -204,6 +218,37 @@ Window {
         version: UpdateChecker.latestVersion
         onDownloadRequested: Qt.openUrlExternally(UpdateChecker.releaseUrl)
         onDismissRequested: UpdateChecker.dismiss()
+    }
+
+    // Export of selected titles: progress and result, above the update hint.
+    ExportHint {
+        x: sidebar.width + Theme.spacingL
+        y: (updateHint.visible ? updateHint.y - Theme.spacingM : parent.height - Theme.spacingL
+            - (PlayerController.hasWork ? Theme.playerBarHeight : 0)) - height
+        visible: !root.galleryMode && ExportController.state !== ExportController.Idle && !reader.fullscreen
+        status: {
+            switch (ExportController.state) {
+            case ExportController.Running:
+                return "running"
+            case ExportController.Done:
+                return "done"
+            case ExportController.Cancelled:
+                return "cancelled"
+            default:
+                return "failed"
+            }
+        }
+        fileCount: ExportController.fileCount
+        copiedCount: ExportController.copiedCount
+        progress: ExportController.progress
+        currentFile: ExportController.currentFile
+        folderName: ExportController.folderName
+        missingCount: ExportController.missingCount
+        errorText: ExportController.errorText
+
+        onCancelRequested: ExportController.cancel()
+        onOpenFolderRequested: ExportController.openFolder()
+        onCloseRequested: ExportController.dismiss()
     }
 
     // The library cannot be opened (release step 3): what happened and the

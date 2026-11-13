@@ -6,6 +6,8 @@
 #include <QQuickWindow>
 #include <QTimer>
 
+#include "appearancesettings.h"
+#include "exportcontroller.h"
 #include "importcontroller.h"
 #include "languagemanager.h"
 #include "appinfo.h"
@@ -131,6 +133,8 @@ int main(int argc, char *argv[])
     auto *readerSettings = new ReaderSettings(&engine, &engine);
     new ReaderController(*libraryController, *readerSettings, &engine, &engine);
     new AppInfo(&engine, &engine);
+    new AppearanceSettings(&engine, &engine);
+    new ExportController(*libraryController, &engine, &engine);
     // Looks for a newer version once a day (not with sample data, which is
     // only used during development).
     auto *updateChecker = new UpdateChecker(QStringLiteral(CALIBLY_VERSION), &engine, &engine);

@@ -114,6 +114,14 @@ ViewBase {
         removeDialog.open()
     }
 
+    // "Exportieren …": asks where the export folder goes; ExportController
+    // copies the files, ExportHint (Main.qml) shows how far it is.
+    function askExport() {
+        exportDialog.workIds = works.selectedIds
+        exportDialog.currentFolder = ExportController.lastFolder
+        exportDialog.open()
+    }
+
     // Choices that are kept between starts (stored by Qt in the user settings).
     Settings {
         id: settings
@@ -539,11 +547,24 @@ ViewBase {
         canMerge: works.canMergeSelection
         // An import that is running may still add to the selected works.
         busy: ImportController.busy
+        exporting: ExportController.running
 
         onMetadataRequested: root.editSelection()
         onMergeRequested: root.askMerge()
+        onExportRequested: root.askExport()
         onRemoveRequested: root.askRemove(works.selectedIds, "")
         onCloseRequested: works.clearSelection()
+    }
+
+    FolderDialog {
+        id: exportDialog
+
+        // The works to export, taken when the dialog opens.
+        property list<string> workIds
+
+        title: qsTr("Wohin sollen die Dateien exportiert werden?")
+        acceptLabel: qsTr("Hierhin exportieren")
+        onAccepted: ExportController.exportWorks(exportDialog.workIds, exportDialog.selectedFolder)
     }
 
     // --- context menu of a cover (right click) --------------------------------
@@ -559,6 +580,7 @@ ViewBase {
         selectionCount: works.selectedCount
         canMerge: works.canMergeSelection
         busy: ImportController.busy
+        exporting: ExportController.running
 
         onOpenRequested: {
             if (workMenu.stack)
@@ -582,6 +604,7 @@ ViewBase {
         onSelectToggled: works.toggleSelected(workMenu.workId)
         onClearSelectionRequested: works.clearSelection()
         onMergeRequested: root.askMerge()
+        onExportRequested: root.askExport()
         onRemoveRequested: {
             if (workMenu.bulk)
                 root.askRemove(works.selectedIds, "")

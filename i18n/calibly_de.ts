@@ -4,7 +4,7 @@
 <context>
     <name>BulkActionBar</name>
     <message numerus="yes">
-        <location filename="../qml/Components/BulkActionBar.qml" line="98"/>
+        <location filename="../qml/Components/BulkActionBar.qml" line="102"/>
         <source>%Ln ausgewählt</source>
         <translation>
             <numerusform>%Ln ausgewählt</numerusform>
@@ -15,7 +15,7 @@
 <context>
     <name>ComponentGallery</name>
     <message numerus="yes">
-        <location filename="../qml/Views/ComponentGallery.qml" line="364"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="416"/>
         <source>%Ln Bände · Serie</source>
         <translation>
             <numerusform>%Ln Band · Serie</numerusform>
@@ -23,7 +23,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/ComponentGallery.qml" line="901"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="954"/>
         <source>%Ln Titel entfernen?</source>
         <translation>
             <numerusform>%Ln Titel entfernen?</numerusform>
@@ -50,6 +50,33 @@
         <translation>
             <numerusform>%Ln Titel</numerusform>
             <numerusform>%Ln Titel</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>ExportHint</name>
+    <message numerus="yes">
+        <location filename="../qml/Components/ExportHint.qml" line="74"/>
+        <source>%Ln Dateien werden exportiert …</source>
+        <translation>
+            <numerusform>%Ln Datei wird exportiert …</numerusform>
+            <numerusform>%Ln Dateien werden exportiert …</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Components/ExportHint.qml" line="76"/>
+        <source>%Ln Dateien exportiert</source>
+        <translation>
+            <numerusform>%Ln Datei exportiert</numerusform>
+            <numerusform>%Ln Dateien exportiert</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Components/ExportHint.qml" line="128"/>
+        <source>%Ln Dateien wurden nicht gefunden und fehlen im Export.</source>
+        <translation>
+            <numerusform>%Ln Datei wurde nicht gefunden und fehlt im Export.</numerusform>
+            <numerusform>%Ln Dateien wurden nicht gefunden und fehlen im Export.</numerusform>
         </translation>
     </message>
 </context>
@@ -94,7 +121,7 @@
 <context>
     <name>LibraryView</name>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="406"/>
+        <location filename="../qml/Views/LibraryView.qml" line="414"/>
         <source>%Ln Bände</source>
         <translation>
             <numerusform>%Ln Band</numerusform>
@@ -102,7 +129,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="407"/>
+        <location filename="../qml/Views/LibraryView.qml" line="415"/>
         <source>%Ln Serien</source>
         <translation>
             <numerusform>%Ln Serie</numerusform>
@@ -110,7 +137,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="408"/>
+        <location filename="../qml/Views/LibraryView.qml" line="416"/>
         <source>%L1 von %Ln Titeln</source>
         <translation>
             <numerusform>%L1 von %Ln Titel</numerusform>
@@ -118,7 +145,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="409"/>
+        <location filename="../qml/Views/LibraryView.qml" line="417"/>
         <source>%Ln Titel</source>
         <translation>
             <numerusform>%Ln Titel</numerusform>
@@ -126,7 +153,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="411"/>
+        <location filename="../qml/Views/LibraryView.qml" line="419"/>
         <source>%Ln ausgewählt</source>
         <translation>
             <numerusform>%Ln ausgewählt</numerusform>
@@ -134,7 +161,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="471"/>
+        <location filename="../qml/Views/LibraryView.qml" line="479"/>
         <source>%Ln Bände · Serie</source>
         <translation>
             <numerusform>%Ln Band · Serie</numerusform>
@@ -142,7 +169,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="597"/>
+        <location filename="../qml/Views/LibraryView.qml" line="620"/>
         <source>%Ln Titel zu einem Werk verbinden?</source>
         <translation>
             <numerusform>%Ln Titel zu einem Werk verbinden?</numerusform>
@@ -150,7 +177,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="615"/>
+        <location filename="../qml/Views/LibraryView.qml" line="638"/>
         <source>%Ln Titel entfernen?</source>
         <translation>
             <numerusform>%Ln Titel entfernen?</numerusform>
@@ -183,7 +210,7 @@
 <context>
     <name>WorkMenu</name>
     <message numerus="yes">
-        <location filename="../qml/Components/WorkMenu.qml" line="112"/>
+        <location filename="../qml/Components/WorkMenu.qml" line="116"/>
         <source>Metadaten der %Ln Titel bearbeiten</source>
         <translation>
             <numerusform>Metadaten des Titels bearbeiten</numerusform>
@@ -191,7 +218,15 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Components/WorkMenu.qml" line="161"/>
+        <location filename="../qml/Components/WorkMenu.qml" line="149"/>
+        <source>%Ln Titel exportieren …</source>
+        <translation>
+            <numerusform>%Ln Titel exportieren …</numerusform>
+            <numerusform>%Ln Titel exportieren …</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Components/WorkMenu.qml" line="172"/>
         <source>%Ln Titel entfernen</source>
         <translation>
             <numerusform>%Ln Titel entfernen</numerusform>

@@ -11,6 +11,8 @@ One library for ebooks and audiobooks - calibre's library management combined wi
 - Integrated player for audiobooks similar to Audibly.
 - Integrated reader for ebooks (EPUB, PDF, text and Markdown) with text settings like Apple Books.
 - Importing ebooks and audiobooks by pulling the files in the interface.
+- Export selected titles: their files are copied into a folder of your choice, split into `Ebooks` and `Audiobooks`.
+- Choose the accent color with a color wheel in the settings.
 
 ## UI Mockup
 Prototype of the planned cover gallery interface (not implemented yet): main library view, detail view, fullscreen player, drag & drop import, metadata editor and cover states.

@@ -58,6 +58,10 @@ qt_add_executable(tst_logfile tst_logfile.cpp)
 target_link_libraries(tst_logfile PRIVATE Qt6::Test calibly_core)
 add_test(NAME tst_logfile COMMAND tst_logfile)
 
+qt_add_executable(tst_export tst_export.cpp)
+target_link_libraries(tst_export PRIVATE Qt6::Test calibly_models calibly_controllers)
+add_test(NAME tst_export COMMAND tst_export)
+
 qt_add_executable(tst_appsettings tst_appsettings.cpp)
 target_link_libraries(tst_appsettings PRIVATE Qt6::Test calibly_controllers)
 add_test(NAME tst_appsettings COMMAND tst_appsettings)

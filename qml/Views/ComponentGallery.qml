@@ -270,6 +270,58 @@ ViewBase {
             }
 
             Section {
+                heading: qsTr("Farbwahl")
+                width: page.width
+
+                Row {
+                    spacing: Theme.spacingXxl
+
+                    ColorWheel {
+                        id: wheelSample
+
+                        text: qsTr("Farbe")
+                        color: "#4fc3c9"
+                        minimumBrightness: 0.45
+                        onMoved: function(color) {
+                            wheelSample.color = color
+                        }
+                    }
+                    Column {
+                        spacing: Theme.spacingS
+
+                        Rectangle {
+                            width: Theme.colorPreviewSize
+                            height: Theme.colorPreviewSize
+                            radius: Theme.radiusL
+                            color: wheelSample.color
+                        }
+                        Row {
+                            spacing: Theme.spacingS
+
+                            ColorSwatch {
+                                color: "#ff8a3d"
+                                text: "#ff8a3d"
+                                checked: true
+                            }
+                            ColorSwatch {
+                                color: "#a77bf0"
+                                text: "#a77bf0"
+                                onClicked: wheelSample.color = color
+                            }
+                            ColorSwatch {
+                                color: "#4fc3c9"
+                                text: "#4fc3c9"
+                                onClicked: wheelSample.color = color
+                            }
+                        }
+                    }
+                }
+                Caption {
+                    text: qsTr("Farbrad mit Helligkeit (die dunkelsten Farben fehlen), daneben die Farbe und Farbfelder: gewählt und nicht gewählt")
+                }
+            }
+
+            Section {
                 heading: qsTr("Fortschritt und Badges")
                 width: page.width
 
@@ -842,9 +894,10 @@ ViewBase {
                 BulkActionBar {
                     count: 1
                     canMerge: false
+                    exporting: true
                 }
                 Caption {
-                    text: qsTr("Aktionsleiste: zwei Titel, ein Titel (Verbinden nicht möglich). „Entfernen“ öffnet die Rückfrage.")
+                    text: qsTr("Aktionsleiste: zwei Titel, ein Titel (Verbinden nicht möglich, ein Export läuft schon). „Entfernen“ öffnet die Rückfrage.")
                 }
 
                 Row {
@@ -1200,6 +1253,51 @@ ViewBase {
                 }
                 Caption {
                     text: qsTr("Hinweis auf eine neue Version (unten links über der Bibliothek)")
+                }
+            }
+
+            Section {
+                heading: qsTr("Export")
+                width: page.width
+
+                Flow {
+                    width: parent.width
+                    spacing: Theme.spacingL
+
+                    ExportHint {
+                        status: "running"
+                        fileCount: 14
+                        copiedCount: 5
+                        progress: 0.42
+                        currentFile: "Buddenbrooks - Teil 2.m4b"
+                    }
+                    ExportHint {
+                        status: "done"
+                        fileCount: 14
+                        copiedCount: 14
+                        folderName: "calibly-Export 2026-11-13"
+                    }
+                    ExportHint {
+                        status: "done"
+                        fileCount: 12
+                        copiedCount: 12
+                        missingCount: 2
+                        folderName: "calibly-Export 2026-11-13 (2)"
+                    }
+                    ExportHint {
+                        status: "cancelled"
+                        fileCount: 14
+                        copiedCount: 3
+                    }
+                    ExportHint {
+                        status: "failed"
+                        fileCount: 14
+                        copiedCount: 6
+                        errorText: qsTr("„Dracula.m4b“ konnte nicht kopiert werden. 6 von 14 Dateien liegen im Export-Ordner.")
+                    }
+                }
+                Caption {
+                    text: qsTr("Export der Auswahl (unten links): läuft, fertig, fertig mit fehlenden Dateien, abgebrochen, fehlgeschlagen")
                 }
             }
 

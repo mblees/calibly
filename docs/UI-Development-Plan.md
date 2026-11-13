@@ -21,7 +21,7 @@ calibly is a **personal tool**, not a commercial product. It manages ebooks and 
 | Color | Meaning |
 |---|---|
 | Blue `#6ea8ff` | Reading / ebook |
-| Orange `#ff8a3d` | Listening / audiobook, also the accent color (selection, primary action) |
+| Orange `#ff8a3d` | Listening / audiobook, also the accent color (selection, primary action); can be changed in the settings (phase 11), both change together |
 | Green `#5fcf80` | Finished |
 | Background `#16171b`, card `#212228` | Dark base theme |
 
@@ -236,6 +236,7 @@ Every phase ends with a **runnable app**. A phase only starts once the previous 
 | 8 | "Continue" and cover states | – |
 | 9 | Multi-selection, merging works, series | – |
 | 10 | Ebook reader (EPUB and PDF) | Qt PDF Quick; EPUB rendering as decided |
+| 11 | Accent color and export of the selection | – |
 
 ### Phase 0 – Skeleton
 - CMake project, folder and module structure as described above.
@@ -386,6 +387,16 @@ Five layouts were compared (one page in fullscreen, two-page spread, continuous 
 *Hook-up:* every "Lesen" (hover action on a cover, `ContinueCard`, context menu, `FormatCard` in the detail view – the drawer closes) calls `ReaderController.read()`. The `FormatCard` of a readable ebook and the context menu have "Mit Standardprogramm öffnen"; so has the error page (damaged or DRM-protected file); a missing file shows "Datei fehlt". "Weitermachen" shows "Kapitel 4 · 42 %" for EPUB and text books (from the stored chapter title) and "Seite 88 von 210" for PDFs (the stored page).
 *Step 10.4:* TXT and Markdown (`.txt`, `.md`, `.markdown`) are imported only when the user picks or drops the file itself, not when they are found in a dropped folder – folders of audiobooks often hold `.txt` files. Title and author come from the file name. MOBI / AZW3 still open in the default application.
 *Deviations:* PDFs are drawn with `QPdfDocument::render()` in C++ (the same `BookPage` as EPUBs) instead of the page view of `QtQuick.Pdf` – one drawing path, the same click zones and two-page logic, and no QML module that has to be deployed; links inside PDFs are not followed. The page and percent stand in the bar below the page in both modes (the mockup has them in the top bar in the window), so the slider is always next to them. The text settings show no "Scrollansicht" switch (scrolling is not part of phase 10).
+
+### Phase 11 – Accent color and export
+- **Accent color** in the settings, chosen with a color wheel (currently orange). The accent is also the color of listening, so both change together (decided 2026-11-13); reading stays blue, finished stays green.
+- **Export** of selected titles ("Exportieren …" in the selection bar and the context menu of a selection): the user picks where the export folder goes; it has the subfolders `Audiobooks` and `Ebooks` with all raw files (`.epub`, `.pdf`, `.m4b`, `.mp3` …) and no further subfolders. Files keep their names (decided 2026-11-13).
+- **Done when:** the accent can be changed and comes back after a restart, and three selected titles end up as their files in a chosen folder.
+
+**Implemented as:**
+*Accent color:* `AppearanceSettings` (C++, QML singleton) holds `accentColor` (stored as `appearance/accentColor`, removed again for the default orange) and derives `accentForeground`: a very dark shade of the accent, or white where that contrasts better (WCAG luminance). Colors darker than `minimumBrightness` (HSV value 0.45) are raised to it, so the accent stays visible on the dark background; transparency is dropped. `Theme.accent` and `Theme.accentForeground` are no longer read-only: `Main.qml` binds them to `AppearanceSettings`, so the theme still knows nothing about controllers and every component keeps reading `Theme.accent` / `Theme.listen`. The settings page has a section "Akzentfarbe": the new control `ColorWheel` (hue around the circle, saturation towards the edge, brightness slider below; drag, click or arrow keys), a preview (headphones on the accent, a progress line), eight quick choices (`ColorSwatch`, colors in `Theme.accentSwatches`, away from blue, green and red) and "Auf Orange zurücksetzen". Changes apply at once. The app icon stays orange.
+*Export:* `LibraryExport` (core) plans and copies: `plan()` lists the files of each format – for audiobooks of several files every file of their chapters, in playing order –, plans each file once, leaves out missing files (they are reported) and gives a name that is taken in a subfolder " (2)", " (3)" … before the extension (without case, as Windows does). `run()` creates the new folder with both subfolders (always both), copies in 1 MB pieces with progress and stops when cancelled. `ExportController` (QML singleton) checks first – folder found, any file found, enough free space – and then copies in its own thread into a new folder "calibly-Export <date>" (" (2)" … if that exists) inside the chosen folder; the chosen folder is remembered for the next export (documents folder at first). The new component `ExportHint` shows it at the bottom left, above the update hint: progress with the current file and "Abbrechen", then the result with "Ordner öffnen". *Cancel* removes the new folder again (it holds only files of this export); if a file cannot be copied, the files copied before stay and the hint says how many. Exporting is disabled while an export runs; covers and the database are not exported.
+- Tests: new `tst_export` (folder names, the plan with name clashes, multi-file audiobooks, duplicates and missing files, copying in pieces, cancelling, the controller with its errors, the thread and a second export the same day); `tst_appsettings` got `accentColor` (default, stored, raised brightness, foreground, reset).
 
 ### Afterwards (separate plans)
 - The way to a public release (0.1 Beta, then 1.0): [Release Plan](Release-Plan.md).

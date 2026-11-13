@@ -8,8 +8,8 @@ import Calibly.Components
 import Calibly.Controllers
 
 // The settings (release step 4), the entry at the bottom of the sidebar:
-// the library folder, the language, the check for new versions and
-// "Über calibly". Changes apply at once; there is no "Speichern".
+// the library folder, the accent color (phase 11), the language, the check
+// for new versions and "Über calibly". Changes apply at once; there is no "Speichern".
 ViewBase {
     id: root
 
@@ -149,6 +149,90 @@ ViewBase {
                 }
                 Hint {
                     text: qsTr("Die Bibliothek ist ein Ordner mit den Dateien und der Datenbank calibly.db. Eine andere zu öffnen verschiebt keine Dateien; die bisherige bleibt, wo sie ist, und lässt sich jederzeit wieder öffnen.")
+                }
+            }
+
+            // --- appearance: accent color ------------------------------------------
+            Section {
+                heading: qsTr("Akzentfarbe")
+
+                Row {
+                    spacing: Theme.spacingXxl
+
+                    ColorWheel {
+                        text: qsTr("Akzentfarbe")
+                        color: AppearanceSettings.accentColor
+                        minimumBrightness: AppearanceSettings.minimumBrightness
+                        onMoved: function(color) {
+                            AppearanceSettings.accentColor = color
+                        }
+                    }
+
+                    Column {
+                        spacing: Theme.spacingL
+
+                        // What the accent looks like on the things it colors.
+                        Row {
+                            spacing: Theme.spacingM
+
+                            Rectangle {
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: Theme.colorPreviewSize
+                                height: Theme.colorPreviewSize
+                                radius: Theme.radiusL
+                                color: Theme.accent
+
+                                Icon {
+                                    anchors.centerIn: parent
+                                    name: "headphones"
+                                    color: Theme.accentForeground
+                                }
+                            }
+                            Column {
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: Theme.spacingXs
+
+                                Text {
+                                    text: AppearanceSettings.isDefault ? qsTr("Orange (Standard)")
+                                                                       : AppearanceSettings.accentColor.toString()
+                                    color: Theme.textPrimary
+                                    font.pixelSize: Theme.fontBody
+                                    font.weight: Font.DemiBold
+                                }
+                                ProgressLine {
+                                    width: Theme.sliderWidth
+                                    value: 0.6
+                                }
+                            }
+                        }
+
+                        Flow {
+                            width: Theme.colorSwatchSize * 4 + Theme.spacingS * 3
+                            spacing: Theme.spacingS
+
+                            Repeater {
+                                model: Theme.accentSwatches
+
+                                delegate: ColorSwatch {
+                                    required property color modelData
+
+                                    color: modelData
+                                    text: modelData.toString()
+                                    checked: Qt.colorEqual(AppearanceSettings.accentColor, modelData)
+                                    onClicked: AppearanceSettings.accentColor = modelData
+                                }
+                            }
+                        }
+
+                        AppButton {
+                            enabled: !AppearanceSettings.isDefault
+                            text: qsTr("Auf Orange zurücksetzen")
+                            onClicked: AppearanceSettings.reset()
+                        }
+                    }
+                }
+                Hint {
+                    text: qsTr("Die Akzentfarbe färbt Schaltflächen, Auswahl und alles rund ums Hören. E-Books bleiben blau, Fertiges bleibt grün. Sehr dunkle Farben werden etwas aufgehellt, damit sie auf dem dunklen Hintergrund sichtbar bleiben.")
                 }
             }
 

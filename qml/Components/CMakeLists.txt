@@ -23,6 +23,7 @@ qt_add_qml_module(calibly_components
         ReaderBar.qml
         LibraryProblem.qml
         UpdateHint.qml
+        ExportHint.qml
 )
 
 # calibly_models: only for the enum WorkState (the state of a cover).

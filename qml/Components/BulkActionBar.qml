@@ -12,9 +12,11 @@ import Calibly.Controls
 //   canMerge  "Zu einem Werk verbinden" is possible with this selection
 //   busy      the actions that change the library are disabled, e.g. while
 //             an import is running
+//   exporting an export is running: "Exportieren …" is disabled
 // Signals:
 //   metadataRequested()  edit the metadata of the selected works
 //   mergeRequested()     join them into one work
+//   exportRequested()    copy their files into a folder
 //   removeRequested()    remove them from the library
 //   closeRequested()     ✕: end the selection
 Rectangle {
@@ -23,9 +25,11 @@ Rectangle {
     property int count: 0
     property bool canMerge: false
     property bool busy: false
+    property bool exporting: false
 
     signal metadataRequested()
     signal mergeRequested()
+    signal exportRequested()
     signal removeRequested()
     signal closeRequested()
 
@@ -116,6 +120,12 @@ Rectangle {
             text: qsTr("Zu einem Werk verbinden")
             enabled: root.canMerge && !root.busy
             onClicked: root.mergeRequested()
+        }
+        BarButton {
+            iconName: "upload"
+            text: qsTr("Exportieren …")
+            enabled: !root.exporting
+            onClicked: root.exportRequested()
         }
         BarButton {
             iconName: "trash"

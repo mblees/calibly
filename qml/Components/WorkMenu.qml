@@ -22,6 +22,7 @@ import Calibly.Controls
 //   canMerge           "Zu einem Werk verbinden" is possible with the selection
 //   busy               actions that change the library are disabled, e.g.
 //                      while an import is running
+//   exporting          an export is running: exporting is disabled
 //   bulk (read-only)   the menu is about the whole selection: the title is
 //                      selected and not the only one
 // Signals:
@@ -33,6 +34,7 @@ import Calibly.Controls
 //   selectToggled()    select the title / take it out of the selection
 //   clearSelectionRequested()   bulk: end the selection
 //   mergeRequested()   bulk: join the selected titles into one work
+//   exportRequested()  bulk: copy the files of the selected titles into a folder
 //   removeRequested()  remove the title, or the selection (bulk)
 AppMenu {
     id: root
@@ -48,6 +50,7 @@ AppMenu {
     property int selectionCount: 0
     property bool canMerge: false
     property bool busy: false
+    property bool exporting: false
 
     readonly property bool bulk: !root.stack && root.selected && root.selectionCount > 1
     // One title, not a stack and not a selection.
@@ -63,6 +66,7 @@ AppMenu {
     signal selectToggled()
     signal clearSelectionRequested()
     signal mergeRequested()
+    signal exportRequested()
     signal removeRequested()
 
     // --- a series stack --------------------------------------------------------
@@ -137,6 +141,13 @@ AppMenu {
         iconName: "link"
         text: qsTr("Zu einem Werk verbinden")
         onTriggered: root.mergeRequested()
+    }
+    AppMenuItem {
+        visible: root.bulk
+        enabled: !root.exporting
+        iconName: "upload"
+        text: qsTr("%Ln Titel exportieren …", "", root.selectionCount)
+        onTriggered: root.exportRequested()
     }
     AppMenuItem {
         visible: root.single

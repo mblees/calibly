@@ -4,6 +4,7 @@
 #include <QSignalSpy>
 #include <QTest>
 
+#include "appearancesettings.h"
 #include "languagemanager.h"
 #include "updatechecker.h"
 
@@ -63,6 +64,50 @@ private slots:
         QFETCH(int, result);
         QCOMPARE(UpdateChecker::compareVersions(a, b), result);
         QCOMPARE(UpdateChecker::compareVersions(b, a), -result);
+    }
+
+    // The accent: orange by default, kept between starts, never too dark,
+    // with a readable color on it.
+    void accentColor()
+    {
+        QSettings().remove(QStringLiteral("appearance"));
+        const QColor orange(QStringLiteral("#ff8a3d"));
+        {
+            QQmlEngine engine;
+            AppearanceSettings settings(&engine);
+            QCOMPARE(settings.accentColor(), orange);
+            QVERIFY(settings.isDefault());
+            // The default foreground is close to the one Theme had: dark.
+            QVERIFY(settings.accentForeground().lightnessF() < 0.1);
+
+            QSignalSpy changed(&settings, &AppearanceSettings::accentColorChanged);
+            settings.setAccentColor(QColor(QStringLiteral("#a77bf0")));
+            QCOMPARE(changed.count(), 1);
+            settings.setAccentColor(QColor(QStringLiteral("#a77bf0")));
+            QCOMPARE(changed.count(), 1); // the same color is no change
+            QVERIFY(!settings.isDefault());
+        }
+        {
+            QQmlEngine engine;
+            AppearanceSettings settings(&engine);
+            QCOMPARE(settings.accentColor(), QColor(QStringLiteral("#a77bf0")));
+
+            // Too dark: raised to the minimum brightness, hue kept.
+            settings.setAccentColor(QColor(QStringLiteral("#100820")));
+            QVERIFY(std::abs(settings.accentColor().valueF() - AppearanceSettings::minimumBrightness()) < 0.01);
+            QVERIFY(std::abs(settings.accentColor().hsvHueF() - QColor(QStringLiteral("#100820")).hsvHueF()) < 0.01);
+            // Dark accents get white text, light ones a dark shade.
+            QCOMPARE(settings.accentForeground(), QColor(Qt::white));
+            QVERIFY(AppearanceSettings::foregroundFor(QColor(QStringLiteral("#ffe08a"))).lightnessF() < 0.1);
+            // Transparency and invalid colors are not accents.
+            settings.setAccentColor(QColor(255, 0, 0, 40));
+            QCOMPARE(settings.accentColor().alpha(), 255);
+            QCOMPARE(AppearanceSettings::usableAccent(QColor()), orange);
+
+            settings.reset();
+            QVERIFY(settings.isDefault());
+            QVERIFY(!QSettings().contains(QStringLiteral("appearance/accentColor")));
+        }
     }
 
     // Pre-releases count only while one is installed; drafts never.
