@@ -402,12 +402,17 @@ bool WorkFilterModel::rebuildStacks()
             continue;
 
         // The first volume stands for the series: lowest number, unnumbered
-        // last. For an author: the first title.
-        const auto number = [model, byAuthor](int row) {
-            const int index = byAuthor ? 0 : model->index(row, 0).data(WorkModel::SeriesIndexRole).toInt();
+        // last. For an author: the first volume of the first series or
+        // single work (see compareBySeries()).
+        const auto number = [model](int row) {
+            const int index = model->index(row, 0).data(WorkModel::SeriesIndexRole).toInt();
             return index > 0 ? index : std::numeric_limits<int>::max();
         };
         const int lead = *std::min_element(members.cbegin(), members.cend(), [&](int a, int b) {
+            if (byAuthor) {
+                const int order = compareBySeries(model->index(a, 0), model->index(b, 0));
+                return order != 0 ? order < 0 : a < b;
+            }
             if (number(a) != number(b))
                 return number(a) < number(b);
             const int byTitle = compareText(model->index(a, 0), model->index(b, 0), WorkModel::TitleRole);
@@ -528,6 +533,24 @@ int WorkFilterModel::compareText(const QModelIndex &left, const QModelIndex &rig
     return compareText(left.data(role).toString(), right.data(role).toString());
 }
 
+int WorkFilterModel::compareBySeries(const QModelIndex &left, const QModelIndex &right) const
+{
+    // A series and a single work by name: the series name, else the title.
+    const auto name = [](const QModelIndex &index) {
+        const QString series = index.data(WorkModel::SeriesRole).toString();
+        return series.trimmed().isEmpty() ? index.data(WorkModel::TitleRole).toString() : series;
+    };
+    const int byName = compareText(name(left), name(right));
+    if (byName != 0)
+        return byName;
+    // Volumes of one series by number, unnumbered ones at the end.
+    const int a = left.data(WorkModel::SeriesIndexRole).toInt();
+    const int b = right.data(WorkModel::SeriesIndexRole).toInt();
+    if (a != b)
+        return b == 0 || (a != 0 && a < b) ? -1 : 1;
+    return compareText(left, right, WorkModel::TitleRole);
+}
+
 bool WorkFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
     // A given list: its order.
@@ -561,6 +584,12 @@ bool WorkFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right
         const int byAuthor = compareText(left, right, WorkModel::AuthorSortRole);
         if (byAuthor != 0)
             return byAuthor < 0;
+        break;
+    }
+    case Series: {
+        const int bySeries = compareBySeries(left, right);
+        if (bySeries != 0)
+            return bySeries < 0;
         break;
     }
     case Added: {
@@ -682,6 +711,32 @@ void WorkFilterModel::toggleSelected(const QString &workId)
     }
     emit dataChanged(index(row, 0), index(row, 0), { SelectedRole });
     emit selectionChanged();
+}
+
+void WorkFilterModel::toggleWork(const QString &workId)
+{
+    const int row = rowOf(workId);
+    if (row >= 0 && !isStack(row)) {
+        toggleSelected(workId);
+        return;
+    }
+    // A volume of a shown stack (the stack's first one too): only this work.
+    const QAbstractItemModel *model = sourceModel();
+    if (!model)
+        return;
+    for (int sourceRow = 0; sourceRow < model->rowCount(); ++sourceRow) {
+        if (model->index(sourceRow, 0).data(WorkModel::WorkIdRole).toString() != workId)
+            continue;
+        const int lead = m_leadOfRow.value(sourceRow, -1);
+        const QModelIndex shown = lead >= 0 ? mapFromSource(model->index(lead, 0)) : QModelIndex();
+        if (!shown.isValid())
+            return;
+        if (!m_selected.remove(workId))
+            m_selected.insert(workId);
+        emit dataChanged(shown, shown, { SelectedRole });
+        emit selectionChanged();
+        return;
+    }
 }
 
 void WorkFilterModel::selectAll()

@@ -257,6 +257,25 @@ bool LibraryController::setFormatFinished(const QString &workId, int formatIndex
     return !markFinished(changed.formats[formatIndex], finished) || saveWork(changed);
 }
 
+bool LibraryController::removeFromContinue(const QString &workId, const QString &kind)
+{
+    const Work *found = m_works.workAt(m_works.rowOf(workId));
+    if (!found || !found->hasFormat(kindOf(kind)))
+        return false;
+    // The player stores its position when it lets go: before the reset.
+    emit worksAboutToChange({ workId });
+    Work work = *m_works.workAt(m_works.rowOf(workId));
+    for (Format &format : work.formats) {
+        if (format.kind != kindOf(kind))
+            continue;
+        format.progress = 0.0;
+        format.positionMs = 0;
+        format.readingPosition.clear();
+        format.lastOpened = QDateTime();
+    }
+    return saveWork(work);
+}
+
 int LibraryController::markWorks(const QStringList &workIds, bool finished)
 {
     if (worksById(workIds).isEmpty())

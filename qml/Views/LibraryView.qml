@@ -25,16 +25,20 @@ import Calibly.Models
 // click on it shows its volumes, "‹" leads back.
 // Selection: the circle on a cover, Ctrl + click or Ctrl + A select works;
 // the bar at the bottom then edits their metadata, joins them into one work
-// or removes them. Esc ends the selection, then leaves an opened series.
+// or removes them; the Delete key removes them too (after asking, as the
+// bar does). Esc ends the selection, then leaves an opened series.
 // A right click on a cover opens a menu with the actions for that title, or
 // for the selection if the title is one of several selected ones.
 //
 // Properties:
 //   seriesOnly   show only the series, each as a stack: the view "Serien" of
 //                the sidebar (see SeriesView)
-//   authorsOnly  every author as a stack: the view "Autoren" (AuthorsView).
-//                An opened author shows the works with their series as
-//                stacks, an opened series of it its volumes.
+//   authorsOnly  the view "Autoren" (AuthorsView), in one of two layouts
+//                (instead of sorting, authors are always by last name):
+//                every author as a stack – an opened author shows the works
+//                with their series as stacks, an opened series of it its
+//                volumes – or every author as a heading with all its works
+//                below, one by one ("shelves").
 //   newOnly      only works added in the last newMinutes minutes, newest
 //                first: the view "Neu" (NewView)
 ViewBase {
@@ -65,11 +69,15 @@ ViewBase {
     readonly property bool showContinue: continueWorks.count > 0 && search.text === ""
                                          && !root.seriesOnly && !root.authorsOnly && !root.newOnly
                                          && root.openedSeries === ""
-    // The list of all authors has only author stacks.
+    // The list of all authors: author stacks, or shelves.
     readonly property bool authorList: root.authorsOnly && root.openedAuthor === ""
-    // The list of all series (or authors) has only stacks, which cannot be selected.
+    readonly property bool authorShelves: root.authorList && settings.authorLayout === 1
+    // The view that shows the works: the cover grid, or the shelves of the authors.
+    readonly property Flickable activeView: root.authorShelves ? shelves : grid
+    // The list of all series (or author stacks) has only stacks, which cannot
+    // be selected; the works on the shelves can.
     readonly property bool canSelect: works.count > 0 && !(root.seriesOnly && root.openedSeries === "")
-                                      && !root.authorList
+                                      && !(root.authorList && !root.authorShelves)
     readonly property bool popupOpen: detail.visible || metadataEditor.visible
                                       || mergeDialog.visible || removeDialog.visible || workMenu.visible
                                       || seriesOrderDialog.visible
@@ -85,6 +93,30 @@ ViewBase {
     // Back to the top of the grid, including its header.
     function scrollToTop() {
         grid.contentY = grid.originY - grid.topMargin
+        shelves.contentY = shelves.originY - shelves.topMargin
+    }
+
+    // The context menu of a cover. info: the work (or stack) as the
+    // delegates know it: workId, title, series (or the name of the stack),
+    // coverUrl, coverIsSquare, stack, authorStack, hasEbook, hasAudiobook,
+    // readProgress, listenProgress, workState, selected, canSplit.
+    function openWorkMenu(item: Item, x: real, y: real, info: var) {
+        workMenu.workId = info.workId
+        workMenu.title = info.title
+        workMenu.series = info.series
+        workMenu.coverUrl = info.coverUrl
+        workMenu.coverIsSquare = info.coverIsSquare
+        workMenu.stack = info.stack
+        workMenu.authorStack = info.authorStack
+        workMenu.hasEbook = info.hasEbook
+        workMenu.readsInApp = info.hasEbook && ReaderController.canRead(info.workId)
+        workMenu.hasAudiobook = info.hasAudiobook
+        workMenu.ebookFinished = info.readProgress >= 1
+        workMenu.audiobookFinished = info.listenProgress >= 1
+        workMenu.fileMissing = info.workState === WorkState.FileMissing
+        workMenu.selected = info.selected
+        workMenu.canSplit = info.canSplit
+        workMenu.popup(item, x, y)
     }
 
     // Continues reading / listening where the user stopped: audiobooks play
@@ -192,6 +224,8 @@ ViewBase {
         property int sortOrder: WorkFilterModel.LastOpened
         property real tileWidth: Theme.coverTileMinWidth
         property bool groupSeries: true
+        // The view "Autoren": 0 = author stacks, 1 = shelves.
+        property int authorLayout: 0
     }
 
     WorkFilterModel {
@@ -199,7 +233,9 @@ ViewBase {
 
         sourceModel: LibraryController.works
         formatFilter: settings.formatFilter
-        sortOrder: root.newOnly ? WorkFilterModel.Added : settings.sortOrder
+        sortOrder: root.newOnly ? WorkFilterModel.Added
+                   : root.authorList ? WorkFilterModel.Author
+                   : root.authorsOnly ? WorkFilterModel.Series : settings.sortOrder
         searchText: search.text
         groupSeries: root.seriesOnly || root.authorsOnly || (!root.newOnly && settings.groupSeries)
         seriesOnly: root.seriesOnly
@@ -233,6 +269,14 @@ ViewBase {
         sequences: [StandardKey.SelectAll]
         enabled: root.canSelect && !root.popupOpen
         onActivated: works.selectAll()
+    }
+    // Entf / Delete: removes the selected titles, after asking (removeDialog;
+    // in the tabs "E-Books" / "Hörbücher" only that format). Not while
+    // typing in the search field or while an import may still add to them.
+    Shortcut {
+        sequences: [StandardKey.Delete]
+        enabled: works.selectedCount > 0 && !root.popupOpen && !search.activeFocus && !ImportController.busy
+        onActivated: root.askRemove(works.selectedIds, "")
     }
     Shortcut {
         sequence: "Esc"
@@ -372,8 +416,8 @@ ViewBase {
         anchors.right: parent.right
         anchors.rightMargin: Theme.spacingXl
         anchors.verticalCenter: formats.verticalCenter
-        // "Neu" is always newest first.
-        visible: !root.newOnly
+        // "Neu" is always newest first; "Autoren" has its own order.
+        visible: !root.newOnly && !root.authorsOnly
         iconName: "sort"
         label: qsTr("Sortieren")
         options: [qsTr("Zuletzt geöffnet"), qsTr("Titel"), qsTr("Autor")]
@@ -384,36 +428,29 @@ ViewBase {
         }
     }
 
-    // --- cover grid, with "Weitermachen" and the heading as its header --------
-    GridView {
-        id: grid
-
-        // Columns: as many as fit with at least the chosen tile width each.
-        readonly property int gap: Theme.spacingL
-        readonly property int columns: Math.max(2, Math.floor((width + gap) / (settings.tileWidth + gap)))
-        readonly property real tileWidth: cellWidth - gap
-
-        anchors.top: formats.bottom
-        anchors.left: parent.left
+    // "Autoren": stacks or shelves, instead of sorting.
+    SelectMenu {
         anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.topMargin: Theme.spacingS
-        anchors.leftMargin: Theme.spacingXl
-        // The gap of the last column is part of the cell, so subtract it here.
-        anchors.rightMargin: Theme.spacingXl - gap
+        anchors.rightMargin: Theme.spacingXl
+        anchors.verticalCenter: formats.verticalCenter
+        visible: root.authorList
+        iconName: settings.authorLayout === 1 ? "list" : "layers"
+        label: qsTr("Anordnung")
+        options: [qsTr("Stapel"), qsTr("Alle Titel")]
+        currentIndex: settings.authorLayout
 
-        cellWidth: Math.floor(width / columns)
-        cellHeight: Math.round(tileWidth * Theme.coverAspect) + Theme.coverTileTextHeight + Theme.spacingL
-        bottomMargin: Theme.spacingXl
-        clip: true
-        boundsBehavior: Flickable.StopAtBounds
-        cacheBuffer: cellHeight * 2
-        model: works
+        onActivated: function(index) {
+            works.clearSelection()
+            settings.authorLayout = index
+        }
+    }
 
-        ScrollBar.vertical: ScrollBar {}
+    // Above the covers, scrolling with them: "Weitermachen" and the heading.
+    Component {
+        id: viewHeader
 
-        header: Column {
-            width: grid.width - grid.gap
+        Column {
+            width: root.width - 2 * Theme.spacingXl
             topPadding: Theme.spacingL
             // Below the heading: also room for the sheets of series stacks.
             bottomPadding: Theme.spacingM + Theme.coverStackOffset * 2
@@ -432,6 +469,9 @@ ViewBase {
                 }
                 onContinueRequested: function(workId, kind) {
                     root.continueWith(workId, kind)
+                }
+                onRemoveRequested: function(workId, kind) {
+                    LibraryController.removeFromContinue(workId, kind)
                 }
             }
 
@@ -452,11 +492,14 @@ ViewBase {
                     font.pixelSize: Theme.fontBody
                     onClicked: root.goBack()
                 }
+                // Not over the list of all authors: the sidebar already says it.
                 Text {
                     id: heading
 
                     anchors.left: back.right
                     anchors.verticalCenter: parent.verticalCenter
+                    visible: !root.authorList
+                    width: visible ? implicitWidth : 0
                     text: root.openedSeries !== "" ? root.openedSeries
                           : root.openedAuthor !== "" ? root.openedAuthor : root.title
                     color: Theme.textPrimary
@@ -465,7 +508,7 @@ ViewBase {
                 }
                 Text {
                     anchors.left: heading.right
-                    anchors.leftMargin: Theme.spacingM
+                    anchors.leftMargin: heading.visible ? Theme.spacingM : 0
                     anchors.right: selectAll.left
                     anchors.rightMargin: Theme.spacingM
                     anchors.baseline: heading.baseline
@@ -506,6 +549,39 @@ ViewBase {
                 }
             }
         }
+    }
+
+    // --- cover grid, with "Weitermachen" and the heading as its header --------
+    GridView {
+        id: grid
+
+        // Columns: as many as fit with at least the chosen tile width each.
+        readonly property int gap: Theme.spacingL
+        readonly property int columns: Math.max(2, Math.floor((width + gap) / (settings.tileWidth + gap)))
+        readonly property real tileWidth: cellWidth - gap
+
+        anchors.top: formats.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.topMargin: Theme.spacingS
+        anchors.leftMargin: Theme.spacingXl
+        // The gap of the last column is part of the cell, so subtract it here.
+        anchors.rightMargin: Theme.spacingXl - gap
+
+        visible: !root.authorShelves
+        cellWidth: Math.floor(width / columns)
+        cellHeight: Math.round(tileWidth * Theme.coverAspect) + Theme.coverTileTextHeight + Theme.spacingL
+        bottomMargin: Theme.spacingXl
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        cacheBuffer: cellHeight * 2
+        // Not while the shelves show the works.
+        model: root.authorShelves ? null : works
+
+        ScrollBar.vertical: ScrollBar {}
+
+        header: viewHeader
 
         delegate: Item {
             id: cell
@@ -572,25 +648,150 @@ ViewBase {
                 }
                 onSelectToggled: works.toggleSelected(cell.workId)
                 onMenuRequested: function(x, y) {
-                    workMenu.workId = cell.workId
-                    workMenu.title = cell.title
-                    workMenu.series = cell.stack ? cell.stackName : cell.series
-                    workMenu.coverUrl = cell.coverUrl
-                    workMenu.coverIsSquare = cell.coverIsSquare
-                    workMenu.stack = cell.stack
-                    workMenu.authorStack = cell.authorStack
-                    workMenu.hasEbook = cell.hasEbook
-                    workMenu.readsInApp = cell.hasEbook && ReaderController.canRead(cell.workId)
-                    workMenu.hasAudiobook = cell.hasAudiobook
-                    workMenu.ebookFinished = cell.readProgress >= 1
-                    workMenu.audiobookFinished = cell.listenProgress >= 1
-                    workMenu.fileMissing = cell.workState === WorkState.FileMissing
-                    workMenu.selected = cell.selected
-                    workMenu.canSplit = cell.canSplit
-                    workMenu.popup(tile, x, y)
+                    root.openWorkMenu(tile, x, y, {
+                        workId: cell.workId, title: cell.title,
+                        series: cell.stack ? cell.stackName : cell.series,
+                        coverUrl: cell.coverUrl, coverIsSquare: cell.coverIsSquare,
+                        stack: cell.stack, authorStack: cell.authorStack,
+                        hasEbook: cell.hasEbook, hasAudiobook: cell.hasAudiobook,
+                        readProgress: cell.readProgress, listenProgress: cell.listenProgress,
+                        workState: cell.workState, selected: cell.selected, canSplit: cell.canSplit
+                    })
                 }
                 onReadRequested: root.continueWith(cell.workId, "ebook")
                 onListenRequested: root.continueWith(cell.workId, "audiobook")
+            }
+        }
+    }
+
+    // --- "Autoren" as shelves: each author with all its works below -----------
+    // One row per author (the stacks of works); each row has its own list of
+    // the author's works, made only while the row is in view.
+    ListView {
+        id: shelves
+
+        anchors.fill: grid
+        // Like the grid, whose last column ends with a gap.
+        anchors.rightMargin: grid.gap
+        visible: root.authorShelves
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        bottomMargin: Theme.spacingXl
+        spacing: Theme.spacingXl
+        model: root.authorShelves ? works : null
+        header: viewHeader
+
+        ScrollBar.vertical: ScrollBar {
+            parent: shelves.parent
+            anchors.top: shelves.top
+            anchors.bottom: shelves.bottom
+            anchors.left: shelves.right
+        }
+
+        delegate: Column {
+            id: shelf
+
+            required property string stackName
+            required property int seriesCount
+
+            width: ListView.view ? ListView.view.width : 0
+            spacing: Theme.spacingM
+
+            // The author, how many titles, and an accent line to the right edge.
+            Item {
+                width: parent.width
+                height: authorName.implicitHeight
+
+                Text {
+                    id: authorName
+
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Math.min(implicitWidth, parent.width * 0.7)
+                    elide: Text.ElideRight
+                    text: shelf.stackName
+                    color: Theme.textPrimary
+                    font.pixelSize: Theme.fontTitle
+                    font.weight: Font.Bold
+                }
+                Text {
+                    id: titleCount
+
+                    anchors.left: authorName.right
+                    anchors.leftMargin: Theme.spacingM
+                    anchors.baseline: authorName.baseline
+                    text: qsTr("%Ln Titel", "", shelfWorks.count)
+                    color: Theme.textMuted
+                    font.pixelSize: Theme.fontBody
+                }
+                Rectangle {
+                    anchors.left: titleCount.right
+                    anchors.leftMargin: Theme.spacingL
+                    anchors.right: parent.right
+                    anchors.verticalCenter: authorName.verticalCenter
+                    height: Theme.shelfLineWidth
+                    radius: height / 2
+                    color: Theme.accent
+                }
+            }
+
+            // The works one by one: series and their volumes in order.
+            WorkFilterModel {
+                id: shelfWorks
+
+                sourceModel: LibraryController.works
+                authorFilter: shelf.stackName
+                formatFilter: settings.formatFilter
+                searchText: search.text
+                sortOrder: WorkFilterModel.Series
+            }
+
+            Flow {
+                width: parent.width
+                spacing: grid.gap
+
+                Repeater {
+                    model: shelfWorks
+
+                    delegate: CoverTile {
+                        id: shelfTile
+
+                        required property string workId
+                        required property string authorText
+                        required property bool canSplit
+                        required property string series
+                        // Not required in CoverTile, but taken from the model here.
+                        required workState
+
+                        width: grid.tileWidth
+                        author: shelfTile.authorText
+                        selectable: true
+                        // The selection is that of the view (works).
+                        selected: works.selectedCount >= 0 && works.isSelected(shelfTile.workId)
+                        selecting: works.selectedCount > 0
+
+                        onClicked: {
+                            if (works.selectedCount > 0)
+                                works.toggleWork(shelfTile.workId)
+                            else
+                                detail.openFor(shelfTile.workId, shelfTile.coverUrl, shelfTile.coverIsSquare)
+                        }
+                        onSelectToggled: works.toggleWork(shelfTile.workId)
+                        onMenuRequested: function(x, y) {
+                            root.openWorkMenu(shelfTile, x, y, {
+                                workId: shelfTile.workId, title: shelfTile.title, series: shelfTile.series,
+                                coverUrl: shelfTile.coverUrl, coverIsSquare: shelfTile.coverIsSquare,
+                                stack: false, authorStack: false,
+                                hasEbook: shelfTile.hasEbook, hasAudiobook: shelfTile.hasAudiobook,
+                                readProgress: shelfTile.readProgress, listenProgress: shelfTile.listenProgress,
+                                workState: shelfTile.workState, selected: shelfTile.selected,
+                                canSplit: shelfTile.canSplit
+                            })
+                        }
+                        onReadRequested: root.continueWith(shelfTile.workId, "ebook")
+                        onListenRequested: root.continueWith(shelfTile.workId, "audiobook")
+                    }
+                }
             }
         }
     }
@@ -674,7 +875,13 @@ ViewBase {
             const finished = kind === "audiobook" ? workMenu.audiobookFinished : workMenu.ebookFinished
             LibraryController.setFinished(workMenu.workId, kind, !finished)
         }
-        onSelectToggled: works.toggleSelected(workMenu.workId)
+        // A stack: all its works; a title (also one on a shelf): only it.
+        onSelectToggled: {
+            if (workMenu.stack)
+                works.toggleSelected(workMenu.workId)
+            else
+                works.toggleWork(workMenu.workId)
+        }
         onClearSelectionRequested: works.clearSelection()
         onMergeRequested: root.askMerge()
         onSeriesRequested: root.askSeries()
@@ -880,14 +1087,16 @@ ViewBase {
         // Finds the cover under the point (in the coordinates of the drop area).
         function updateTarget(x: real, y: real) {
             drop.lastPosition = Qt.point(x, y)
-            const p = grid.mapFromItem(drop, x, y)
-            const inGrid = p.x >= 0 && p.y >= 0 && p.x < grid.width && p.y < grid.height
+            const view = root.activeView
+            const p = view.mapFromItem(drop, x, y)
+            const inGrid = p.x >= 0 && p.y >= 0 && p.x < view.width && p.y < view.height
             drop.scrollDirection = !inGrid ? 0
                                  : p.y < Theme.dropScrollMargin ? -1
-                                 : p.y > grid.height - Theme.dropScrollMargin ? 1 : 0
+                                 : p.y > view.height - Theme.dropScrollMargin ? 1 : 0
 
             let workId = ""
-            if (inGrid) {
+            // On the shelves files always become new works.
+            if (inGrid && !root.authorShelves) {
                 const contentX = p.x + grid.contentX
                 const contentY = p.y + grid.contentY
                 const index = grid.indexAt(contentX, contentY)
@@ -937,9 +1146,10 @@ ViewBase {
         running: drop.containsDrag && drop.scrollDirection !== 0
 
         onTriggered: {
-            const top = grid.originY - grid.topMargin
-            const bottom = Math.max(top, grid.originY + grid.contentHeight + grid.bottomMargin - grid.height)
-            grid.contentY = Math.max(top, Math.min(bottom, grid.contentY + drop.scrollDirection * Theme.dropScrollStep))
+            const view = root.activeView
+            const top = view.originY - view.topMargin
+            const bottom = Math.max(top, view.originY + view.contentHeight + view.bottomMargin - view.height)
+            view.contentY = Math.max(top, Math.min(bottom, view.contentY + drop.scrollDirection * Theme.dropScrollStep))
             drop.updateTarget(drop.lastPosition.x, drop.lastPosition.y)
         }
     }

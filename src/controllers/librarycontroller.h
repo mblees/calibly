@@ -35,6 +35,12 @@ class LibraryLock;
 //       at the start)
 //   LibraryController.setFormatFinished(workId, formatIndex, finished)
 //       the same for one format, e.g. one volume
+//   LibraryController.removeFromContinue(workId, kind)
+//       "Aus Weitermachen entfernen": every format of that kind ("ebook" or
+//       "audiobook") back to the start – progress, listening and reading
+//       position and when it was opened are cleared – so it is no longer
+//       started. The work keeps its own "last opened" (not "NEU" again).
+//       False if the work has no such format or cannot be stored.
 //   LibraryController.markWorks(workIds, finished)
 //       finished: every format of the works read / listened to the end;
 //       otherwise "new": progress, positions and "last opened" cleared.
@@ -164,6 +170,7 @@ public:
     Q_INVOKABLE bool openFormatAt(const QString &workId, int formatIndex);
     Q_INVOKABLE bool setFinished(const QString &workId, const QString &kind, bool finished);
     Q_INVOKABLE bool setFormatFinished(const QString &workId, int formatIndex, bool finished);
+    Q_INVOKABLE bool removeFromContinue(const QString &workId, const QString &kind);
     Q_INVOKABLE int markWorks(const QStringList &workIds, bool finished);
     Q_INVOKABLE int setSeries(const QStringList &workIds, const QString &name);
     Q_INVOKABLE bool seriesNeedsOrder(const QStringList &workIds, const QString &name) const;

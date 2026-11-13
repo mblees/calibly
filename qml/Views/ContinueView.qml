@@ -16,7 +16,8 @@ import Calibly.Models
 // titles in the same order (most recently opened first) – but all of them,
 // and independent of the format selection of the library.
 // The round button of a card continues directly, a click on the card opens
-// the detail view.
+// the detail view, a right click a menu that can also take it out of the
+// list (its progress goes back to the start).
 ViewBase {
     id: root
 
@@ -105,7 +106,28 @@ ViewBase {
 
             onClicked: detail.openFor(card.workId, card.coverUrl, card.coverIsSquare)
             onContinueRequested: root.continueWith(card.workId, card.kind)
+            onMenuRequested: function(x, y) {
+                menu.workId = card.workId
+                menu.coverUrl = card.coverUrl
+                menu.coverIsSquare = card.coverIsSquare
+                menu.kind = card.kind
+                menu.available = card.available
+                menu.popup(card, x, y)
+            }
         }
+    }
+
+    // Right click on a card.
+    ContinueMenu {
+        id: menu
+
+        property string workId
+        property url coverUrl
+        property bool coverIsSquare
+
+        onOpenRequested: detail.openFor(menu.workId, menu.coverUrl, menu.coverIsSquare)
+        onContinueRequested: root.continueWith(menu.workId, menu.kind)
+        onRemoveRequested: LibraryController.removeFromContinue(menu.workId, menu.kind)
     }
 
     DetailDrawer {

@@ -32,10 +32,10 @@ Window {
         id: navigation
 
         ListElement { title: qsTr("Bibliothek"); iconName: "library"; count: 0; view: "LibraryView" }
-        ListElement { title: qsTr("Weitermachen"); iconName: "clock"; count: 0; view: "ContinueView" }
-        ListElement { title: qsTr("Neu"); iconName: "star"; count: 0; view: "NewView" }
-        ListElement { title: qsTr("Serien"); iconName: "layers"; count: 0; view: "SeriesView" }
         ListElement { title: qsTr("Autoren"); iconName: "user"; count: 0; view: "AuthorsView" }
+        ListElement { title: qsTr("Serien"); iconName: "layers"; count: 0; view: "SeriesView" }
+        ListElement { title: qsTr("Neu"); iconName: "star"; count: 0; view: "NewView" }
+        ListElement { title: qsTr("Weitermachen"); iconName: "clock"; count: 0; view: "ContinueView" }
     }
 
     // Entries at the bottom of the sidebar; their indices follow navigation's.
@@ -45,16 +45,16 @@ Window {
         ListElement { title: qsTr("Einstellungen"); iconName: "settings"; count: 0; view: "SettingsView" }
     }
 
-    // The library entry shows the number of works, "Weitermachen" the
-    // number of titles that were started and are not finished, "Neu" the
-    // titles added in the last minutes, "Serien" the number of series,
-    // "Autoren" the number of authors.
+    // The library entry shows the number of works, "Autoren" the number of
+    // authors, "Serien" the number of series, "Neu" the titles added in the
+    // last minutes, "Weitermachen" the number of titles that were started
+    // and are not finished.
     function updateCounts() {
         navigation.setProperty(0, "count", LibraryController.works.count)
-        navigation.setProperty(1, "count", continueWorks.count)
-        navigation.setProperty(2, "count", newWorks.count)
-        navigation.setProperty(3, "count", seriesStacks.count)
-        navigation.setProperty(4, "count", authorStacks.count)
+        navigation.setProperty(1, "count", authorStacks.count)
+        navigation.setProperty(2, "count", seriesStacks.count)
+        navigation.setProperty(3, "count", newWorks.count)
+        navigation.setProperty(4, "count", continueWorks.count)
     }
 
     Component.onCompleted: root.updateCounts()

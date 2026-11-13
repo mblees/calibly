@@ -138,6 +138,56 @@ private slots:
         QCOMPARE(m_filter.selectedCount(), 2);
     }
 
+    // An author stack shows the first volume of its first series or single
+    // work (by name); "Series" orders the works so; on shelves single works
+    // of a stack are selected one by one.
+    void authorStackCoverAndShelves()
+    {
+        const auto work = [](const QString &title, const QString &author, const QString &series = QString(),
+                             int index = 0) {
+            Work result = makeWork(title, { author }, true, false);
+            result.series = series;
+            result.seriesIndex = index;
+            return result;
+        };
+        WorkModel source;
+        source.setWorks({ work(QStringLiteral("Zebra"), QStringLiteral("A")),
+                          work(QStringLiteral("Mond zwei"), QStringLiteral("A"), QStringLiteral("Mond"), 2),
+                          work(QStringLiteral("Apfel"), QStringLiteral("A")),
+                          work(QStringLiteral("Mond eins"), QStringLiteral("A"), QStringLiteral("Mond"), 1),
+                          work(QStringLiteral("Beta"), QStringLiteral("B")),
+                          work(QStringLiteral("Drei"), QStringLiteral("B"), QStringLiteral("Alpha"), 3),
+                          work(QStringLiteral("Eins"), QStringLiteral("B"), QStringLiteral("Alpha"), 1) });
+        WorkFilterModel model;
+        model.setSourceModel(&source);
+        model.setGroupAuthors(true);
+        model.setSortOrder(WorkFilterModel::Author);
+        QCOMPARE(model.count(), 2);
+        QCOMPARE(model.workIdAt(0), QStringLiteral("Apfel")); // a single work before the series "Mond"
+        QCOMPARE(model.workIdAt(1), QStringLiteral("Eins"));  // the first volume of "Alpha"
+
+        WorkFilterModel shelf;
+        shelf.setSourceModel(&source);
+        shelf.setAuthorFilter(QStringLiteral("A"));
+        shelf.setSortOrder(WorkFilterModel::Series);
+        QCOMPARE(titles(shelf), (QStringList{ QStringLiteral("Apfel"), QStringLiteral("Mond eins"),
+                                              QStringLiteral("Mond zwei"), QStringLiteral("Zebra") }));
+
+        // One work of a stack, also its first one, without the others.
+        QSignalSpy changed(&model, &WorkFilterModel::selectionChanged);
+        model.toggleWork(QStringLiteral("Drei"));
+        model.toggleWork(QStringLiteral("Eins"));
+        QCOMPARE(model.selectedCount(), 2);
+        QVERIFY(model.isSelected(QStringLiteral("Drei")));
+        QVERIFY(!model.isSelected(QStringLiteral("Beta")));
+        QVERIFY(!model.index(1, 0).data(WorkFilterModel::SelectedRole).toBool()); // not the whole stack
+        model.toggleWork(QStringLiteral("Drei"));
+        QCOMPARE(model.selectedIds(), QStringList{ QStringLiteral("Eins") });
+        QCOMPARE(changed.count(), 3);
+        model.toggleWork(QStringLiteral("unknown"));
+        QCOMPARE(changed.count(), 3);
+    }
+
     // The view "Neu": only works added in the last minutes, newest first;
     // changing a work does not make it new.
     void showsNewWorks()

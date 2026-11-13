@@ -30,6 +30,8 @@ import Calibly.Controls
 // Signals:
 //   clicked()            the card, e.g. to open the details
 //   continueRequested()  the round button
+//   menuRequested(real x, real y)   right click, at this position of the
+//                                   card: the context menu
 Rectangle {
     id: root
 
@@ -50,6 +52,7 @@ Rectangle {
 
     signal clicked()
     signal continueRequested()
+    signal menuRequested(real x, real y)
 
     readonly property bool isAudiobook: root.kind === "audiobook"
     readonly property color formatColor: root.isAudiobook ? Theme.listen : Theme.read
@@ -238,5 +241,11 @@ Rectangle {
         // A click on the round button is not a click on the card.
         enabled: !continueButton.hovered
         onTapped: root.clicked()
+    }
+    TapHandler {
+        acceptedButtons: Qt.RightButton
+        onTapped: function(eventPoint) {
+            root.menuRequested(eventPoint.position.x, eventPoint.position.y)
+        }
     }
 }

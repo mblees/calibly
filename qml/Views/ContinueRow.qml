@@ -20,6 +20,8 @@ import Calibly.Models
 //   openRequested(string workId, url coverUrl, bool coverIsSquare)  a card was clicked
 //   continueRequested(string workId, string kind)   the round button of a card;
 //                                                   kind: "ebook" or "audiobook"
+//   removeRequested(string workId, string kind)     "Aus Weitermachen entfernen"
+//                                                   in the context menu of a card
 Item {
     id: root
 
@@ -28,6 +30,7 @@ Item {
 
     signal openRequested(string workId, url coverUrl, bool coverIsSquare)
     signal continueRequested(string workId, string kind)
+    signal removeRequested(string workId, string kind)
 
     // Scrolls by as many whole cards as fit, direction -1 = left, 1 = right.
     function scrollBy(direction: int) {
@@ -110,6 +113,14 @@ Item {
 
             onClicked: root.openRequested(card.workId, card.coverUrl, card.coverIsSquare)
             onContinueRequested: root.continueRequested(card.workId, card.kind)
+            onMenuRequested: function(x, y) {
+                menu.workId = card.workId
+                menu.coverUrl = card.coverUrl
+                menu.coverIsSquare = card.coverIsSquare
+                menu.kind = card.kind
+                menu.available = card.available
+                menu.popup(card, x, y)
+            }
         }
 
         NumberAnimation {
@@ -120,5 +131,18 @@ Item {
             duration: Theme.durationDrawer
             easing.type: Easing.OutCubic
         }
+    }
+
+    // Right click on a card.
+    ContinueMenu {
+        id: menu
+
+        property string workId
+        property url coverUrl
+        property bool coverIsSquare
+
+        onOpenRequested: root.openRequested(menu.workId, menu.coverUrl, menu.coverIsSquare)
+        onContinueRequested: root.continueRequested(menu.workId, menu.kind)
+        onRemoveRequested: root.removeRequested(menu.workId, menu.kind)
     }
 }

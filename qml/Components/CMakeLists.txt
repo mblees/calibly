@@ -20,6 +20,7 @@ qt_add_qml_module(calibly_components
         DropHint.qml
         ImportQueue.qml
         ContinueCard.qml
+        ContinueMenu.qml
         BulkActionBar.qml
         WorkMenu.qml
         TableOfContents.qml

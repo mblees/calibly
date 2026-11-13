@@ -124,6 +124,7 @@ QtObject {
     readonly property int borderWidth: 1
     readonly property int focusWidth: 2
     readonly property int selectionWidth: 3       // accent frame of a selected cover
+    readonly property int shelfLineWidth: 2       // accent line beside an author on the shelves ("Autoren")
     readonly property int badgeSize: 20
     readonly property real badgeIconStrokeWidth: 2.4 // thicker lines, so the small icons stay readable
     readonly property real disabledOpacity: 0.4

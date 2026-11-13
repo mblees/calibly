@@ -58,7 +58,8 @@
 //
 // Authors (the view "Autoren"):
 //   groupAuthors  only works with an author; every (first) author is a stack,
-//                 also one with a single work. Without volume numbers.
+//                 also one with a single work. Without volume numbers. Its
+//                 cover is that of the first work in the order "Series".
 //   authorFilter  only the works of this (first) author ("" = all): an
 //                 opened author stack. groupSeries then stacks their series.
 //
@@ -74,6 +75,9 @@
 // shown stack counts as shown) leave the selection, so it never contains
 // anything the user does not see.
 //   toggleSelected(workId)   a work, or the stack whose first volume it is
+//   toggleWork(workId)       only this work, also a volume of a shown stack
+//                            (e.g. the titles of an author shown one by one)
+//   isSelected(workId)
 //   selectAll(), clearSelection()
 //   selectedCount  selected works (the volumes of a stack each count)
 //   selectedIds    in the shown order, the volumes of a stack in theirs
@@ -116,6 +120,8 @@ public:
         Title,      // A–Z
         Author,     // by last name of the first author
         Added,      // most recently added first
+        Series,     // by series (a single work: by its title), its volumes
+                    // by number: the works of an author
     };
     Q_ENUM(SortOrder)
 
@@ -182,6 +188,8 @@ public:
     QStringList selectedIds() const;
     bool canMergeSelection() const;
     Q_INVOKABLE void toggleSelected(const QString &workId);
+    Q_INVOKABLE void toggleWork(const QString &workId);
+    Q_INVOKABLE bool isSelected(const QString &workId) const { return m_selected.contains(workId); }
     Q_INVOKABLE void selectAll();
     Q_INVOKABLE void clearSelection();
 
@@ -240,6 +248,8 @@ private:
     const Stack *stackOf(int sourceRow) const;
     int compareText(const QString &left, const QString &right) const;
     int compareText(const QModelIndex &left, const QModelIndex &right, int role) const;
+    // The order "Series": < 0 if left comes first.
+    int compareBySeries(const QModelIndex &left, const QModelIndex &right) const;
     // Works out the stacks again; true if they changed.
     bool rebuildStacks();
     // Call after a filter property changed.

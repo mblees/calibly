@@ -16,6 +16,7 @@
 #include "librarybackend.h"
 #include "librarycontroller.h"
 #include "librarylock.h"
+#include "continuemodel.h"
 #include "playercontroller.h"
 
 namespace {
@@ -505,6 +506,55 @@ private slots:
         QVERIFY(m_library->setFinished(QStringLiteral("audio"), QStringLiteral("audiobook"), false));
         QCOMPARE(work("audio")->formats.first().progress, 0.25);
         QVERIFY(work("audio")->formats.first().lastOpened.isValid());
+    }
+
+    // "Aus Weitermachen entfernen": that format back to the start, so it
+    // leaves "Weitermachen"; the other format and the work's "last opened" stay.
+    void removesFromContinue()
+    {
+        QCOMPARE(m_library->mergeWorks({ QStringLiteral("audio"), QStringLiteral("book") }), QStringLiteral("book"));
+        const WorkModel *works = m_library->works();
+        const auto book = [works] { return works->workAt(works->rowOf(QStringLiteral("book"))); };
+        Work started = *book();
+        const QDateTime now = QDateTime::currentDateTime();
+        for (int i = 0; i < started.formats.size(); ++i) {
+            Format &format = started.formats[i];
+            started.markOpened(i, now);
+            format.progress = 0.4;
+            if (format.kind == Format::Kind::Audiobook)
+                format.positionMs = 1500;
+            else
+                format.readingPosition = QStringLiteral("chapter-3");
+        }
+        QVERIFY(m_library->saveWork(started));
+
+        ContinueModel continueModel;
+        continueModel.setSourceModel(m_library->works());
+        continueModel.setFormatFilter(WorkFilterModel::Audiobook);
+        QCOMPARE(continueModel.count(), 1);
+
+        QSignalSpy aboutToChange(m_library.get(), &LibraryController::worksAboutToChange);
+        QVERIFY(m_library->removeFromContinue(QStringLiteral("book"), QStringLiteral("audiobook")));
+        QCOMPARE(aboutToChange.count(), 1);
+        QCOMPARE(continueModel.count(), 0);
+        const Format *audiobook = book()->format(Format::Kind::Audiobook);
+        QCOMPARE(audiobook->progress, 0.0);
+        QCOMPARE(audiobook->positionMs, 0);
+        QVERIFY(!audiobook->lastOpened.isValid());
+        const Format *ebook = book()->format(Format::Kind::Ebook);
+        QCOMPARE(ebook->progress, 0.4); // the ebook is untouched
+        QCOMPARE(ebook->readingPosition, QStringLiteral("chapter-3"));
+        QVERIFY(book()->lastOpened.isValid());
+        QCOMPARE(book()->state(), Work::State::Normal);
+
+        continueModel.setFormatFilter(WorkFilterModel::Ebook);
+        QCOMPARE(continueModel.count(), 1);
+        QVERIFY(m_library->removeFromContinue(QStringLiteral("book"), QStringLiteral("ebook")));
+        QCOMPARE(continueModel.count(), 0);
+        QVERIFY(book()->format(Format::Kind::Ebook)->readingPosition.isEmpty());
+
+        QVERIFY(!m_library->removeFromContinue(QStringLiteral("faust"), QStringLiteral("audiobook"))); // none
+        QVERIFY(!m_library->removeFromContinue(QStringLiteral("unknown"), QStringLiteral("ebook")));
     }
 
     // "Kombinieren" two books into volumes, mark one volume, and dissolve
