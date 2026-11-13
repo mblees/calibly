@@ -8,6 +8,7 @@
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QQuickWindow>
+#include <QStyleHints>
 #include <QTimer>
 
 #include "appearancesettings.h"
@@ -38,6 +39,12 @@ constexpr bool kDevTools = true;
 constexpr bool kDevTools = false;
 #endif
 
+// The mouse wheel scrolls the lists and grids (Qt Quick Flickable) by
+// wheelScrollLines × 8 px per notch: with the 3 lines of Windows only 24 px,
+// which feels slow for a cover gallery. calibly scrolls this many times the
+// lines set in Windows.
+constexpr int kWheelScrollFactor = 4;
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -46,6 +53,8 @@ int main(int argc, char *argv[])
     QGuiApplication::setApplicationVersion(QStringLiteral(CALIBLY_VERSION));
     // Messages also go to %LOCALAPPDATA%\calibly\logs, for bug reports.
     LogFile::install();
+    QGuiApplication::styleHints()->setWheelScrollLines(QGuiApplication::styleHints()->wheelScrollLines()
+                                                       * kWheelScrollFactor);
     qInfo("calibly %s started", CALIBLY_VERSION);
 
     QCommandLineParser parser;

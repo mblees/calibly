@@ -665,10 +665,18 @@ ViewBase {
     }
 
     // --- "Autoren" as shelves: each author with all its works below -----------
-    // One row per author (the stacks of works); each row has its own list of
-    // the author's works, made only while the row is in view.
-    ListView {
+    // One row per author (the stacks of works). Every row knows its height
+    // from the number of its works, so the scroll bar stays steady; the
+    // covers (and the row's own list of the author's works) are only made
+    // while the row is in or near the view.
+    Flickable {
         id: shelves
+
+        // Height of an author's heading, and of a cover with its texts.
+        readonly property real headingHeight: Math.ceil(headingFont.height)
+        readonly property real tileHeight: Math.round(grid.tileWidth * Theme.coverAspect) + Theme.coverTileTextHeight
+        // How far beyond the view rows are built already.
+        readonly property real buffer: shelves.height
 
         anchors.fill: grid
         // Like the grid, whose last column ends with a gap.
@@ -676,10 +684,8 @@ ViewBase {
         visible: root.authorShelves
         clip: true
         boundsBehavior: Flickable.StopAtBounds
-        bottomMargin: Theme.spacingXl
-        spacing: Theme.spacingXl
-        model: root.authorShelves ? works : null
-        header: viewHeader
+        contentWidth: width
+        contentHeight: shelfColumn.height
 
         ScrollBar.vertical: ScrollBar {
             parent: shelves.parent
@@ -688,108 +694,143 @@ ViewBase {
             anchors.left: shelves.right
         }
 
-        delegate: Column {
-            id: shelf
+        FontMetrics {
+            id: headingFont
 
-            required property string stackName
-            required property int seriesCount
+            font.pixelSize: Theme.fontTitle
+            font.weight: Font.Bold
+        }
 
-            width: ListView.view ? ListView.view.width : 0
-            spacing: Theme.spacingM
+        Column {
+            id: shelfColumn
 
-            // The author, how many titles, and an accent line to the right edge.
-            Item {
+            width: shelves.width
+
+            Loader {
                 width: parent.width
-                height: authorName.implicitHeight
-
-                Text {
-                    id: authorName
-
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: Math.min(implicitWidth, parent.width * 0.7)
-                    elide: Text.ElideRight
-                    text: shelf.stackName
-                    color: Theme.textPrimary
-                    font.pixelSize: Theme.fontTitle
-                    font.weight: Font.Bold
-                }
-                Text {
-                    id: titleCount
-
-                    anchors.left: authorName.right
-                    anchors.leftMargin: Theme.spacingM
-                    anchors.baseline: authorName.baseline
-                    text: qsTr("%Ln Titel", "", shelfWorks.count)
-                    color: Theme.textMuted
-                    font.pixelSize: Theme.fontBody
-                }
-                Rectangle {
-                    anchors.left: titleCount.right
-                    anchors.leftMargin: Theme.spacingL
-                    anchors.right: parent.right
-                    anchors.verticalCenter: authorName.verticalCenter
-                    height: Theme.shelfLineWidth
-                    radius: height / 2
-                    color: Theme.accent
-                }
+                active: root.authorShelves
+                sourceComponent: viewHeader
             }
 
-            // The works one by one: series and their volumes in order.
-            WorkFilterModel {
-                id: shelfWorks
+            Repeater {
+                model: root.authorShelves ? works : null
 
-                sourceModel: LibraryController.works
-                authorFilter: shelf.stackName
-                formatFilter: settings.formatFilter
-                searchText: search.text
-                sortOrder: WorkFilterModel.Series
-            }
+                delegate: Item {
+                    id: shelf
 
-            Flow {
-                width: parent.width
-                spacing: grid.gap
+                    required property string stackName
+                    required property int seriesCount
 
-                Repeater {
-                    model: shelfWorks
+                    readonly property int rows: Math.ceil(shelf.seriesCount / grid.columns)
+                    readonly property bool nearView: shelf.y + shelf.height > shelves.contentY - shelves.buffer
+                                                     && shelf.y < shelves.contentY + shelves.height + shelves.buffer
 
-                    delegate: CoverTile {
-                        id: shelfTile
+                    // With the gap to the next author (or the end) below.
+                    width: shelfColumn.width
+                    height: shelves.headingHeight + Theme.spacingM + shelf.rows * shelves.tileHeight
+                            + Math.max(0, shelf.rows - 1) * grid.gap + Theme.spacingXl
 
-                        required property string workId
-                        required property string authorText
-                        required property bool canSplit
-                        required property string series
-                        // Not required in CoverTile, but taken from the model here.
-                        required workState
+                    // The author, how many titles, and an accent line to the right edge.
+                    Item {
+                        width: parent.width
+                        height: shelves.headingHeight
 
-                        width: grid.tileWidth
-                        author: shelfTile.authorText
-                        selectable: true
-                        // The selection is that of the view (works).
-                        selected: works.selectedCount >= 0 && works.isSelected(shelfTile.workId)
-                        selecting: works.selectedCount > 0
+                        Text {
+                            id: authorName
 
-                        onClicked: {
-                            if (works.selectedCount > 0)
-                                works.toggleWork(shelfTile.workId)
-                            else
-                                detail.openFor(shelfTile.workId, shelfTile.coverUrl, shelfTile.coverIsSquare)
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: Math.min(implicitWidth, parent.width * 0.7)
+                            elide: Text.ElideRight
+                            text: shelf.stackName
+                            color: Theme.textPrimary
+                            font: headingFont.font
                         }
-                        onSelectToggled: works.toggleWork(shelfTile.workId)
-                        onMenuRequested: function(x, y) {
-                            root.openWorkMenu(shelfTile, x, y, {
-                                workId: shelfTile.workId, title: shelfTile.title, series: shelfTile.series,
-                                coverUrl: shelfTile.coverUrl, coverIsSquare: shelfTile.coverIsSquare,
-                                stack: false, authorStack: false,
-                                hasEbook: shelfTile.hasEbook, hasAudiobook: shelfTile.hasAudiobook,
-                                readProgress: shelfTile.readProgress, listenProgress: shelfTile.listenProgress,
-                                workState: shelfTile.workState, selected: shelfTile.selected,
-                                canSplit: shelfTile.canSplit
-                            })
+                        Text {
+                            id: titleCount
+
+                            anchors.left: authorName.right
+                            anchors.leftMargin: Theme.spacingM
+                            anchors.baseline: authorName.baseline
+                            text: qsTr("%Ln Titel", "", shelf.seriesCount)
+                            color: Theme.textMuted
+                            font.pixelSize: Theme.fontBody
                         }
-                        onReadRequested: root.continueWith(shelfTile.workId, "ebook")
-                        onListenRequested: root.continueWith(shelfTile.workId, "audiobook")
+                        Rectangle {
+                            anchors.left: titleCount.right
+                            anchors.leftMargin: Theme.spacingL
+                            anchors.right: parent.right
+                            anchors.verticalCenter: authorName.verticalCenter
+                            height: Theme.shelfLineWidth
+                            radius: height / 2
+                            color: Theme.accent
+                        }
+                    }
+
+                    // The works one by one: series and their volumes in order.
+                    Loader {
+                        y: shelves.headingHeight + Theme.spacingM
+                        width: parent.width
+                        active: shelf.nearView
+
+                        sourceComponent: Grid {
+                            columns: grid.columns
+                            columnSpacing: grid.gap
+                            rowSpacing: grid.gap
+
+                            WorkFilterModel {
+                                id: shelfWorks
+
+                                sourceModel: LibraryController.works
+                                authorFilter: shelf.stackName
+                                formatFilter: settings.formatFilter
+                                searchText: search.text
+                                sortOrder: WorkFilterModel.Series
+                            }
+
+                            Repeater {
+                                model: shelfWorks
+
+                                delegate: CoverTile {
+                                    id: shelfTile
+
+                                    required property string workId
+                                    required property string authorText
+                                    required property bool canSplit
+                                    required property string series
+                                    // Not required in CoverTile, but taken from the model here.
+                                    required workState
+
+                                    width: grid.tileWidth
+                                    author: shelfTile.authorText
+                                    selectable: true
+                                    // The selection is that of the view (works).
+                                    selected: works.selectedCount >= 0 && works.isSelected(shelfTile.workId)
+                                    selecting: works.selectedCount > 0
+
+                                    onClicked: {
+                                        if (works.selectedCount > 0)
+                                            works.toggleWork(shelfTile.workId)
+                                        else
+                                            detail.openFor(shelfTile.workId, shelfTile.coverUrl, shelfTile.coverIsSquare)
+                                    }
+                                    onSelectToggled: works.toggleWork(shelfTile.workId)
+                                    onMenuRequested: function(x, y) {
+                                        root.openWorkMenu(shelfTile, x, y, {
+                                            workId: shelfTile.workId, title: shelfTile.title, series: shelfTile.series,
+                                            coverUrl: shelfTile.coverUrl, coverIsSquare: shelfTile.coverIsSquare,
+                                            stack: false, authorStack: false,
+                                            hasEbook: shelfTile.hasEbook, hasAudiobook: shelfTile.hasAudiobook,
+                                            readProgress: shelfTile.readProgress, listenProgress: shelfTile.listenProgress,
+                                            workState: shelfTile.workState, selected: shelfTile.selected,
+                                            canSplit: shelfTile.canSplit
+                                        })
+                                    }
+                                    onReadRequested: root.continueWith(shelfTile.workId, "ebook")
+                                    onListenRequested: root.continueWith(shelfTile.workId, "audiobook")
+                                }
+                            }
+                        }
                     }
                 }
             }
