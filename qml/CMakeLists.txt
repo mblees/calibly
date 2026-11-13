@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 # QML modules, from bottom to top layer (see docs/UI-Development-Plan.md):
 #   Calibly.Theme       colors, spacing, fonts, icons
 #   Calibly.Controls    neutral building blocks

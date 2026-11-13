@@ -1,3 +1,7 @@
+// This file is part of calibly.
+// Copyright (C) 2026 mblees
+// SPDX-License-Identifier: GPL-3.0-only
+
 import QtQuick
 import Calibly.Theme
 import Calibly.Controls

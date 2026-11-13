@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 # Opens Windows Sandbox (a clean Windows without Qt) with the installer of the
 # last release build on its desktop, to test the installer and the app.
 # Optional: a folder of test books (EPUB, PDF, M4B, MP3 folder) to try out.

@@ -1,5 +1,9 @@
 .pragma library
 
+// This file is part of calibly.
+// Copyright (C) 2026 mblees
+// SPDX-License-Identifier: GPL-3.0-only
+
 // Times as a player shows them, from milliseconds:
 //   clock(372000)   -> "6:12"
 //   clock(51727000) -> "14:22:07"

@@ -1,3 +1,7 @@
+; This file is part of calibly.
+; Copyright (C) 2026 mblees
+; SPDX-License-Identifier: GPL-3.0-only
+
 ; Installer of calibly (Inno Setup 6). Built by tools/make-release.ps1:
 ;   ISCC.exe /DBuildDir=<release build folder> installer\calibly.iss
 ; It packs the folder that "cmake --install" wrote to <BuildDir>\deploy.

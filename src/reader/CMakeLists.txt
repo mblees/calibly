@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 # The ebook reader without UI (phase 10): EPUB and text books, the HTML
 # preparation and the page layout with QTextDocument (option A).
 qt_add_library(calibly_reader STATIC

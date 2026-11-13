@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 # Third-party libraries that are not part of Qt. They are downloaded and built
 # together with calibly, so nothing has to be installed by hand.
 

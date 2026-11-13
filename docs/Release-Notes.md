@@ -1,5 +1,33 @@
 # Release Notes
 
+## 0.3.0-beta (2026-11-13)
+
+### Deutsch
+
+**Neu**
+- **calibly ist Open Source:** calibly steht jetzt unter der GNU General Public License Version 3 (GPL-3.0-only). Du darfst calibly unter ihren Bedingungen weitergeben und verändern. Der Quellcode liegt auf GitHub: https://github.com/mblees/calibly
+- **Über calibly** (Einstellungen) nennt Copyright, Lizenz und dass calibly ohne Gewährleistung bereitgestellt wird, mit den Links „Lizenz (GNU GPL 3)“ und „Quellcode“.
+
+**Geändert**
+- Der Installer zeigt die GPL 3 in beiden Sprachen auf Englisch, weil nur der englische Text verbindlich ist. Die bisherigen deutschen Lizenzbedingungen (`LICENSE.de.txt`) entfallen und werden beim Update entfernt.
+- Die Hinweise zu Software Dritter nennen den Quellcode von calibly; TagLib wird jetzt unter der LGPL 2.1 genutzt (bisher MPL 1.1).
+
+**Hinweise**
+- Sonst hat sich nichts geändert. Ein Update über 0.2 behält Bibliothek und Einstellungen, die Bibliothek wird nicht umgestellt.
+
+### English
+
+**New**
+- **calibly is open source:** calibly is now licensed under the GNU General Public License version 3 (GPL-3.0-only). You may redistribute and modify it under its terms. The source code is on GitHub: https://github.com/mblees/calibly
+- **About calibly** (settings) names the copyright, the license and that calibly comes without any warranty, with the links "License (GNU GPL 3)" and "Source code".
+
+**Changed**
+- The installer shows the GPL 3 in English in both languages, because only the English text is official. The former German license terms (`LICENSE.de.txt`) are gone and are removed by the update.
+- The third-party notices name calibly's source code; TagLib is now used under the LGPL 2.1 (before: MPL 1.1).
+
+**Notes**
+- Nothing else changed. Updating over 0.2 keeps the library and the settings; the library is not updated.
+
 ## 0.2.0-beta (2026-11-13)
 
 ### Deutsch

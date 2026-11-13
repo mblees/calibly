@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 # Builds a release of calibly: release build, unit tests, the deployed folder
 # (build\mingw-release\deploy) and the installer
 # (build\mingw-release\installer\calibly-<version>-setup.exe).

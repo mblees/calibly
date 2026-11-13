@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 # Import of files into the library: metadata readers (EPUB, audio, PDF,
 # file names), grouping into works, copying into the library folder.
 # No UI, no QML.

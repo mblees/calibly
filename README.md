@@ -152,6 +152,12 @@ It configures and builds the preset `mingw-release`, runs the tests, writes the 
 UI texts are written in German and translated with Qt Linguist. The English translation is in `i18n/calibly_en.ts`. After changing or adding texts, run `update_translations`, translate the new entries (e.g. with `C:\Qt\6.12.0\mingw_64\bin\linguist.exe`) and build again. Start with a specific language with `--language en`. The language can be switched at runtime, as shown in the component gallery. Details are in the [UI Development Plan](docs/UI-Development-Plan.md#translations).
 
 ## License
-calibly is free software: you can redistribute it and/or modify it under the terms of the [GNU General Public License version 3](LICENSE.txt). It comes without any warranty.
+calibly is free software: you can redistribute it and/or modify it under the terms of the [GNU General Public License version 3](LICENSE.txt) (`GPL-3.0-only`). It comes without any warranty. Every source file starts with this notice:
+
+```
+// This file is part of calibly.
+// Copyright (C) 2026 mblees
+// SPDX-License-Identifier: GPL-3.0-only
+```
 
 calibly uses open-source software, among it Qt (LGPL 3), FFmpeg (LGPL 2.1 or later) and TagLib (used under the LGPL 2.1). `THIRD-PARTY-NOTICES.txt` in the installed folder lists every component with its license.

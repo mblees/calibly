@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 # Data sources behind the LibraryBackend interface. No UI, no QML.
 qt_add_library(calibly_backend STATIC
     librarybackend.h

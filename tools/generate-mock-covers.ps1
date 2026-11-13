@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 # Generates the sample cover images in resources/mock/covers.
 # Book covers are 2:3, audiobook covers are square (like real audiobook covers).
 # Non-ASCII letters are written as [char] codes, so Windows PowerShell 5.1

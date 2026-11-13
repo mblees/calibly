@@ -1,7 +1,11 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 cmake_minimum_required(VERSION 3.28)
 
 project(calibly
-    VERSION 0.2.0
+    VERSION 0.3.0
     DESCRIPTION "One library for ebooks and audiobooks"
     LANGUAGES CXX
 )

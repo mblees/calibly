@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 """Writes THIRD-PARTY-NOTICES.txt for a deployed calibly folder.
 
 The notices name every third-party component in the program folder with its

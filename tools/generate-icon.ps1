@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 # Generates the app icon resources/icon/calibly.ico (and calibly.png, 256 px):
 # book spines on a shelf whose heights form an equalizer, blue (reading) and
 # orange (listening) in turn, on the dark background of calibly (idea 4 of

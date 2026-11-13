@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 # C++ controllers that QML views can use (layer below the QML modules).
 qt_add_library(calibly_controllers STATIC)
 

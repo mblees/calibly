@@ -1,3 +1,7 @@
+# This file is part of calibly.
+# Copyright (C) 2026 mblees
+# SPDX-License-Identifier: GPL-3.0-only
+
 # Unit tests (Qt Test). Run all with:
 #   ctest --preset mingw-debug
 qt_add_executable(tst_workfiltermodel tst_workfiltermodel.cpp)
