@@ -44,6 +44,9 @@ ViewBase {
     property list<string> actionIds: []
     property string actionTitle
     property bool actionOnSelection: false
+    // What removeDialog removes: "ebook" / "audiobook" = only that format
+    // (the tab "E-Books" / "Hörbücher"), "" = the whole titles.
+    property string actionKind
 
     readonly property int total: LibraryController.works.count
     readonly property bool filtered: works.workCount !== root.total
@@ -55,6 +58,7 @@ ViewBase {
     readonly property bool canSelect: works.count > 0 && !(root.seriesOnly && root.openedSeries === "")
     readonly property bool popupOpen: detail.visible || metadataEditor.visible
                                       || mergeDialog.visible || removeDialog.visible || workMenu.visible
+                                      || seriesOrderDialog.visible
     // The view "Serien" without any series (and without a filter that hides them).
     readonly property bool noSeries: root.seriesOnly && root.openedSeries === "" && search.text === ""
                                      && settings.formatFilter === WorkFilterModel.AllFormats
@@ -121,10 +125,13 @@ ViewBase {
     }
 
     // Asks before works are removed: the selection, or one title (with its name).
+    // In the tabs "E-Books" and "Hörbücher" only that format is removed.
     function askRemove(workIds: list<string>, title: string) {
         root.actionIds = workIds
         root.actionOnSelection = title === ""
         root.actionTitle = title
+        root.actionKind = settings.formatFilter === WorkFilterModel.Ebook ? "ebook"
+                        : settings.formatFilter === WorkFilterModel.Audiobook ? "audiobook" : ""
         removeDialog.open()
     }
 
@@ -651,12 +658,23 @@ ViewBase {
         }
     }
 
+    // Titles without volume numbers (or with gaps or doubles): the user
+    // gives the order first, see SeriesOrderDialog.
     SeriesDialog {
         id: seriesDialog
 
         suggestions: LibraryController.seriesNames
 
-        onAccepted: LibraryController.setSeries(root.actionIds, seriesDialog.name)
+        onAccepted: {
+            if (LibraryController.seriesNeedsOrder(root.actionIds, seriesDialog.name))
+                seriesOrderDialog.openFor(root.actionIds, seriesDialog.name, settings.formatFilter)
+            else
+                LibraryController.setSeries(root.actionIds, seriesDialog.name)
+        }
+    }
+
+    SeriesOrderDialog {
+        id: seriesOrderDialog
     }
 
     // actionTitle: the series that is dissolved.
@@ -681,13 +699,33 @@ ViewBase {
         onAccepted: LibraryController.markWorks(root.actionIds, false)
     }
 
-    // actionTitle: the one title that is removed, "" for the selection.
+    // actionTitle: the one title that is removed, "" for the selection;
+    // actionKind: only that format.
     ConfirmDialog {
         id: removeDialog
 
-        title: root.actionTitle !== "" ? qsTr("„%1“ entfernen?").arg(root.actionTitle)
-                                       : qsTr("%Ln Titel entfernen?", "", root.actionIds.length)
+        title: {
+            const one = root.actionTitle !== ""
+            if (root.actionKind === "ebook")
+                return one ? qsTr("E-Book von „%1“ entfernen?").arg(root.actionTitle)
+                           : qsTr("E-Books von %Ln Titeln entfernen?", "", root.actionIds.length)
+            if (root.actionKind === "audiobook")
+                return one ? qsTr("Hörbuch von „%1“ entfernen?").arg(root.actionTitle)
+                           : qsTr("Hörbücher von %Ln Titeln entfernen?", "", root.actionIds.length)
+            return one ? qsTr("„%1“ entfernen?").arg(root.actionTitle)
+                       : qsTr("%Ln Titel entfernen?", "", root.actionIds.length)
+        }
         message: {
+            if (root.actionKind === "ebook") {
+                return LibraryController.canImport
+                       ? qsTr("Nur die E-Books werden entfernt, Hörbücher derselben Titel bleiben. Die Dateien im Bibliotheksordner kommen in den Papierkorb.")
+                       : qsTr("Nur die E-Books werden entfernt, Hörbücher derselben Titel bleiben.")
+            }
+            if (root.actionKind === "audiobook") {
+                return LibraryController.canImport
+                       ? qsTr("Nur die Hörbücher werden entfernt, E-Books derselben Titel bleiben. Die Dateien im Bibliotheksordner kommen in den Papierkorb.")
+                       : qsTr("Nur die Hörbücher werden entfernt, E-Books derselben Titel bleiben.")
+            }
             if (root.actionTitle !== "") {
                 return LibraryController.canImport
                        ? qsTr("Der Titel wird aus der Bibliothek entfernt. Seine Dateien im Bibliotheksordner kommen in den Papierkorb.")
@@ -703,7 +741,7 @@ ViewBase {
         onAccepted: {
             if (root.actionOnSelection)
                 works.clearSelection()
-            LibraryController.removeWorks(root.actionIds)
+            LibraryController.removeWorks(root.actionIds, root.actionKind)
         }
     }
 

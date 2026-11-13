@@ -32,6 +32,9 @@ import Calibly.Models
 //   workState                     WorkState.New ("NEU"), WorkState.Finished
 //                                 ("FERTIG"), WorkState.FileMissing (grey
 //                                 cover, "DATEI FEHLT") or WorkState.Normal
+//   orderNumber                   a number at the bottom right, e.g. the
+//                                 volume a click gave it when the order of
+//                                 a series is chosen; 0 = none
 //   dropLabel                     files are dragged over this cover: accent
 //                                 glow and this text, e.g. "Als Hörbuch zu
 //                                 „Dracula“ hinzufügen"; empty = no drag
@@ -58,6 +61,7 @@ Item {
     property bool selected: false
     property bool selecting: false
     property int workState: WorkState.Normal
+    property int orderNumber: 0
     property string dropLabel
 
     readonly property bool hovered: hover.hovered
@@ -213,6 +217,30 @@ Item {
         }
     }
 
+    // Number at the bottom right, above the progress lines.
+    Rectangle {
+        x: art.width - width - Theme.spacingS
+        y: art.height - height - Theme.spacingS - Theme.progressHeight
+        width: Math.max(Theme.orderBadgeSize, orderText.implicitWidth + 2 * Theme.spacingS)
+        height: Theme.orderBadgeSize
+        visible: root.orderNumber > 0
+        radius: height / 2
+        color: Theme.accent
+
+        Accessible.role: Accessible.StaticText
+        Accessible.name: qsTr("Band %1").arg(root.orderNumber)
+
+        Text {
+            id: orderText
+
+            anchors.centerIn: parent
+            text: root.orderNumber
+            color: Theme.accentForeground
+            font.pixelSize: Theme.fontLarge
+            font.weight: Font.Bold
+        }
+    }
+
     // Hover actions: continue directly. Both are also in the detail view.
     Column {
         x: (art.width - art.stackInset - width) / 2
@@ -247,16 +275,21 @@ Item {
         }
     }
 
-    // Hover outline around the cover (without the sheets of a stack).
+    // Hover outline around the cover (without the sheets of a stack); a
+    // selected cover has a thicker one, outside the cover as well.
     Rectangle {
-        x: -Theme.spacingXxs
-        y: art.stackInset - Theme.spacingXxs
-        width: art.width - art.stackInset + 2 * Theme.spacingXxs
-        height: art.height - art.stackInset + 2 * Theme.spacingXxs
+        id: outline
+
+        readonly property int frameWidth: root.selected ? Theme.selectionWidth : Theme.focusWidth
+
+        x: -outline.frameWidth
+        y: art.stackInset - outline.frameWidth
+        width: art.width - art.stackInset + 2 * outline.frameWidth
+        height: art.height - art.stackInset + 2 * outline.frameWidth
         visible: (root.hovered || root.selected) && !root.dropTarget
         color: "transparent"
-        radius: Theme.radiusS + Theme.spacingXxs
-        border.width: Theme.focusWidth
+        radius: Theme.radiusS + outline.frameWidth
+        border.width: outline.frameWidth
         // Selected: accent frame, also without hovering.
         border.color: root.selected ? Theme.accent : Theme.textPrimary
     }

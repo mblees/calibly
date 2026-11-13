@@ -123,6 +123,7 @@ QtObject {
     readonly property int sidebarWidth: 220
     readonly property int borderWidth: 1
     readonly property int focusWidth: 2
+    readonly property int selectionWidth: 3       // accent frame of a selected cover
     readonly property int badgeSize: 20
     readonly property real badgeIconStrokeWidth: 2.4 // thicker lines, so the small icons stay readable
     readonly property real disabledOpacity: 0.4
@@ -131,6 +132,7 @@ QtObject {
     readonly property int continueCoverWidth: 46  // cover in a "Continue" card (2:3)
     readonly property int confirmDialogWidth: 440
     readonly property int selectCircleSize: 22    // selection circle on a cover
+    readonly property int orderBadgeSize: 30      // volume number on a cover while the order of a series is chosen
     readonly property int importQueueWidth: 340
     readonly property int importQueueMaxHeight: 320
     readonly property int importThumbWidth: 26    // cover thumbnail in the import queue (2:3)

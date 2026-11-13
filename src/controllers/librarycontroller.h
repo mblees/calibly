@@ -5,6 +5,7 @@
 #pragma once
 
 #include <QObject>
+#include <QSet>
 #include <QQmlEngine>
 #include <QStringList>
 #include <QUrl>
@@ -42,6 +43,17 @@ class LibraryLock;
 //       "Als Serie zusammenfassen": the works get this series; a volume
 //       number they have stays, the others get the next free numbers in the
 //       given order. Returns how many works were changed.
+//   LibraryController.seriesNeedsOrder(workIds, name)
+//       the user should give the order before setSeries(): two or more
+//       works, and one has no volume number, or the numbers (with those of
+//       the other volumes of the series) are not 1, 2, 3 … without gaps
+//       and doubles
+//   LibraryController.seriesNumbers(workIds, name)
+//       the numbers setSeriesOrder() gives, in order: the first ones that
+//       no other volume of the series has
+//   LibraryController.setSeriesOrder(workIds, name)
+//       like setSeries(), but the works get these numbers in the given
+//       order, whatever numbers they had. Returns how many works were changed.
 //   LibraryController.removeSeries(name)
 //       "Serie auflösen": every work of that series (compared as the stacks
 //       do, without case and accents) loses its series and volume number.
@@ -86,9 +98,12 @@ class LibraryLock;
 //       (see splitWork() in core); works merged before phase 12 become one
 //       work per format, titled from the file's metadata. Returns how many
 //       works there are afterwards, 0 on failure.
-//   LibraryController.removeWorks(workIds)
+//   LibraryController.removeWorks(workIds, kind)
 //       removes the works from the library and moves their files in the
-//       library folder to the recycle bin; returns how many were removed
+//       library folder to the recycle bin; returns how many were removed.
+//       kind "ebook" or "audiobook" (the format selection of the view):
+//       only the formats of that kind go, a work that also has the other
+//       kind stays with it; "" = the whole works.
 //   worksAboutToChange(workIds)   emitted before works are merged or removed,
 //       so whoever uses one of them (the player) can let go of it first
 //
@@ -151,12 +166,15 @@ public:
     Q_INVOKABLE bool setFormatFinished(const QString &workId, int formatIndex, bool finished);
     Q_INVOKABLE int markWorks(const QStringList &workIds, bool finished);
     Q_INVOKABLE int setSeries(const QStringList &workIds, const QString &name);
+    Q_INVOKABLE bool seriesNeedsOrder(const QStringList &workIds, const QString &name) const;
+    Q_INVOKABLE QList<int> seriesNumbers(const QStringList &workIds, const QString &name) const;
+    Q_INVOKABLE int setSeriesOrder(const QStringList &workIds, const QString &name);
     Q_INVOKABLE int removeSeries(const QString &name);
     Q_INVOKABLE int clearSeries(const QStringList &workIds);
     Q_INVOKABLE QString mergeWorks(const QStringList &workIds);
     Q_INVOKABLE QString mergeTitle(const QStringList &workIds) const;
     Q_INVOKABLE int splitWork(const QString &workId);
-    Q_INVOKABLE int removeWorks(const QStringList &workIds);
+    Q_INVOKABLE int removeWorks(const QStringList &workIds, const QString &kind = QString());
     QStringList seriesNames() const;
     Q_INVOKABLE QString suggestedSeries(const QStringList &workIds) const;
 
@@ -179,6 +197,8 @@ signals:
 
 private:
     void connectModel();
+    // Numbers the volumes of the series have, apart from these works.
+    QSet<int> takenSeriesNumbers(const QString &series, const QStringList &except) const;
 
     LibraryBackend *m_backend = nullptr;
     std::unique_ptr<LibraryBackend> m_ownedBackend;

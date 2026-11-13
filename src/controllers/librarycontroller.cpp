@@ -276,6 +276,17 @@ int LibraryController::markWorks(const QStringList &workIds, bool finished)
     return changed;
 }
 
+QSet<int> LibraryController::takenSeriesNumbers(const QString &series, const QStringList &except) const
+{
+    QSet<int> taken;
+    for (const Work &work : m_works.works()) {
+        if (work.seriesIndex > 0 && !except.contains(work.id)
+            && work.series.compare(series, Qt::CaseInsensitive) == 0)
+            taken.insert(work.seriesIndex);
+    }
+    return taken;
+}
+
 int LibraryController::setSeries(const QStringList &workIds, const QString &name)
 {
     const QString series = name.simplified();
@@ -283,12 +294,7 @@ int LibraryController::setSeries(const QStringList &workIds, const QString &name
     if (series.isEmpty() || works.isEmpty())
         return 0;
     // Numbers that volumes of this series which are not selected have.
-    QSet<int> taken;
-    for (const Work &work : m_works.works()) {
-        if (work.seriesIndex > 0 && !workIds.contains(work.id)
-            && work.series.compare(series, Qt::CaseInsensitive) == 0)
-            taken.insert(work.seriesIndex);
-    }
+    QSet<int> taken = takenSeriesNumbers(series, workIds);
     // First the selected works keep their numbers, unless another volume
     // has it; then the others get the free numbers in the given order.
     QList<bool> keeps;
@@ -309,6 +315,57 @@ int LibraryController::setSeries(const QStringList &workIds, const QString &name
             taken.insert(next);
         }
         work.series = series;
+        if (saveWork(work))
+            ++changed;
+    }
+    return changed;
+}
+
+bool LibraryController::seriesNeedsOrder(const QStringList &workIds, const QString &name) const
+{
+    const QString series = name.simplified();
+    const QList<Work> works = worksById(workIds);
+    if (works.size() < 2)
+        return false;
+    // Every work has a number of its own, and with the other volumes of the
+    // series they are 1, 2, 3 … without gaps.
+    QSet<int> numbers = takenSeriesNumbers(series, workIds);
+    for (const Work &work : works) {
+        if (work.seriesIndex <= 0 || numbers.contains(work.seriesIndex))
+            return true;
+        numbers.insert(work.seriesIndex);
+    }
+    for (int number = 1; number <= numbers.size(); ++number) {
+        if (!numbers.contains(number))
+            return true;
+    }
+    return false;
+}
+
+QList<int> LibraryController::seriesNumbers(const QStringList &workIds, const QString &name) const
+{
+    const QSet<int> taken = takenSeriesNumbers(name.simplified(), workIds);
+    const qsizetype count = worksById(workIds).size();
+    QList<int> numbers;
+    for (int next = 1; numbers.size() < count; ++next) {
+        if (!taken.contains(next))
+            numbers.append(next);
+    }
+    return numbers;
+}
+
+int LibraryController::setSeriesOrder(const QStringList &workIds, const QString &name)
+{
+    const QString series = name.simplified();
+    const QList<Work> works = worksById(workIds);
+    if (series.isEmpty() || works.isEmpty())
+        return 0;
+    const QList<int> numbers = seriesNumbers(workIds, series);
+    int changed = 0;
+    for (int i = 0; i < works.size(); ++i) {
+        Work work = works.at(i);
+        work.series = series;
+        work.seriesIndex = numbers.at(i);
         if (saveWork(work))
             ++changed;
     }
@@ -457,7 +514,7 @@ QString LibraryController::mergeWorks(const QStringList &workIds)
     return merged.id;
 }
 
-int LibraryController::removeWorks(const QStringList &workIds)
+int LibraryController::removeWorks(const QStringList &workIds, const QString &kind)
 {
     if (worksById(workIds).isEmpty())
         return 0;
@@ -465,6 +522,25 @@ int LibraryController::removeWorks(const QStringList &workIds)
 
     int removed = 0;
     for (const Work &work : worksById(workIds)) {
+        // Only the formats of this kind, if the work has others too.
+        if (!kind.isEmpty() && work.hasFormat(kindOf(kind))
+            && std::any_of(work.formats.cbegin(), work.formats.cend(),
+                           [&kind](const Format &format) { return format.kind != kindOf(kind); })) {
+            Work kept = work;
+            Work gone; // the removed formats, for their files
+            kept.formats.clear();
+            for (const Format &format : work.formats)
+                (format.kind == kindOf(kind) ? gone : kept).formats.append(format);
+            // The parts of a combined work keep their files: splitWork()
+            // leaves out parts whose formats are gone.
+            if (!saveWork(kept))
+                continue;
+            ++removed;
+            const QStringList failed = LibraryFolder::removeWorkFiles(m_backend->libraryRoot(), gone, m_trashFiles);
+            for (const QString &path : failed)
+                qWarning("Could not remove the file %s", qPrintable(path));
+            continue;
+        }
         if (!m_backend->removeWork(work.id)) {
             qWarning("Could not remove %s from the library", qPrintable(work.title));
             continue;

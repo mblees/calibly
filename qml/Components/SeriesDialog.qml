@@ -37,7 +37,7 @@ ConfirmDialog {
     }
 
     title: qsTr("%Ln Titel als Serie zusammenfassen", "", root.count)
-    message: qsTr("Alle bekommen diesen Seriennamen. Vorhandene Bandnummern bleiben, fehlende werden in der angezeigten Reihenfolge vergeben.")
+    message: qsTr("Alle bekommen diesen Seriennamen. Fehlen Bandnummern oder kommen sie doppelt vor, wird danach die Reihenfolge der Bände festgelegt.")
     confirmText: qsTr("Zusammenfassen")
     confirmEnabled: root.name.trim() !== ""
 

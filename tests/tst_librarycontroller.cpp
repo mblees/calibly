@@ -209,6 +209,36 @@ private slots:
         QCOMPARE(m_library->removeWorks({ QStringLiteral("book") }), 0);
     }
 
+    // Removing in the tab "E-Books" or "Hörbücher": only that format and its
+    // files; a work without the other format goes as a whole.
+    void removesOneFormat()
+    {
+        QCOMPARE(m_library->mergeWorks({ QStringLiteral("audio"), QStringLiteral("book") }), QStringLiteral("book"));
+        const WorkModel *works = m_library->works();
+        const auto book = [works] { return works->workAt(works->rowOf(QStringLiteral("book"))); };
+
+        QCOMPARE(m_library->removeWorks({ QStringLiteral("book") }, QStringLiteral("audiobook")), 1);
+        QVERIFY(book());
+        QVERIFY(book()->hasEbook());
+        QVERIFY(!book()->hasAudiobook());
+        QVERIFY(m_backend->has(QStringLiteral("book")));
+        QVERIFY(!QFileInfo::exists(m_part1));
+        QVERIFY(!QFileInfo::exists(m_part2));
+        QVERIFY(!QFileInfo::exists(m_part1 + QStringLiteral(".cover.jpg")));
+        QVERIFY(QFileInfo::exists(m_epub)); // the ebook stays
+        QVERIFY(QFileInfo::exists(m_epub + QStringLiteral(".cover.jpg")));
+
+        // The ebook is all that is left: the work goes.
+        QCOMPARE(m_library->removeWorks({ QStringLiteral("book") }, QStringLiteral("ebook")), 1);
+        QVERIFY(!book());
+        QVERIFY(!m_backend->has(QStringLiteral("book")));
+        QVERIFY(!QFileInfo::exists(m_epub));
+
+        // "" removes the whole works.
+        QCOMPARE(m_library->removeWorks({ QStringLiteral("faust") }, QString()), 1);
+        QCOMPARE(works->count(), 0);
+    }
+
     // Sample data (no library folder) owns no files: nothing is deleted.
     void removingSampleDataKeepsFiles()
     {
@@ -387,6 +417,50 @@ private:
         QCOMPARE(m_library->seriesNames(), QStringList{ QStringLiteral("Klassiker") });
         QCOMPARE(m_library->suggestedSeries({ QStringLiteral("faust") }), QStringLiteral("Klassiker"));
         QCOMPARE(m_library->setSeries(ids, QStringLiteral("   ")), 0); // no name
+    }
+
+    // Titles without volume numbers, with gaps or doubles: the user gives the
+    // order, and they get the free numbers in that order.
+    void ordersSeries()
+    {
+        const WorkModel *works = m_library->works();
+        const auto work = [works](const char *id) { return works->workAt(works->rowOf(QLatin1String(id))); };
+        const auto number = [this, &work](const char *id, int index, const QString &series = QString()) {
+            Work changed = *work(id);
+            changed.seriesIndex = index;
+            changed.series = series;
+            QVERIFY(m_library->saveWork(changed));
+        };
+        const QStringList ids = { QStringLiteral("book"), QStringLiteral("faust"), QStringLiteral("audio") };
+        const QString name = QStringLiteral("Klassiker");
+
+        QVERIFY(m_library->seriesNeedsOrder(ids, name)); // no numbers
+        QVERIFY(!m_library->seriesNeedsOrder({ QStringLiteral("book") }, name)); // one title
+        number("book", 1);
+        number("faust", 2);
+        number("audio", 3);
+        QVERIFY(!m_library->seriesNeedsOrder(ids, name)); // 1, 2, 3
+        number("audio", 4);
+        QVERIFY(m_library->seriesNeedsOrder(ids, name)); // a gap
+        number("audio", 2);
+        QVERIFY(m_library->seriesNeedsOrder(ids, name)); // twice 2
+
+        // Another volume of the series has number 2: it is left out.
+        number("audio", 2, name);
+        const QStringList two = { QStringLiteral("faust"), QStringLiteral("book") };
+        number("book", 3);
+        number("faust", 1);
+        QVERIFY(!m_library->seriesNeedsOrder(two, name)); // 1, 2, 3 together
+        number("faust", 2);
+        QVERIFY(m_library->seriesNeedsOrder(two, name)); // twice 2
+        QCOMPARE(m_library->seriesNumbers(two, name), (QList<int>{ 1, 3 }));
+
+        QCOMPARE(m_library->setSeriesOrder(two, QStringLiteral(" Klassiker ")), 2);
+        QCOMPARE(work("faust")->seriesIndex, 1);
+        QCOMPARE(work("book")->seriesIndex, 3);
+        QCOMPARE(work("book")->series, name);
+        QCOMPARE(work("audio")->seriesIndex, 2); // untouched
+        QCOMPARE(m_library->setSeriesOrder(two, QStringLiteral("  ")), 0);
     }
 
     // Phase 13: a series can be dissolved again, or works taken out of it.
