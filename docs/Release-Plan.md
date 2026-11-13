@@ -125,6 +125,7 @@ On the way, the installed folder lost five SQL drivers calibly never uses (Oracl
 
 ### Step 6 – Towards 1.0
 1. **Beta feedback**: fix reported bugs, each with a test where possible; further betas (`0.2.0-beta` …) as needed.
+   - **0.2.0-beta** (2026-11-13): phases 11–13 of the UI plan (accent color, export, series and combining that can be undone, selecting stacks, import whitelist) and the new icon; library schema 6. Release notes in [Release-Notes.md](Release-Notes.md).
 2. **Views "Autoren" and "Sprecher"** (separate small plan, like the phases of the UI plan): a list of all authors / narrators with the number of titles and a small cover row, a click shows their titles in the cover grid (as the series do). Sidebar counts.
 3. Feature freeze: from here on only fixes.
 4. Translations complete (`update_translations`, no unfinished entries), README and release notes in both languages.

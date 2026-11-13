@@ -23,7 +23,7 @@ Prototype of the planned cover gallery interface (not implemented yet): main lib
 ![calibly cover gallery mockup](mockups/calibly-cover-galerie-v2.png)
 
 ## UI Development Plan
-The UI will be built with Qt Quick, in small phases that each end with a runnable app. The [UI Development Plan](docs/UI-Development-Plan.md) describes the concept, the modular architecture and the phases. The [Release Plan](docs/Release-Plan.md) lists what is left until the first public release.
+The UI will be built with Qt Quick, in small phases that each end with a runnable app. The [UI Development Plan](docs/UI-Development-Plan.md) describes the concept, the modular architecture and the phases. The [Release Plan](docs/Release-Plan.md) lists what is left until 1.0; what changed in each version is in the [Release Notes](docs/Release-Notes.md).
 
 ## Build
 Requirements: Qt 6.12 (6.12.0 is tested; calibly uses Qt's internal `QZipReader` for EPUB files, so check the EPUB tests after a Qt update) with **MinGW 64-bit** and **Qt Multimedia** (Additional Libraries), plus **CMake** and **Ninja** from the Qt Online Installer (under "Build Tools"). Optional: **Qt PDF** (Extensions) for PDF covers and reading PDFs in calibly. TagLib is downloaded and built automatically on the first configure (needs internet once). The presets expect Qt in `C:\Qt`; if it is installed elsewhere, change `QT_ROOT` in `CMakePresets.json`.
