@@ -38,6 +38,12 @@ class LibraryLock;
 //       "Als Serie zusammenfassen": the works get this series; a volume
 //       number they have stays, the others get the next free numbers in the
 //       given order. Returns how many works were changed.
+//   LibraryController.removeSeries(name)
+//       "Serie auflösen": every work of that series (compared as the stacks
+//       do, without case and accents) loses its series and volume number.
+//   LibraryController.clearSeries(workIds)
+//       "Aus der Serie nehmen": the same for these works.
+//       Both return how many works were changed.
 //   seriesNames       the series of the library, sorted, for suggestions
 //   LibraryController.suggestedSeries(workIds)   the first series one of
 //       the works has, "" if none has one
@@ -141,6 +147,8 @@ public:
     Q_INVOKABLE bool setFormatFinished(const QString &workId, int formatIndex, bool finished);
     Q_INVOKABLE int markWorks(const QStringList &workIds, bool finished);
     Q_INVOKABLE int setSeries(const QStringList &workIds, const QString &name);
+    Q_INVOKABLE int removeSeries(const QString &name);
+    Q_INVOKABLE int clearSeries(const QStringList &workIds);
     Q_INVOKABLE QString mergeWorks(const QStringList &workIds);
     Q_INVOKABLE QString mergeTitle(const QStringList &workIds) const;
     Q_INVOKABLE int splitWork(const QString &workId);

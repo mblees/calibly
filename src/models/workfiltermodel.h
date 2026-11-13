@@ -50,14 +50,18 @@
 //                 series is a stack then, also one with a single volume.
 //   workCount     the works behind the shown rows (count counts a stack once)
 //
-// Selection (phase 9): shown works can be selected; stacks cannot. The role
-// "selected" tells it per row. Works that are no longer shown (filter,
-// search, removed) leave the selection, so it never contains anything the
-// user does not see.
-//   toggleSelected(workId), selectAll(), clearSelection()
-//   selectedCount, selectedIds (in the shown order)
-//   canMergeSelection   "Zu einem Werk verbinden" makes sense: two or more
-//                       works, or one work with several audiobook files
+// Selection (phase 9): shown works can be selected. A series stack too
+// (phase 13): selecting it selects all its volumes, and it counts as
+// selected when all of them are. The role "selected" tells it per row.
+// Works that are no longer shown (filter, search, removed – a volume of a
+// shown stack counts as shown) leave the selection, so it never contains
+// anything the user does not see.
+//   toggleSelected(workId)   a work, or the stack whose first volume it is
+//   selectAll(), clearSelection()
+//   selectedCount  selected works (the volumes of a stack each count)
+//   selectedIds    in the shown order, the volumes of a stack in theirs
+//   canMergeSelection   "Kombinieren" makes sense: two or more works, or
+//                       one work with several audiobook files
 //
 // onlyIds: shows exactly these works, in this order, ignoring every other
 // filter – e.g. to step through a selection in the metadata editor.
@@ -206,6 +210,9 @@ private:
     void updateCount();
     void updateFormatCounts();
     void pruneSelection();
+    // The works a shown row stands for: itself, or the volumes of its stack
+    // (by volume number).
+    QStringList idsOfRow(int row) const;
 
     FormatFilter m_formatFilter = AllFormats;
     QString m_searchText;

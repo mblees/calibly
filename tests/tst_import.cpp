@@ -480,10 +480,9 @@ private slots:
         QCOMPARE(summary.countBySuffix.value(QStringLiteral("MP3")), 2);
     }
 
-    // Text and Markdown files are imported when picked or dropped
-    // themselves, not when found in a folder (audiobook folders often hold
-    // .txt files).
-    void textFilesOnlyWhenPicked()
+    // Phase 13: text and Markdown files are not imported, neither found in a
+    // folder nor picked or dropped themselves; neither are other files.
+    void onlyBooksAreImported()
     {
         QTemporaryDir dir;
         const QString source = dir.filePath(QStringLiteral("in"));
@@ -499,13 +498,18 @@ private slots:
         QCOMPARE(ImportWorker::collectFiles({ source }), QStringList{ source + QStringLiteral("/1.mp3") });
         QCOMPARE(ImportWorker::inspectPaths({ source }).ebookCount, 0);
 
-        const QString picked = source + QStringLiteral("/Notizen - Testautor.md");
-        QCOMPARE(ImportWorker::collectFiles({ picked }), QStringList{ picked });
-        QCOMPARE(ImportWorker::inspectPaths({ picked }).ebookCount, 1);
-        const FileMetadata metadata = readMetadata(picked);
-        QCOMPARE(metadata.kind, Format::Kind::Ebook);
-        QCOMPARE(metadata.title, QStringLiteral("Notizen"));
-        QCOMPARE(metadata.authors, QStringList{ QStringLiteral("Testautor") });
+        for (const QString &name : { QStringLiteral("Notizen - Testautor.md"), QStringLiteral("info.txt") }) {
+            const QString picked = source + u'/' + name;
+            QVERIFY(ImportWorker::collectFiles({ picked }).isEmpty());
+            QCOMPARE(ImportWorker::inspectPaths({ picked }).ebookCount, 0);
+        }
+        QVERIFY(!isSupportedFile(QStringLiteral("x.markdown")));
+        QVERIFY(!isSupportedFile(QStringLiteral("x.docx")));
+        QVERIFY(!isSupportedFile(QStringLiteral("cover.jpg")));
+        for (const QString &book : { QStringLiteral("a.EPUB"), QStringLiteral("a.pdf"), QStringLiteral("a.mobi"),
+                                     QStringLiteral("a.azw3"), QStringLiteral("a.m4b"), QStringLiteral("a.mp3"),
+                                     QStringLiteral("a.flac") })
+            QVERIFY2(isSupportedFile(book), qPrintable(book));
     }
 
     void safeNames()

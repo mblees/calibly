@@ -40,7 +40,7 @@ QStringList ImportWorker::collectFiles(const QStringList &paths)
                 if (isSupportedFile(file))
                     files.append(file);
             }
-        } else if (isSupportedFile(path, true)) {
+        } else if (isSupportedFile(path)) {
             files.append(info.absoluteFilePath());
         }
     }
@@ -56,8 +56,8 @@ PathSummary ImportWorker::inspectPaths(const QStringList &paths, int limit)
         summary.name = QFileInfo(paths.first()).fileName();
 
     int looked = 0;
-    const auto count = [&summary](const QString &file, bool picked) {
-        if (!isSupportedFile(file, picked))
+    const auto count = [&summary](const QString &file) {
+        if (!isSupportedFile(file))
             return;
         const QString suffix = upperSuffix(file);
         summary.countBySuffix[suffix] += 1;
@@ -71,11 +71,11 @@ PathSummary ImportWorker::inspectPaths(const QStringList &paths, int limit)
         if (info.isDir()) {
             QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
             while (it.hasNext() && looked < limit) {
-                count(it.next(), false);
+                count(it.next());
                 ++looked;
             }
         } else {
-            count(path, true);
+            count(path);
             ++looked;
         }
         if (looked >= limit)

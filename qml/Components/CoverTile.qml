@@ -21,7 +21,7 @@ import Calibly.Models
 //   stacked                       draw the cover as a series stack
 //   stackLabel                    label of a stack, e.g. "Band 1–4"; shown
 //                                 instead of the state label
-//   selectable                    the work can be selected (not a stack)
+//   selectable                    the work (or stack, for all its volumes) can be selected
 //   selected                      it is selected
 //   selecting                     other works are selected: the circle is
 //                                 shown without hovering

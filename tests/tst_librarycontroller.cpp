@@ -385,6 +385,28 @@ private:
         QCOMPARE(m_library->setSeries(ids, QStringLiteral("   ")), 0); // no name
     }
 
+    // Phase 13: a series can be dissolved again, or works taken out of it.
+    void removesSeries()
+    {
+        const QStringList ids = { QStringLiteral("book"), QStringLiteral("faust"), QStringLiteral("audio") };
+        QCOMPARE(m_library->setSeries(ids, QStringLiteral("Klassiker")), 3);
+        const WorkModel *works = m_library->works();
+        const auto work = [works](const char *id) { return works->workAt(works->rowOf(QLatin1String(id))); };
+
+        QCOMPARE(m_library->clearSeries({ QStringLiteral("audio") }), 1);
+        QVERIFY(work("audio")->series.isEmpty());
+        QCOMPARE(work("audio")->seriesIndex, 0);
+        QCOMPARE(work("book")->series, QStringLiteral("Klassiker"));
+        QCOMPARE(m_library->clearSeries({ QStringLiteral("audio") }), 0); // nothing left to clear
+
+        // Compared like the stacks: without case and accents.
+        QCOMPARE(m_library->removeSeries(QStringLiteral("KLASSÌKER")), 2);
+        QVERIFY(work("book")->series.isEmpty());
+        QCOMPARE(work("faust")->seriesIndex, 0);
+        QVERIFY(m_library->seriesNames().isEmpty());
+        QCOMPARE(m_library->removeSeries(QString()), 0);
+    }
+
     // "Kombinieren" two books into volumes, mark one volume, and dissolve
     // the combination again.
     void combinesAndSplits()

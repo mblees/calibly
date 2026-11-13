@@ -5,9 +5,9 @@ import Calibly.Controls
 // offers depends on what was clicked:
 //   * a title: details, read / listen, metadata, mark as finished,
 //     dissolve a combination, select, remove
-//   * one of several selected titles: the actions for all of them, as in
-//     the BulkActionBar
-//   * a series stack: open the series
+//   * one of several selected titles (or a selected series stack): the
+//     actions for all of them, as in the BulkActionBar
+//   * a series stack: open it, select it, dissolve the series
 // Presentation only: it reports what was chosen, the view does it.
 //
 // Properties:
@@ -24,8 +24,8 @@ import Calibly.Controls
 //   busy               actions that change the library are disabled, e.g.
 //                      while an import is running
 //   exporting          an export is running: exporting is disabled
-//   bulk (read-only)   the menu is about the whole selection: the title is
-//                      selected and not the only one
+//   bulk (read-only)   the menu is about the whole selection: the title (or
+//                      stack) is selected and not the only one
 // Signals:
 //   openRequested()    the details of the title, or the series of a stack
 //   readRequested(), listenRequested()
@@ -35,6 +35,8 @@ import Calibly.Controls
 //   selectToggled()    select the title / take it out of the selection
 //   clearSelectionRequested()   bulk: end the selection
 //   mergeRequested()   bulk: "Kombinieren", the selected titles into one entry
+//   seriesClearRequested()    bulk: "Aus der Serie nehmen"
+//   seriesRemoveRequested()   a stack: "Serie auflösen …"
 //   seriesRequested()  bulk: "Als Serie zusammenfassen …"
 //   markRequested(bool finished)   bulk: all as finished / as new
 //   splitRequested()   "Kombination auflösen"
@@ -57,7 +59,9 @@ AppMenu {
     property bool busy: false
     property bool exporting: false
 
-    readonly property bool bulk: !root.stack && root.selected && root.selectionCount > 1
+    readonly property bool bulk: root.selected && root.selectionCount > 1
+    // A series stack that is not part of a selection.
+    readonly property bool stackOnly: root.stack && !root.bulk
     // One title, not a stack and not a selection.
     readonly property bool single: !root.stack && !root.bulk
     readonly property bool bothFormats: root.hasEbook && root.hasAudiobook
@@ -74,15 +78,24 @@ AppMenu {
     signal seriesRequested()
     signal markRequested(bool finished)
     signal splitRequested()
+    signal seriesClearRequested()
+    signal seriesRemoveRequested()
     signal exportRequested()
     signal removeRequested()
 
     // --- a series stack --------------------------------------------------------
     AppMenuItem {
-        visible: root.stack
+        visible: root.stackOnly
         iconName: "layers"
         text: qsTr("Serie öffnen")
         onTriggered: root.openRequested()
+    }
+    AppMenuItem {
+        visible: root.stackOnly
+        enabled: !root.busy
+        iconName: "split"
+        text: qsTr("Serie auflösen …")
+        onTriggered: root.seriesRemoveRequested()
     }
 
     // --- one title ---------------------------------------------------------------
@@ -120,7 +133,7 @@ AppMenu {
     // --- one title or the selection ------------------------------------------------
     // Metadata are edited for one title at a time.
     AppMenuItem {
-        visible: !root.stack
+        visible: !root.stackOnly
         enabled: !root.bulk
         iconName: "edit"
         text: qsTr("Metadaten bearbeiten")
@@ -173,6 +186,13 @@ AppMenu {
         onTriggered: root.seriesRequested()
     }
     AppMenuItem {
+        visible: root.bulk
+        enabled: !root.busy
+        iconName: "x"
+        text: qsTr("Aus der Serie nehmen")
+        onTriggered: root.seriesClearRequested()
+    }
+    AppMenuItem {
         visible: root.single && root.canSplit
         enabled: !root.busy
         iconName: "split"
@@ -187,7 +207,7 @@ AppMenu {
         onTriggered: root.exportRequested()
     }
     AppMenuItem {
-        visible: root.single
+        visible: root.single || root.stackOnly
         iconName: root.selected ? "x" : "plus"
         text: root.selected ? qsTr("Auswahl aufheben") : qsTr("Auswählen")
         onTriggered: root.selectToggled()
@@ -199,10 +219,10 @@ AppMenu {
         onTriggered: root.clearSelectionRequested()
     }
     AppMenuSeparator {
-        visible: !root.stack
+        visible: !root.stackOnly
     }
     AppMenuItem {
-        visible: !root.stack
+        visible: !root.stackOnly
         enabled: !root.busy
         iconName: "trash"
         danger: true

@@ -485,7 +485,7 @@ ViewBase {
                 stackLabel: !cell.stack || cell.seriesFirst === 0 ? ""
                             : cell.seriesFirst === cell.seriesLast ? qsTr("Band %1").arg(cell.seriesFirst)
                             : qsTr("Band %1–%2").arg(cell.seriesFirst).arg(cell.seriesLast)
-                selectable: !cell.stack
+                selectable: true
                 selected: cell.selected
                 selecting: works.selectedCount > 0
                 coverUrl: cell.coverUrl
@@ -496,8 +496,11 @@ ViewBase {
                 listenProgress: cell.listenProgress
                 workState: cell.workState
 
+                // While titles are selected a click selects (phase 13).
                 onClicked: {
-                    if (cell.stack)
+                    if (works.selectedCount > 0)
+                        works.toggleSelected(cell.workId)
+                    else if (cell.stack)
                         root.openSeries(cell.series)
                     else
                         detail.openFor(cell.workId, cell.coverUrl, cell.coverIsSquare)
@@ -613,6 +616,11 @@ ViewBase {
                 root.askMarkNew()
         }
         onSplitRequested: LibraryController.splitWork(workMenu.workId)
+        onSeriesClearRequested: LibraryController.clearSeries(works.selectedIds)
+        onSeriesRemoveRequested: {
+            root.actionTitle = workMenu.series
+            removeSeriesDialog.open()
+        }
         onExportRequested: root.askExport()
         onRemoveRequested: {
             if (workMenu.bulk)
@@ -645,6 +653,17 @@ ViewBase {
         suggestions: LibraryController.seriesNames
 
         onAccepted: LibraryController.setSeries(root.actionIds, seriesDialog.name)
+    }
+
+    // actionTitle: the series that is dissolved.
+    ConfirmDialog {
+        id: removeSeriesDialog
+
+        title: qsTr("Serie „%1“ auflösen?").arg(root.actionTitle)
+        message: qsTr("Die Bände bleiben in der Bibliothek, verlieren aber den Seriennamen und ihre Bandnummer.")
+        confirmText: qsTr("Auflösen")
+
+        onAccepted: LibraryController.removeSeries(root.actionTitle)
     }
 
     ConfirmDialog {

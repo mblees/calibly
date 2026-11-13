@@ -238,6 +238,7 @@ Every phase ends with a **runnable app**. A phase only starts once the previous 
 | 10 | Ebook reader (EPUB and PDF) | Qt PDF Quick; EPUB rendering as decided |
 | 11 | Accent color and export of the selection | – |
 | 12 | Selection fixes, "Als Serie zusammenfassen", combining that can be undone | SQLite schema 6 |
+| 13 | Import whitelist, select mode, dissolving series, selecting stacks | – |
 
 ### Phase 0 – Skeleton
 - CMake project, folder and module structure as described above.
@@ -461,6 +462,20 @@ Issues found while testing (2026-11-13) and what was decided about them. Three w
 *Kombination auflösen:* in the context menu of a title and as a button in the detail view (`canSplit`; no question). `splitWork()` (core) gives the parts back with their ids and metadata (the part with the work's id keeps the metadata of the combined entry); each format goes to the part of its file; a joined audiobook is cut at the files of each part, the position goes to the part it is in (the ones before are finished). Works merged before this phase become one work per format; `LibraryController::splitWork()` titles them from the file's metadata (`readMetadata()`, as the import), the first keeps the id; sizes of cut audiobooks are read from their files.
 *Deviations:* Only a **combined** work (with stored parts) treats its ebooks as volumes. Several ebooks of a work that was not combined are the same book in other files (e.g. an EPUB and a PDF dropped onto one cover), as before: the highest progress counts, one finished is enough, the reader picks EPUB before PDF. Works merged into "volumes" before phase 12 therefore still behave like one book until they are dissolved and combined again. The chapter list of a combined audiobook gets no headings; instead a file without chapters of its own is one chapter titled like its part (cleared again when dissolving).
 - Tests: `tst_workmerge` (`combinesVolumes`, `sameBookInSeveralFiles`, `currentFormat`, `splitsCombinedWork` with the audiobook cut and its position, `splitsWorkWithoutParts`), `tst_librarycontroller` (`marksWorks`, `setsSeries`, `combinesAndSplits`), `tst_readercontroller` (`volumes`: current volume and place, turning back and on across the border, contents), `tst_continuemodel` (`currentVolume`), `tst_import` (`sqliteMigratesVersion5`; the older migration tests drop the new column too). `tst_readercontroller` now deletes removed test files instead of moving them to the recycle bin.
+
+### Phase 13 – Import whitelist, select mode, dissolving series, selecting stacks
+Issues found while testing (2026-11-13), implemented right away (decided with the user: no text files at all; "groups" are combined entries).
+- `.md` files could be imported: the import should accept books and audiobooks only.
+- While titles are selected, a click on a cover opened the detail view instead of selecting it.
+- A series could not be undone ("Als Serie zusammenfassen" or set by hand): there should be a way that removes the series from the metadata.
+- Series stacks could not be selected; selecting a stack should mean selecting all its volumes, together with single titles and combined entries.
+
+**Implemented as:**
+*Whitelist:* the import accepts exactly `ebookSuffixes()` (epub, pdf, mobi, azw3) and `audiobookSuffixes()` (m4b, m4a, mp3, aac, ogg, opus, flac), found in a folder or picked / dropped alike (`isSupportedFile(path)`; the "picked" exception of step 10.4 and `textSuffixes()` are gone), and the file dialog offers only these. This reverses the TXT / Markdown import of phase 10: the reader still opens text and Markdown files a library already has, but none are added any more.
+*Select mode:* while titles are selected, a click on a cover (also on a stack) selects it or takes it out of the selection; details and series open again once nothing is selected.
+*Series:* "Serie auflösen …" in the context menu of a stack asks first and then removes series and volume number from every work of that series (`LibraryController.removeSeries(name)`, names compared like the stacks, without case and accents – also volumes hidden by the search or format selection). "Aus der Serie nehmen" in the menu of a selection does the same for the selected works (`clearSeries(workIds)`).
+*Selecting stacks:* `WorkFilterModel` treats a stack as its volumes: `toggleSelected()` with the id of a stack selects all volumes (or none, if all were selected), `selectAll()` includes them, a stack counts as selected when all its volumes are, `selectedIds` lists them in volume order at the place of the stack, and volumes of a shown stack stay in the selection. The circle, Ctrl + click and the new click work on stacks; the menu of a selected stack is the menu of the selection (`WorkMenu.bulk` now includes stacks), so stacks, single titles and combined entries can be combined, exported, given a series or marked together. `selectedCount` counts works, so a stack of four adds four.
+- Tests: `tst_import` (`onlyBooksAreImported`: no text, Markdown or other files, picked or not; every book suffix), `tst_workfiltermodel` (`seriesStacks`: selecting a stack, toggling it, volumes of a shown stack stay), `tst_librarycontroller` (`removesSeries`). Gallery: a selected stack.
 
 ### Afterwards (separate plans)
 - The way to a public release (0.1 Beta, then 1.0): [Release Plan](Release-Plan.md).

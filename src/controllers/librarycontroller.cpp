@@ -13,6 +13,7 @@
 #include "librarylock.h"
 #include "metadatareader.h"
 #include "sqlitebackend.h"
+#include "textutils.h"
 #include "workmerge.h"
 
 #include <QCollator>
@@ -185,7 +186,7 @@ LibraryController::LibraryError LibraryController::retryLibrary()
 QStringList LibraryController::fileNameFilters() const
 {
     QStringList patterns;
-    for (const QString &suffix : ebookSuffixes() + textSuffixes() + audiobookSuffixes())
+    for (const QString &suffix : ebookSuffixes() + audiobookSuffixes())
         patterns.append(QStringLiteral("*.") + suffix);
     return patterns;
 }
@@ -304,6 +305,33 @@ int LibraryController::setSeries(const QStringList &workIds, const QString &name
             taken.insert(next);
         }
         work.series = series;
+        if (saveWork(work))
+            ++changed;
+    }
+    return changed;
+}
+
+int LibraryController::removeSeries(const QString &name)
+{
+    const QString key = TextUtils::foldForSearch(name).simplified();
+    if (key.isEmpty())
+        return 0;
+    QStringList ids;
+    for (const Work &work : m_works.works()) {
+        if (TextUtils::foldForSearch(work.series).simplified() == key)
+            ids.append(work.id);
+    }
+    return clearSeries(ids);
+}
+
+int LibraryController::clearSeries(const QStringList &workIds)
+{
+    int changed = 0;
+    for (Work work : worksById(workIds)) {
+        if (work.series.isEmpty() && work.seriesIndex == 0)
+            continue;
+        work.series.clear();
+        work.seriesIndex = 0;
         if (saveWork(work))
             ++changed;
     }

@@ -403,11 +403,24 @@ private slots:
         QVERIFY(m_filter.isStack(0));
         QCOMPARE(m_filter.workIdAt(1), QStringLiteral("Einzelband"));
 
-        // Stacks cannot be selected.
+        // Phase 13: selecting a stack selects all its volumes (by number,
+        // the unnumbered one last), together with single works.
         m_filter.selectAll();
-        QCOMPARE(m_filter.selectedIds(), (QStringList{ QStringLiteral("Einzelband"), QStringLiteral("Zauberberg") }));
-        m_filter.toggleSelected(m_filter.workIdAt(0));
+        QCOMPARE(m_filter.selectedIds(),
+                 (QStringList{ QStringLiteral("Eine Studie in Scharlachrot"), QStringLiteral("Der Hund der Baskervilles"),
+                               QStringLiteral("Abenteuer"), QStringLiteral("Einzelband"), QStringLiteral("Zauberberg") }));
+        QVERIFY(m_filter.index(0, 0).data(WorkFilterModel::SelectedRole).toBool());
+        QSignalSpy selectionChanged(&m_filter, &WorkFilterModel::selectionChanged);
+        m_filter.toggleSelected(m_filter.workIdAt(0)); // all were selected: none
         QCOMPARE(m_filter.selectedCount(), 2);
+        QVERIFY(!m_filter.index(0, 0).data(WorkFilterModel::SelectedRole).toBool());
+        m_filter.toggleSelected(m_filter.workIdAt(0));
+        QCOMPARE(m_filter.selectedCount(), 5);
+        QCOMPARE(selectionChanged.count(), 2);
+        // A hidden volume of a shown stack stays selected; a hidden stack's do not.
+        m_filter.setSearchText(QStringLiteral("zauberberg"));
+        QCOMPARE(m_filter.selectedIds(), QStringList{ QStringLiteral("Zauberberg") });
+        m_filter.setSearchText(QString());
         m_filter.clearSelection();
 
         // With the format selection the stack only has what its volumes have there.

@@ -18,16 +18,10 @@ QStringList audiobookSuffixes()
              QStringLiteral("ogg"), QStringLiteral("opus"), QStringLiteral("flac") };
 }
 
-QStringList textSuffixes()
-{
-    return { QStringLiteral("txt"), QStringLiteral("md"), QStringLiteral("markdown") };
-}
-
-bool isSupportedFile(const QString &path, bool picked)
+bool isSupportedFile(const QString &path)
 {
     const QString suffix = QFileInfo(path).suffix().toLower();
-    return ebookSuffixes().contains(suffix) || audiobookSuffixes().contains(suffix)
-           || (picked && textSuffixes().contains(suffix));
+    return ebookSuffixes().contains(suffix) || audiobookSuffixes().contains(suffix);
 }
 
 FileMetadata readMetadata(const QString &path)

@@ -111,8 +111,14 @@ QVariant WorkFilterModel::data(const QModelIndex &index, int role) const
 {
     const bool oneFormat = m_formatFilter == Ebook || m_formatFilter == Audiobook;
     switch (role) {
-    case SelectedRole:
-        return m_selected.contains(QSortFilterProxyModel::data(index, WorkModel::WorkIdRole).toString());
+    case SelectedRole: {
+        if (m_selected.isEmpty())
+            return false;
+        const QStringList ids = idsOfRow(index.row());
+        return !ids.isEmpty() && std::all_of(ids.cbegin(), ids.cend(), [this](const QString &id) {
+            return m_selected.contains(id);
+        });
+    }
     case SeriesCountRole:
     case SeriesFirstRole:
     case SeriesLastRole: {
@@ -498,15 +504,40 @@ void WorkFilterModel::updateFormatCounts()
 
 // --- selection ---------------------------------------------------------------
 
+QStringList WorkFilterModel::idsOfRow(int row) const
+{
+    if (row < 0 || row >= rowCount())
+        return {};
+    const int lead = mapToSource(index(row, 0)).row();
+    if (!stackOf(lead))
+        return { workIdAt(row) };
+    const QAbstractItemModel *model = sourceModel();
+    QList<int> rows;
+    for (int sourceRow = 0; sourceRow < m_leadOfRow.size(); ++sourceRow) {
+        if (m_leadOfRow.at(sourceRow) == lead)
+            rows.append(sourceRow);
+    }
+    const auto number = [model](int r) {
+        const int volume = model->index(r, 0).data(WorkModel::SeriesIndexRole).toInt();
+        return volume > 0 ? volume : std::numeric_limits<int>::max();
+    };
+    std::stable_sort(rows.begin(), rows.end(), [&](int a, int b) { return number(a) < number(b); });
+    QStringList ids;
+    for (int r : std::as_const(rows))
+        ids.append(model->index(r, 0).data(WorkModel::WorkIdRole).toString());
+    return ids;
+}
+
 QStringList WorkFilterModel::selectedIds() const
 {
     QStringList ids;
     if (m_selected.isEmpty())
         return ids;
     for (int row = 0; row < rowCount(); ++row) {
-        const QString id = workIdAt(row);
-        if (m_selected.contains(id))
-            ids.append(id);
+        for (const QString &id : idsOfRow(row)) {
+            if (m_selected.contains(id))
+                ids.append(id);
+        }
     }
     return ids;
 }
@@ -529,10 +560,17 @@ bool WorkFilterModel::canMergeSelection() const
 void WorkFilterModel::toggleSelected(const QString &workId)
 {
     const int row = rowOf(workId);
-    if (row < 0 || isStack(row))
+    if (row < 0)
         return;
-    if (!m_selected.remove(workId))
-        m_selected.insert(workId);
+    // A stack: all its volumes, or none if all were selected.
+    const QStringList ids = idsOfRow(row);
+    const bool all = std::all_of(ids.cbegin(), ids.cend(), [this](const QString &id) { return m_selected.contains(id); });
+    for (const QString &id : ids) {
+        if (all)
+            m_selected.remove(id);
+        else
+            m_selected.insert(id);
+    }
     emit dataChanged(index(row, 0), index(row, 0), { SelectedRole });
     emit selectionChanged();
 }
@@ -541,8 +579,8 @@ void WorkFilterModel::selectAll()
 {
     const qsizetype before = m_selected.size();
     for (int row = 0; row < rowCount(); ++row) {
-        if (!isStack(row))
-            m_selected.insert(workIdAt(row));
+        for (const QString &id : idsOfRow(row))
+            m_selected.insert(id);
     }
     if (m_selected.size() == before)
         return;
@@ -566,8 +604,8 @@ void WorkFilterModel::pruneSelection()
         return;
     QSet<QString> shown;
     for (int row = 0; row < rowCount(); ++row) {
-        if (!isStack(row))
-            shown.insert(workIdAt(row));
+        for (const QString &id : idsOfRow(row))
+            shown.insert(id);
     }
     const qsizetype before = m_selected.size();
     m_selected.intersect(shown);

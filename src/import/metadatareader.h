@@ -8,12 +8,10 @@
 // and fills missing title, author and series number from the file name.
 FileMetadata readMetadata(const QString &path);
 
-// File suffixes calibly can import, lower case without dot.
+// File suffixes calibly can import, lower case without dot: the whitelist
+// of the import (phase 13: books and audiobooks only; text and Markdown
+// files are no longer imported, the reader still opens those a library
+// already has).
 QStringList ebookSuffixes();
 QStringList audiobookSuffixes();
-// Plain text and Markdown, read in calibly's reader. Imported only when the
-// user picks or drops the file itself: folders of audiobooks often hold
-// .txt files that are no books.
-QStringList textSuffixes();
-// picked: the user chose this file itself (not found in a folder).
-bool isSupportedFile(const QString &path, bool picked = false);
+bool isSupportedFile(const QString &path);
