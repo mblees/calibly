@@ -99,21 +99,14 @@ Rectangle {
         anchors.topMargin: Theme.spacingL
         spacing: Theme.spacingL
 
-        Row {
+        // Wordmark: one color and weight, the color is in the icon
+        // (mockups/calibly-logo-ideen.html, idea 4).
+        Text {
             Layout.leftMargin: Theme.spacingS
-
-            Text {
-                text: "cali"
-                color: Theme.textPrimary
-                font.pixelSize: Theme.fontTitle
-                font.weight: Font.Bold
-            }
-            Text {
-                text: "bly"
-                color: Theme.accent
-                font.pixelSize: Theme.fontTitle
-                font.weight: Font.Bold
-            }
+            text: "calibly"
+            color: Theme.textPrimary
+            font.pixelSize: Theme.fontTitle
+            font.weight: Font.DemiBold
         }
 
         ListView {

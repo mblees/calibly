@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>calibly Logo-Ideen</title>
+<meta name="description" content="Fünf Ideen für ein neues calibly-App-Icon, verglichen in allen Größen und im Schriftzug.">
+<style>
+/* Hallmark · shape: mockup sheet · theme: custom (project mockup style, by request) · genre: editorial · nav: none · footer: none · hero: settled · posture: restrained · signature: five app icons side by side, 16 to 200 px */
+/* critique: one sheet, one question (which icon?); every idea shown at the same sizes and in the same two places so they compare fairly */
+/* Hallmark · waive 38iii · .card h2 .n · a number badge before the heading, not a coloured word inside it */
+:root{
+  --page:#e7e3dc; --card:#fbfaf8; --note:#f2eee7; --line:#ddd7cd;
+  --ink:#1d1d1f; --ink-2:#5b5750; --ink-3:#46423b; --badge:#b24e16; --on-badge:#fff8f2;
+  --tile-hi:#2a2b32; --tile-lo:#121316; --app:#16171b; --side:#1b1c21; --app-tx:#ececef; --app-mut:#8f8f99;
+  --light:#f4f4f6;
+  --or:#ff8a3d; --bl:#6ea8ff; --bl-hi:#8bbcff; --bl-lo:#4a82e0; --bl-pale:#d8e7ff; --shelf:#4a4b55;
+  --shadow:0 2px 10px rgba(29,29,31,.08);
+  --font-ui:"Segoe UI",system-ui,sans-serif; --font-serif:Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:clip}
+body{background:var(--page);color:var(--ink);font-family:var(--font-ui);font-size:16px;line-height:1.45}
+.wrap{max-width:1480px;margin:0 auto;padding:40px 16px 56px}
+
+.head{margin-bottom:28px}
+.head h1{font-size:44px;font-weight:700;letter-spacing:-.5px;text-wrap:balance;overflow-wrap:break-word;min-width:0}
+.head p{font-size:18px;color:var(--ink-2);margin-top:8px;max-width:70ch}
+
+.card{background:var(--card);border-radius:18px;padding:24px 24px 20px;box-shadow:var(--shadow);margin-bottom:28px}
+.card h2{text-wrap:balance;font-size:24px;font-weight:650;display:flex;align-items:center;gap:12px}
+.card h2 .n{min-width:36px;height:36px;padding:0 12px;border-radius:18px;background:var(--badge);color:var(--on-badge);display:grid;place-items:center;font-size:17px}
+.card h2 .n.ref{background:var(--ink-2);color:var(--on-badge)}
+.desc{font-size:15px;color:var(--ink-2);margin:8px 0 20px 48px;max-width:90ch}
+
+/* overview */
+.over{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:20px}
+.over figure{display:flex;flex-direction:column;align-items:center;gap:12px}
+.over svg,.over img{width:112px;height:112px;display:block}
+.over figcaption{font-size:14px;color:var(--ink-2);text-align:center}
+.over figcaption b{color:var(--ink);font-weight:650}
+.strip{display:flex;align-items:center;justify-content:center;gap:16px;padding:12px;border-radius:12px;margin-top:20px}
+.strip.dark{background:var(--app);color:var(--app-tx)}
+.strip.light{background:var(--light);border:1px solid var(--line)}
+.strip .lbl{font-size:13px;color:var(--app-mut);margin-right:8px}
+.strip.light .lbl{color:var(--ink-2)}
+.strip .grp{display:flex;align-items:center;gap:12px;padding:0 16px;border-left:1px solid var(--line)}
+.strip.dark .grp{border-color:var(--tile-hi)}
+.strip .grp:first-of-type{border-left:0}
+
+/* detail */
+.row{display:grid;grid-template-columns:220px minmax(0,1fr) minmax(0,1.15fr);gap:28px;align-items:center}
+.big svg{width:220px;height:220px;display:block}
+.sizes{display:flex;flex-direction:column;gap:12px}
+.sizes .s{display:flex;align-items:flex-end;gap:24px;padding:16px;border-radius:12px}
+.sizes .s.dark{background:var(--app);color:var(--app-tx)}
+.sizes .s.light{background:var(--light);border:1px solid var(--line)}
+.sizes figure{display:flex;flex-direction:column;align-items:center;gap:8px}
+.sizes figcaption{font-size:12px;color:var(--app-mut)}
+.sizes .s.light figcaption{color:var(--ink-2)}
+.sizes svg{display:block}
+
+.lockups{display:flex;flex-direction:column;gap:12px}
+.lock{display:flex;align-items:center;gap:12px;border-radius:12px;padding:16px 20px}
+.lock.side{background:var(--side);color:var(--app-tx)}
+.lock.light{background:var(--light);border:1px solid var(--line);color:var(--ink)}
+.lock .cap{margin-left:auto;font-size:12px;color:var(--app-mut)}
+.lock.light .cap{color:var(--ink-2)}
+.lock.hero{padding:24px 20px;gap:16px}
+
+.wm{font-size:22px;line-height:1;letter-spacing:-.3px}
+.wm .o{color:var(--or)}
+.wm .b{color:var(--bl)}
+.lock.light .wm .o{color:var(--badge)}
+.lock.light .wm .b{color:var(--bl-lo)}
+.lock.hero .wm{font-size:34px}
+.wm.ui{font-family:var(--font-ui);font-weight:700}
+.wm.ui-semi{font-family:var(--font-ui);font-weight:600}
+.wm.serif{font-family:var(--font-serif);font-weight:700;letter-spacing:0}
+.wm.serif-reg{font-family:var(--font-serif);font-weight:400;letter-spacing:0}
+
+.notes{display:flex;gap:16px;margin-top:20px}
+.notes div{flex:1;min-width:0;background:var(--note);border-radius:10px;padding:12px;font-size:14px;line-height:1.45;color:var(--ink-3)}
+.notes b{display:block;color:var(--ink);margin-bottom:2px}
+
+/* SVG paint, all through tokens */
+.t{fill:url(#tile)}
+.f-bl{fill:url(#blue)}
+.f-bl-flat{fill:var(--bl)}
+.f-or{fill:var(--or)}
+.f-dark{fill:var(--tile-lo)}
+.f-shelf{fill:var(--shelf)}
+.f-band{fill:var(--bl-pale);opacity:.45}
+.k-pale{fill:none;stroke:var(--bl-pale);stroke-width:7;stroke-linecap:round}
+.k-or{fill:none;stroke:var(--or);stroke-linecap:round}
+.k-bl{fill:none;stroke:var(--bl);stroke-linecap:round}
+.k-or-soft{stroke-linejoin:round;stroke:var(--or);stroke-width:8}
+.o75{opacity:.72}.o50{opacity:.45}
+.s-tile-hi{stop-color:var(--tile-hi)}.s-tile-lo{stop-color:var(--tile-lo)}
+.s-bl-hi{stop-color:var(--bl-hi)}.s-bl-lo{stop-color:var(--bl-lo)}
+
+@media (max-width:1100px){
+  .row{grid-template-columns:minmax(0,1fr)}
+  .over{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .notes{flex-direction:column}
+  .strip{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<!-- All logos are drawn once on a 256 grid (like tools/generate-icon.ps1)
+     and reused at every size. "-s" symbols are the simplified small sizes
+     (16 to 32 px), the way the .ico draws each size on its own. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" class="s-tile-hi"/><stop offset="1" class="s-tile-lo"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" class="s-bl-hi"/><stop offset="1" class="s-bl-lo"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 1 Seite wird Welle -->
+  <symbol id="l1" viewBox="0 0 256 256">
+    <rect class="t" x="8" y="8" width="240" height="240" rx="52"/>
+    <path class="f-bl" d="M126 80 C104 68 74 66 46 74 L46 184 C74 176 104 178 126 192 Z"/>
+    <path class="k-pale" d="M64 104 C80 99 96 99 110 104"/>
+    <path class="k-pale" d="M64 128 C80 123 96 123 110 128"/>
+    <path class="k-pale" d="M64 152 C76 148 88 148 98 151"/>
+    <rect class="f-or" x="140" y="76" width="12" height="112" rx="6"/>
+    <rect class="f-or" x="158" y="94" width="12" height="76" rx="6"/>
+    <rect class="f-or" x="176" y="84" width="12" height="96" rx="6"/>
+    <rect class="f-or" x="194" y="105" width="12" height="54" rx="6"/>
+    <rect class="f-or" x="212" y="118" width="12" height="28" rx="6"/>
+  </symbol>
+  <symbol id="l1-s" viewBox="0 0 256 256">
+    <rect class="t" x="8" y="8" width="240" height="240" rx="52"/>
+    <path class="f-bl-flat" d="M122 68 C100 58 72 56 40 64 L40 192 C72 184 100 186 122 198 Z"/>
+    <rect class="f-or" x="140" y="62" width="24" height="136" rx="12"/>
+    <rect class="f-or" x="176" y="88" width="24" height="84" rx="12"/>
+    <rect class="f-or" x="212" y="110" width="22" height="40" rx="11"/>
+  </symbol>
+
+  <!-- 2 Lesezeichen mit Play -->
+  <symbol id="l2" viewBox="0 0 256 256">
+    <rect class="t" x="8" y="8" width="240" height="240" rx="52"/>
+    <g transform="translate(8 0)">
+      <rect class="f-bl" x="56" y="60" width="128" height="148" rx="14"/>
+      <path class="k-pale" d="M76 98 H100"/>
+      <path class="k-pale" d="M76 118 H100"/>
+      <path class="k-pale" d="M76 138 H94"/>
+      <path class="f-or k-or-soft" d="M120 42 H172 V212 L146 190 L120 212 Z"/>
+      <path class="f-dark" d="M137 98 L137 146 L164 122 Z"/>
+    </g>
+  </symbol>
+  <symbol id="l2-s" viewBox="0 0 256 256">
+    <rect class="t" x="8" y="8" width="240" height="240" rx="52"/>
+    <g transform="translate(6 0)">
+      <rect class="f-bl-flat" x="40" y="56" width="148" height="156" rx="16"/>
+      <path class="f-or k-or-soft" d="M112 36 H190 V222 L151 192 L112 222 Z"/>
+      <path class="f-dark" d="M134 92 L134 156 L172 124 Z"/>
+    </g>
+  </symbol>
+
+  <!-- 3 Doppel-c -->
+  <symbol id="l3" viewBox="0 0 256 256">
+    <rect class="t" x="8" y="8" width="240" height="240" rx="52"/>
+    <g transform="translate(10 0)">
+      <path class="k-or" stroke-width="28" d="M190.8 75.3 A82 82 0 1 0 190.8 180.7"/>
+      <path class="k-bl" stroke-width="26" d="M158.6 102.3 A40 40 0 1 0 158.6 153.7"/>
+    </g>
+  </symbol>
+  <symbol id="l3-s" viewBox="0 0 256 256">
+    <rect class="t" x="8" y="8" width="240" height="240" rx="52"/>
+    <g transform="translate(10 0)">
+      <path class="k-or" stroke-width="40" d="M186.5 79 A76 76 0 1 0 186.5 177"/>
+      <circle class="f-bl-flat" cx="128" cy="128" r="26"/>
+    </g>
+  </symbol>
+
+  <!-- 4 Regal-Equalizer -->
+  <symbol id="l4" viewBox="0 0 256 256">
+    <rect class="t" x="8" y="8" width="240" height="240" rx="52"/>
+    <g transform="translate(-5 4)">
+      <rect class="f-shelf" x="42" y="192" width="182" height="10" rx="5"/>
+      <rect class="f-bl" x="52" y="112" width="26" height="76" rx="5"/>
+      <rect class="f-or" x="86" y="64" width="26" height="124" rx="5"/>
+      <rect class="f-bl" x="120" y="92" width="26" height="96" rx="5"/>
+      <rect class="f-or" x="154" y="48" width="26" height="140" rx="5"/>
+      <rect class="f-bl" x="188" y="124" width="26" height="64" rx="5"/>
+      <rect class="f-band" x="52" y="126" width="26" height="6"/>
+      <rect class="f-band" x="120" y="106" width="26" height="6"/>
+      <rect class="f-band" x="188" y="138" width="26" height="6"/>
+    </g>
+  </symbol>
+  <symbol id="l4-s" viewBox="0 0 256 256">
+    <rect class="t" x="8" y="8" width="240" height="240" rx="52"/>
+    <rect class="f-bl-flat" x="40" y="110" width="38" height="98" rx="8"/>
+    <rect class="f-or" x="88" y="52" width="38" height="156" rx="8"/>
+    <rect class="f-bl-flat" x="136" y="86" width="38" height="122" rx="8"/>
+    <rect class="f-or" x="184" y="132" width="34" height="76" rx="8"/>
+  </symbol>
+
+  <!-- 5 Seiten fächern auf -->
+  <symbol id="l5" viewBox="0 0 256 256">
+    <rect class="t" x="8" y="8" width="240" height="240" rx="52"/>
+    <g transform="translate(-6 0)">
+      <rect class="f-bl" x="50" y="82" width="56" height="92" rx="10"/>
+      <path class="k-pale" d="M64 108 H92"/>
+      <path class="k-pale" d="M64 124 H86"/>
+      <path class="k-or" stroke-width="18" d="M135.4 95.3 A44 44 0 0 1 135.4 160.7"/>
+      <path class="k-or o75" stroke-width="18" d="M155.5 73 A74 74 0 0 1 155.5 183"/>
+      <path class="k-or o50" stroke-width="18" d="M175.6 50.7 A104 104 0 0 1 175.6 205.3"/>
+    </g>
+  </symbol>
+  <symbol id="l5-s" viewBox="0 0 256 256">
+    <rect class="t" x="8" y="8" width="240" height="240" rx="52"/>
+    <g transform="translate(-4 0)">
+      <rect class="f-bl-flat" x="40" y="74" width="70" height="108" rx="12"/>
+      <path class="k-or" stroke-width="30" d="M143 89 A50 50 0 0 1 143 167"/>
+      <path class="k-or o75" stroke-width="30" d="M171 59 A92 92 0 0 1 171 197"/>
+    </g>
+  </symbol>
+</svg>
+
+<main class="wrap">
+  <header class="head">
+    <h1>calibly Logo-Ideen</h1>
+    <p>Fünf Richtungen für das App-Icon, alle in den Farben der App: Blau für Lesen, Orange für Hören, dunkle Kachel wie heute. Jede Idee in den Größen, die Windows braucht, und im Seitenleisten-Kopf der App.</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="n ref">0</span>Überblick</h2>
+    <p class="desc">Heute links, daneben die fünf Ideen. Unten dieselben Icons in 32 und 16 px, so klein wie in Taskleiste und Explorer.</p>
+    <div class="over">
+      <figure><img src="../resources/icon/calibly.png" alt="Heutiges Icon: Buch mit Kopfhörern"><figcaption><b>Heute</b><br>Buch mit Kopfhörern</figcaption></figure>
+      <figure><svg viewBox="0 0 256 256" role="img" aria-label="Idee 1"><use href="#l1"/></svg><figcaption><b>1</b> Seite wird Welle</figcaption></figure>
+      <figure><svg viewBox="0 0 256 256" role="img" aria-label="Idee 2"><use href="#l2"/></svg><figcaption><b>2</b> Lesezeichen mit Play</figcaption></figure>
+      <figure><svg viewBox="0 0 256 256" role="img" aria-label="Idee 3"><use href="#l3"/></svg><figcaption><b>3</b> Doppel-c</figcaption></figure>
+      <figure><svg viewBox="0 0 256 256" role="img" aria-label="Idee 4"><use href="#l4"/></svg><figcaption><b>4</b> Regal-Equalizer</figcaption></figure>
+      <figure><svg viewBox="0 0 256 256" role="img" aria-label="Idee 5"><use href="#l5"/></svg><figcaption><b>5</b> Seiten fächern auf</figcaption></figure>
+    </div>
+    <div class="strip dark">
+      <span class="lbl">dunkel</span>
+      <span class="grp"><img src="../resources/icon/calibly.png" width="32" height="32" alt=""><img src="../resources/icon/calibly.png" width="16" height="16" alt=""></span>
+      <span class="grp"><svg width="32" height="32" aria-hidden="true"><use href="#l1-s"/></svg><svg width="16" height="16" aria-hidden="true"><use href="#l1-s"/></svg></span>
+      <span class="grp"><svg width="32" height="32" aria-hidden="true"><use href="#l2-s"/></svg><svg width="16" height="16" aria-hidden="true"><use href="#l2-s"/></svg></span>
+      <span class="grp"><svg width="32" height="32" aria-hidden="true"><use href="#l3-s"/></svg><svg width="16" height="16" aria-hidden="true"><use href="#l3-s"/></svg></span>
+      <span class="grp"><svg width="32" height="32" aria-hidden="true"><use href="#l4-s"/></svg><svg width="16" height="16" aria-hidden="true"><use href="#l4-s"/></svg></span>
+      <span class="grp"><svg width="32" height="32" aria-hidden="true"><use href="#l5-s"/></svg><svg width="16" height="16" aria-hidden="true"><use href="#l5-s"/></svg></span>
+    </div>
+    <div class="strip light">
+      <span class="lbl">hell</span>
+      <span class="grp"><img src="../resources/icon/calibly.png" width="32" height="32" alt=""><img src="../resources/icon/calibly.png" width="16" height="16" alt=""></span>
+      <span class="grp"><svg width="32" height="32" aria-hidden="true"><use href="#l1-s"/></svg><svg width="16" height="16" aria-hidden="true"><use href="#l1-s"/></svg></span>
+      <span class="grp"><svg width="32" height="32" aria-hidden="true"><use href="#l2-s"/></svg><svg width="16" height="16" aria-hidden="true"><use href="#l2-s"/></svg></span>
+      <span class="grp"><svg width="32" height="32" aria-hidden="true"><use href="#l3-s"/></svg><svg width="16" height="16" aria-hidden="true"><use href="#l3-s"/></svg></span>
+      <span class="grp"><svg width="32" height="32" aria-hidden="true"><use href="#l4-s"/></svg><svg width="16" height="16" aria-hidden="true"><use href="#l4-s"/></svg></span>
+      <span class="grp"><svg width="32" height="32" aria-hidden="true"><use href="#l5-s"/></svg><svg width="16" height="16" aria-hidden="true"><use href="#l5-s"/></svg></span>
+    </div>
+  </section>
+
+  <!-- 1 -->
+  <section class="card">
+    <h2><span class="n">1</span>Seite wird Welle</h2>
+    <p class="desc">Ein aufgeschlagenes Buch: Die linke Seite ist Text, die rechte löst sich in eine Schallwelle auf. Lesen und Hören in einer Form statt zwei Gegenstände übereinander.</p>
+    <div class="row">
+      <div class="big"><svg viewBox="0 0 256 256" role="img" aria-label="Idee 1 groß"><use href="#l1"/></svg></div>
+      <div class="sizes">
+        <div class="s dark">
+          <figure><svg width="64" height="64" aria-hidden="true"><use href="#l1"/></svg><figcaption>64</figcaption></figure>
+          <figure><svg width="48" height="48" aria-hidden="true"><use href="#l1"/></svg><figcaption>48</figcaption></figure>
+          <figure><svg width="32" height="32" aria-hidden="true"><use href="#l1-s"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg width="24" height="24" aria-hidden="true"><use href="#l1-s"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg width="16" height="16" aria-hidden="true"><use href="#l1-s"/></svg><figcaption>16</figcaption></figure>
+        </div>
+        <div class="s light">
+          <figure><svg width="64" height="64" aria-hidden="true"><use href="#l1"/></svg><figcaption>64</figcaption></figure>
+          <figure><svg width="48" height="48" aria-hidden="true"><use href="#l1"/></svg><figcaption>48</figcaption></figure>
+          <figure><svg width="32" height="32" aria-hidden="true"><use href="#l1-s"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg width="24" height="24" aria-hidden="true"><use href="#l1-s"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg width="16" height="16" aria-hidden="true"><use href="#l1-s"/></svg><figcaption>16</figcaption></figure>
+        </div>
+      </div>
+      <div class="lockups">
+        <div class="lock side hero"><svg width="48" height="48" aria-hidden="true"><use href="#l1"/></svg><span class="wm ui">cali<span class="o">bly</span></span><span class="cap">Über calibly</span></div>
+        <div class="lock side"><svg width="28" height="28" aria-hidden="true"><use href="#l1-s"/></svg><span class="wm ui">cali<span class="o">bly</span></span><span class="cap">Seitenleiste</span></div>
+        <div class="lock light"><svg width="28" height="28" aria-hidden="true"><use href="#l1-s"/></svg><span class="wm ui">cali<span class="o">bly</span></span><span class="cap">Installer, README</span></div>
+      </div>
+    </div>
+    <div class="notes">
+      <div><b>Idee</b>Die Seite wird beim Hören zur Welle. Schriftzug bleibt wie heute, „bly“ in Orange.</div>
+      <div><b>Stärke</b>Eigenständig, erzählt genau, was calibly tut. Bei 16 px bleiben ein blauer Block und drei orange Balken.</div>
+      <div><b>Risiko</b>Die geschwungene Seite braucht bei 24 px und darunter eine eigene, vereinfachte Zeichnung (ist hier schon so).</div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="card">
+    <h2><span class="n">2</span>Lesezeichen mit Play</h2>
+    <p class="desc">Ein blaues Buch, darüber ein oranges Lesezeichen, aus dem ein Play-Dreieck ausgestanzt ist. Das Lesezeichen merkt sich die Stelle, egal ob gelesen oder gehört.</p>
+    <div class="row">
+      <div class="big"><svg viewBox="0 0 256 256" role="img" aria-label="Idee 2 groß"><use href="#l2"/></svg></div>
+      <div class="sizes">
+        <div class="s dark">
+          <figure><svg width="64" height="64" aria-hidden="true"><use href="#l2"/></svg><figcaption>64</figcaption></figure>
+          <figure><svg width="48" height="48" aria-hidden="true"><use href="#l2"/></svg><figcaption>48</figcaption></figure>
+          <figure><svg width="32" height="32" aria-hidden="true"><use href="#l2-s"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg width="24" height="24" aria-hidden="true"><use href="#l2-s"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg width="16" height="16" aria-hidden="true"><use href="#l2-s"/></svg><figcaption>16</figcaption></figure>
+        </div>
+        <div class="s light">
+          <figure><svg width="64" height="64" aria-hidden="true"><use href="#l2"/></svg><figcaption>64</figcaption></figure>
+          <figure><svg width="48" height="48" aria-hidden="true"><use href="#l2"/></svg><figcaption>48</figcaption></figure>
+          <figure><svg width="32" height="32" aria-hidden="true"><use href="#l2-s"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg width="24" height="24" aria-hidden="true"><use href="#l2-s"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg width="16" height="16" aria-hidden="true"><use href="#l2-s"/></svg><figcaption>16</figcaption></figure>
+        </div>
+      </div>
+      <div class="lockups">
+        <div class="lock side hero"><svg width="48" height="48" aria-hidden="true"><use href="#l2"/></svg><span class="wm serif">calibly</span><span class="cap">Über calibly</span></div>
+        <div class="lock side"><svg width="28" height="28" aria-hidden="true"><use href="#l2-s"/></svg><span class="wm serif">calibly</span><span class="cap">Seitenleiste</span></div>
+        <div class="lock light"><svg width="28" height="28" aria-hidden="true"><use href="#l2-s"/></svg><span class="wm serif">calibly</span><span class="cap">Installer, README</span></div>
+      </div>
+    </div>
+    <div class="notes">
+      <div><b>Idee</b>Lesezeichen = Fortschritt, der zentrale Gedanke der App. Schriftzug in Georgia, der Serifenschrift der Cover und des Readers.</div>
+      <div><b>Stärke</b>Sehr einfache Silhouette, bei 16 px am klarsten von allen. Das Play-Dreieck sagt sofort „Hörbuch“.</div>
+      <div><b>Risiko</b>Lesezeichen + Play ist eine naheliegende Kombination; ähnliche Icons gibt es bei Podcast- und Lese-Apps.</div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="card">
+    <h2><span class="n">3</span>Doppel-c</h2>
+    <p class="desc">Ein Monogramm: zwei ineinander liegende „c“, außen Orange, innen Blau. Liest sich als Anfangsbuchstabe, als Kopfhörerbügel von der Seite und als Schallwellen.</p>
+    <div class="row">
+      <div class="big"><svg viewBox="0 0 256 256" role="img" aria-label="Idee 3 groß"><use href="#l3"/></svg></div>
+      <div class="sizes">
+        <div class="s dark">
+          <figure><svg width="64" height="64" aria-hidden="true"><use href="#l3"/></svg><figcaption>64</figcaption></figure>
+          <figure><svg width="48" height="48" aria-hidden="true"><use href="#l3"/></svg><figcaption>48</figcaption></figure>
+          <figure><svg width="32" height="32" aria-hidden="true"><use href="#l3-s"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg width="24" height="24" aria-hidden="true"><use href="#l3-s"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg width="16" height="16" aria-hidden="true"><use href="#l3-s"/></svg><figcaption>16</figcaption></figure>
+        </div>
+        <div class="s light">
+          <figure><svg width="64" height="64" aria-hidden="true"><use href="#l3"/></svg><figcaption>64</figcaption></figure>
+          <figure><svg width="48" height="48" aria-hidden="true"><use href="#l3"/></svg><figcaption>48</figcaption></figure>
+          <figure><svg width="32" height="32" aria-hidden="true"><use href="#l3-s"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg width="24" height="24" aria-hidden="true"><use href="#l3-s"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg width="16" height="16" aria-hidden="true"><use href="#l3-s"/></svg><figcaption>16</figcaption></figure>
+        </div>
+      </div>
+      <div class="lockups">
+        <div class="lock side hero"><svg width="48" height="48" aria-hidden="true"><use href="#l3"/></svg><span class="wm ui"><span class="o">c</span>alibly</span><span class="cap">Über calibly</span></div>
+        <div class="lock side"><svg width="28" height="28" aria-hidden="true"><use href="#l3-s"/></svg><span class="wm ui"><span class="o">c</span>alibly</span><span class="cap">Seitenleiste</span></div>
+        <div class="lock light"><svg width="28" height="28" aria-hidden="true"><use href="#l3-s"/></svg><span class="wm ui"><span class="o">c</span>alibly</span><span class="cap">Installer, README</span></div>
+      </div>
+    </div>
+    <div class="notes">
+      <div><b>Idee</b>Abstrakt statt bildhaft. Klein wird daraus ein oranges „c“ mit blauem Punkt; im Schriftzug ist nur das „c“ orange.</div>
+      <div><b>Stärke</b>Am wenigsten generisch, gut als Marke wiedererkennbar und leicht in jeder Größe zu zeichnen.</div>
+      <div><b>Risiko</b>Sagt nicht von selbst „Bücher“. Funktioniert erst, wenn man calibly kennt.</div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <h2><span class="n">4</span>Regal-Equalizer</h2>
+    <p class="desc">Fünf Buchrücken auf einem Regalbrett, ihre Höhen bilden einen Equalizer. Bibliothek und Audio in einem Bild, abwechselnd blau und orange.</p>
+    <div class="row">
+      <div class="big"><svg viewBox="0 0 256 256" role="img" aria-label="Idee 4 groß"><use href="#l4"/></svg></div>
+      <div class="sizes">
+        <div class="s dark">
+          <figure><svg width="64" height="64" aria-hidden="true"><use href="#l4"/></svg><figcaption>64</figcaption></figure>
+          <figure><svg width="48" height="48" aria-hidden="true"><use href="#l4"/></svg><figcaption>48</figcaption></figure>
+          <figure><svg width="32" height="32" aria-hidden="true"><use href="#l4-s"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg width="24" height="24" aria-hidden="true"><use href="#l4-s"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg width="16" height="16" aria-hidden="true"><use href="#l4-s"/></svg><figcaption>16</figcaption></figure>
+        </div>
+        <div class="s light">
+          <figure><svg width="64" height="64" aria-hidden="true"><use href="#l4"/></svg><figcaption>64</figcaption></figure>
+          <figure><svg width="48" height="48" aria-hidden="true"><use href="#l4"/></svg><figcaption>48</figcaption></figure>
+          <figure><svg width="32" height="32" aria-hidden="true"><use href="#l4-s"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg width="24" height="24" aria-hidden="true"><use href="#l4-s"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg width="16" height="16" aria-hidden="true"><use href="#l4-s"/></svg><figcaption>16</figcaption></figure>
+        </div>
+      </div>
+      <div class="lockups">
+        <div class="lock side hero"><svg width="48" height="48" aria-hidden="true"><use href="#l4"/></svg><span class="wm ui-semi">calibly</span><span class="cap">Über calibly</span></div>
+        <div class="lock side"><svg width="28" height="28" aria-hidden="true"><use href="#l4-s"/></svg><span class="wm ui-semi">calibly</span><span class="cap">Seitenleiste</span></div>
+        <div class="lock light"><svg width="28" height="28" aria-hidden="true"><use href="#l4-s"/></svg><span class="wm ui-semi">calibly</span><span class="cap">Installer, README</span></div>
+      </div>
+    </div>
+    <div class="notes">
+      <div><b>Idee</b>calibly ist zuerst eine Bibliothek: das Regal steht im Mittelpunkt, der Ton steckt in den Höhen. Schriftzug ruhig, ohne Farbe.</div>
+      <div><b>Stärke</b>Klare Balkenform, bei 16 px gut lesbar. Erinnert an die Cover-Galerie der App.</div>
+      <div><b>Risiko</b>Klein sieht es aus wie ein Balkendiagramm; die Bücher erkennt man erst ab etwa 48 px.</div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="card">
+    <h2><span class="n">5</span>Seiten fächern auf</h2>
+    <p class="desc">Ein blaues Buch, von dem drei orange Bögen ausgehen, wie Seiten, die sich auffächern, oder wie Schall aus einem Lautsprecher. Das Buch „spricht“.</p>
+    <div class="row">
+      <div class="big"><svg viewBox="0 0 256 256" role="img" aria-label="Idee 5 groß"><use href="#l5"/></svg></div>
+      <div class="sizes">
+        <div class="s dark">
+          <figure><svg width="64" height="64" aria-hidden="true"><use href="#l5"/></svg><figcaption>64</figcaption></figure>
+          <figure><svg width="48" height="48" aria-hidden="true"><use href="#l5"/></svg><figcaption>48</figcaption></figure>
+          <figure><svg width="32" height="32" aria-hidden="true"><use href="#l5-s"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg width="24" height="24" aria-hidden="true"><use href="#l5-s"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg width="16" height="16" aria-hidden="true"><use href="#l5-s"/></svg><figcaption>16</figcaption></figure>
+        </div>
+        <div class="s light">
+          <figure><svg width="64" height="64" aria-hidden="true"><use href="#l5"/></svg><figcaption>64</figcaption></figure>
+          <figure><svg width="48" height="48" aria-hidden="true"><use href="#l5"/></svg><figcaption>48</figcaption></figure>
+          <figure><svg width="32" height="32" aria-hidden="true"><use href="#l5-s"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg width="24" height="24" aria-hidden="true"><use href="#l5-s"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg width="16" height="16" aria-hidden="true"><use href="#l5-s"/></svg><figcaption>16</figcaption></figure>
+        </div>
+      </div>
+      <div class="lockups">
+        <div class="lock side hero"><svg width="48" height="48" aria-hidden="true"><use href="#l5"/></svg><span class="wm serif-reg">cali<span class="b">bly</span></span><span class="cap">Über calibly</span></div>
+        <div class="lock side"><svg width="28" height="28" aria-hidden="true"><use href="#l5-s"/></svg><span class="wm serif-reg">cali<span class="b">bly</span></span><span class="cap">Seitenleiste</span></div>
+        <div class="lock light"><svg width="28" height="28" aria-hidden="true"><use href="#l5-s"/></svg><span class="wm serif-reg">cali<span class="b">bly</span></span><span class="cap">Installer, README</span></div>
+      </div>
+    </div>
+    <div class="notes">
+      <div><b>Idee</b>Das Buch ist die Quelle, der Ton geht von ihm aus. Die Bögen werden nach außen leiser. Schriftzug in Georgia, „bly“ blau.</div>
+      <div><b>Stärke</b>Sofort verständlich, ohne Gegenstände zu stapeln. Bleibt klein als Block + zwei Bögen erkennbar.</div>
+      <div><b>Risiko</b>Nah am bekannten Lautsprecher- und Cast-Symbol; als Marke weniger eigen als 1 oder 3.</div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

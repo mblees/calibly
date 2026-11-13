@@ -1,7 +1,9 @@
 # Generates the app icon resources/icon/calibly.ico (and calibly.png, 256 px):
-# a blue book (reading) wearing orange headphones (listening) on the dark
-# background of calibly. The .ico holds PNG images of the sizes Windows uses
-# (16 - 256 px); each size is drawn on its own, so small sizes stay sharp.
+# book spines on a shelf whose heights form an equalizer, blue (reading) and
+# orange (listening) in turn, on the dark background of calibly (idea 4 of
+# mockups/calibly-logo-ideen.html). The .ico holds PNG images of the sizes
+# Windows uses (16 - 256 px); each size is drawn on its own, and sizes below
+# 48 px use a simpler drawing, so small sizes stay sharp.
 # Run from the project folder:
 #   powershell -ExecutionPolicy Bypass -File tools/generate-icon.ps1
 
@@ -37,29 +39,38 @@ function Draw-Icon([int]$size) {
     $fill = New-Object System.Drawing.Drawing2D.LinearGradientBrush (New-Object System.Drawing.PointF 0, 8), (New-Object System.Drawing.PointF 0, 248), (Color "#2a2b32"), (Color "#121316")
     $g.FillPath($fill, $background)
 
-    # Book (2:3) with a darker spine
-    $book = RoundedRect 86 88 84 126 9
-    $bookFill = New-Object System.Drawing.Drawing2D.LinearGradientBrush (New-Object System.Drawing.PointF 0, 88), (New-Object System.Drawing.PointF 0, 214), (Color "#8bbcff"), (Color "#4a82e0")
-    $g.FillPath($bookFill, $book)
-    if ($size -ge 32) {
-        $spine = New-Object System.Drawing.SolidBrush (Color "#3466c0")
-        $g.FillRectangle($spine, 86 + 9, 88, 12, 126)
-        $lines = New-Object System.Drawing.Pen (Color "#d8e7ff"), 6
-        $lines.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-        $lines.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-        $g.DrawLine($lines, 122, 124, 154, 124)
-        $g.DrawLine($lines, 122, 140, 146, 140)
-    }
+    $orange = New-Object System.Drawing.SolidBrush (Color "#ff8a3d")
 
-    # Headphones: band over the book, ear cups at its sides
-    $orange = Color "#ff8a3d"
-    $band = New-Object System.Drawing.Pen $orange, 16
-    $band.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $band.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $g.DrawArc($band, 55, 50, 146, 146, 180, 180)
-    $cups = New-Object System.Drawing.SolidBrush $orange
-    $g.FillPath($cups, (RoundedRect 40 118 36 66 14))
-    $g.FillPath($cups, (RoundedRect 180 118 36 66 14))
+    if ($size -ge 48) {
+        # Five spines on a shelf. Blue spines carry a vertical gradient and a
+        # pale band like a printed spine; the bar heights form an equalizer.
+        $shelf = New-Object System.Drawing.SolidBrush (Color "#4a4b55")
+        $g.FillPath($shelf, (RoundedRect 37 196 182 10 5))
+        $band = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(115, (Color "#d8e7ff")))
+        # x, y (top), height of each spine; all are 26 wide and stand on y = 192
+        foreach ($spine in @(@(47, 116, 76, "blue"), @(81, 68, 124, "orange"), @(115, 96, 96, "blue"),
+                             @(149, 52, 140, "orange"), @(183, 128, 64, "blue"))) {
+            $x = $spine[0]; $y = $spine[1]; $h = $spine[2]
+            $shape = RoundedRect $x $y 26 $h 5
+            if ($spine[3] -eq "orange") {
+                $g.FillPath($orange, $shape)
+            } else {
+                # The gradient runs 1 unit past the spine: GDI+ wraps the
+                # first color around at the exact end point.
+                $blue = New-Object System.Drawing.Drawing2D.LinearGradientBrush (New-Object System.Drawing.PointF 0, ($y - 1)), (New-Object System.Drawing.PointF 0, ($y + $h + 1)), (Color "#8bbcff"), (Color "#4a82e0")
+                $g.FillPath($blue, $shape)
+                $g.FillRectangle($band, $x, $y + 14, 26, 6)
+            }
+        }
+    } else {
+        # Small sizes: four wider spines without shelf, bands and gradient,
+        # so each spine keeps at least two pixels at 16 px.
+        $blue = New-Object System.Drawing.SolidBrush (Color "#6ea8ff")
+        $g.FillPath($blue, (RoundedRect 40 110 38 98 8))
+        $g.FillPath($orange, (RoundedRect 88 52 38 156 8))
+        $g.FillPath($blue, (RoundedRect 136 86 38 122 8))
+        $g.FillPath($orange, (RoundedRect 184 132 34 76 8))
+    }
 
     $g.Dispose()
     return $bitmap
