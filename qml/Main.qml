@@ -30,8 +30,6 @@ Window {
         ListElement { title: qsTr("Bibliothek"); iconName: "library"; count: 0; view: "LibraryView" }
         ListElement { title: qsTr("Weitermachen"); iconName: "clock"; count: 0; view: "ContinueView" }
         ListElement { title: qsTr("Serien"); iconName: "layers"; count: 0; view: "SeriesView" }
-        // "Autoren" and "Sprecher" (iconName "user" / "mic") come back with
-        // their views before 1.0 (release plan, step 6).
     }
 
     // Entries at the bottom of the sidebar; their indices follow navigation's.

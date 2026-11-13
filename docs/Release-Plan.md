@@ -6,13 +6,15 @@ From the finished feature phases (1–10 of the [UI Development Plan](UI-Develop
 
 | Question | Decision |
 |---|---|
-| Audience | **Public**: anyone can download calibly. |
+| Audience | **Public**: anyone can download calibly. **Changed 2026-11-13:** first a **closed beta** for invited testers; the public download follows with an open beta. |
 | Source code | **Closed**, all rights stay with the author. The repository `mblees/calibly` stays private. |
 | Where people download | ~~A separate public repository for releases (`mblees/calibly-releases`).~~ **Changed 2026-11-12:** the releases are published in the working repository `mblees/calibly` (private for now; the update check needs it to be public). |
 | Package | **Installer** (`calibly-<version>-setup.exe`). |
 | Updates | **Update hint in the app**: at start calibly asks the public releases repository for the latest version and shows a hint with a link. Can be switched off. No automatic download. |
 | Releases | **0.1 Beta** as a GitHub pre-release first, then **1.0** after the beta feedback. |
-| New features before 1.0 | **Settings page** (in the beta) and the views **"Autoren" and "Sprecher"** (by 1.0). Everything else in "Afterwards" of the UI plan stays after 1.0. |
+| New features before 1.0 | **Settings page** (in the beta). ~~The views "Autoren" and "Sprecher" (by 1.0).~~ **Changed 2026-11-13:** not built, calibly stays uncluttered. Everything else in "Afterwards" of the UI plan stays after 1.0. |
+| Windows version | **Decided 2026-11-13:** Windows 11 only; Windows 10 is not supported or tested. |
+| Size of a library | **Decided 2026-11-13:** very large libraries (thousands of titles) are outside calibly's normal use and not optimized for. |
 
 The concept of the UI plan calls calibly a personal tool; that stays true for the scope ("only what is needed"), but the release work below treats it as software that strangers install.
 
@@ -64,7 +66,7 @@ Each step ends with a runnable app, as in the UI plan. Steps 1–4 lead to the b
 
 **Implemented as:** The release information is at the top of `CMakeLists.txt`: `PROJECT_VERSION` 0.1.0, `CALIBLY_VERSION_SUFFIX` "beta" (the app, the `.exe` properties and the installer show `0.1.0-beta`), publisher, copyright line and the releases page. The icon (book spines on a shelf whose heights form an equalizer, blue and orange in turn, on the dark background; idea 4 of `mockups/calibly-logo-ideen.html`, it replaced the first icon of a book wearing headphones) is drawn by `tools/generate-icon.ps1` into `resources/icon/calibly.ico` (16–256 px) and `calibly.png`; `resources/windows/calibly.rc.in` makes it the icon of `calibly.exe` (`IDI_ICON1`, which Qt also uses for the window) and adds the version information. The CMake option `CALIBLY_DEV_TOOLS` (default on, off in `mingw-release`) builds in `--mock`, `--gallery`, `--screenshot`, `--size`, the target `run-gallery` and the sample library; without it these options do not exist. `cmake --install` writes the program folder: everything next to `calibly.exe` (Qt and MinGW DLLs, FFmpeg, `plugins/`, `qml/`), made by `qt_generate_deploy_qml_app_script()` with `windeployqt` options for no software OpenGL and no QML debugging plugins; the Qt Quick Controls styles other than Basic, which Qt Quick Dialogs pulls in, are removed afterwards. TagLib is excluded from installing (`EXCLUDE_FROM_ALL`, so CMake 3.28 is required now). The folder is 138 MB, the installer 34 MB. `installer/calibly.iss` (Inno Setup 6, German and English) installs per user to `%LOCALAPPDATA%\Programs\calibly`, adds a start-menu entry and an optional desktop icon, removes old `plugins/` and `qml/` folders on an update and never touches the library; it shows `LICENSE.txt` as soon as that file exists (step 2). `tools/make-release.ps1` runs configure, build, tests, install and Inno Setup; `tools/test-in-sandbox.ps1` opens Windows Sandbox (without a graphics card, the harder case) with the installer and optionally a folder of test books on its desktop.
 Found on the way: PDF covers were black for PDFs without their own page background (most of them) – the rendered page is transparent there; the cover is now drawn on white (`pdfreader.cpp`, with a test).
-Checked: the deployed `calibly.exe` starts with a `PATH` without Qt, imports an EPUB and a PDF and shows them. **Still open:** the test of the installer in Windows Sandbox (needs Windows Sandbox switched on, see the script).
+Checked: the deployed `calibly.exe` starts with a `PATH` without Qt, imports an EPUB and a PDF and shows them. The installer was tested by hand and works (2026-11-13).
 
 ### Step 2 – Licenses
 1. **calibly's license**: a proprietary end-user license (`LICENSE.txt`): use free of charge, no redistribution or modification, no warranty, all rights reserved. Shown in the installer and in "Über calibly". (A lawyer should look at the final text if the release reaches many people; the plan only provides the slot.)
@@ -95,7 +97,7 @@ On the way, the installed folder lost five SQL drivers calibly never uses (Oracl
 - *One calibly per library* (`LibraryLock`): a lock file `calibly.lock` in the library folder (`QLockFile`; a lock left by a crashed calibly is taken over) – per library rather than per app, so a second library or a development build can run alongside. The holder listens on a `QLocalServer`; a second start with the same library calls it, allows it to come to the front (`AllowSetForegroundWindow`) and ends; the running window raises itself (`activationRequested`). New dependency: Qt Network (already deployed by Qt).
 - *Log file* (`LogFile`, core): every Qt message also goes to `%LOCALAPPDATA%\calibly\logs\calibly-<date>.log`, one file per day, older than 14 days deleted at start; the console output stays.
 - *First start:* the empty library already had "E-Books und Hörbücher hinzufügen"; it now also says that files and folders can be dragged in and where the library is.
-- *Large library:* a generated library of 2,000 works (half with an audiobook, a third in series, covers) opens its window after 0.66 s instead of 0.45 s for an empty one, using about 170 MB instead of 113 MB (release build). Scrolling has to be judged by hand.
+- *Large library:* a generated library of 2,000 works (half with an audiobook, a third in series, covers) opens its window after 0.66 s instead of 0.45 s for an empty one, using about 170 MB instead of 113 MB (release build). Libraries of this size are outside calibly's normal use (decided 2026-11-13), so this is not pursued further.
 - *QZipReader:* stays; the README names Qt 6.12.0, and the EPUB tests of `tst_import` and `tst_reader` would catch a change of the private API.
 - Tests: `tst_import` (backups, the three opening errors, the database left unchanged), `tst_librarycontroller` (open, create, switch, error keeps the open library, lock and activation, remembered folder), new `tst_logfile`.
 
@@ -106,27 +108,29 @@ On the way, the installed folder lost five SQL drivers calibly never uses (Oracl
    - **Updates**: "Beim Start nach neuen Versionen suchen" (on by default), "Jetzt suchen".
    - **Über calibly**: version, license, third-party notices, log folder, link to the releases page.
 2. **Update hint**: at most once a day calibly asks `https://api.github.com/repos/mblees/calibly-releases/releases/latest` (no account, no personal data; pre-releases count while a beta is installed). If the version is newer, a quiet hint (like the import queue) says "calibly 0.2 ist verfügbar" with "Herunterladen" (opens the release page) and "Ignorieren". No connection = no message.
-3. **Hide the placeholders** "Autoren" and "Sprecher" in the beta, so the beta has nothing unfinished (they return in step 6).
+3. **Hide the placeholders** "Autoren" and "Sprecher" in the beta, so the beta has nothing unfinished (later dropped altogether, see step 6).
 - **Done when:** language, library folder and update check can be changed without command-line options, and a test release in the releases repository is found by the app.
 
 **Implemented as:**
 - *Settings* (`SettingsView`, the entry "Einstellungen" at the bottom of the sidebar – `SidebarNav` got `bottomModel` for it): **Bibliothek** – the folder, "Im Explorer öffnen", "Andere Bibliothek öffnen …" / "Neue Bibliothek anlegen …" (`LibraryController.openLibraryUrl()` from step 3; an error is shown below the buttons and the open library stays); **Sprache** – "Wie das System", Deutsch, English (`LanguageManager.followSystem()` / `chooseLanguage()`; the system's language can now also be chosen on purpose); **Neue Versionen** – the switch, "Jetzt suchen" with the result, and what is sent; **Über calibly** – version and links to the license terms, the third-party notices, the log folder and the download page (`AppInfo`; license and notices exist only in an installed calibly and are greyed out in a development build).
 - *Update check* (`UpdateChecker`): at start (3 s after, at most once a day, only with a real library) and with "Jetzt suchen" calibly asks `api.github.com/repos/<CALIBLY_RELEASES_REPO>/releases` (no account, a `User-Agent` "calibly/<version>"). Drafts never count, pre-releases only while a pre-release is installed; versions compare numerically ("0.10" > "0.9", "1.0.0" > "1.0.0-beta.2" > "1.0.0-beta"). A newer version shows `UpdateHint` at the bottom left (not in fullscreen) with "Herunterladen" (the release page) and "Ignorieren" (no hint for that version again; the settings still show it). No connection only shows on the settings page; the reason is logged. Checked with the installed build: the request reaches GitHub over HTTPS (404 until the releases repository exists).
-- *Placeholders:* "Autoren" and "Sprecher" are left out of the sidebar until step 6.
+- *Placeholders:* "Autoren" and "Sprecher" are left out of the sidebar; they were dropped later (step 6).
 - Tests: new `tst_appsettings` (version comparison, choice of the release, hint and "Ignorieren", stored switch, language: system / chosen).
-- **Still open:** the releases repository `mblees/calibly-releases` does not exist yet (step 5), so "a test release is found by the app" can only be checked then.
+- **Still open:** the releases are published in `mblees/calibly`, which stays private during the closed beta (step 5). The update check only finds a release once the releases are public, so "a test release is found by the app" is checked with the open beta.
 
 ### Step 5 – 0.1 Beta
-1. Create the public repository `mblees/calibly-releases`: a user README (German and English: what calibly is, screenshots, system requirements Windows 10/11 64-bit, install, where the library lives, how to report bugs), issue templates (bug report asks for version and log file).
-2. **Code signing** (open decision, see section 4): without a signature, Windows SmartScreen warns "Der Computer wurde durch Windows geschützt" at the first downloads; the README explains "Weitere Informationen → Trotzdem ausführen".
-3. Manual test with the checklist (section 5) on the developer PC and in Windows Sandbox.
-4. Tag `v0.1.0-beta` in the private repository, GitHub **pre-release** in the releases repository with the setup file, release notes and known issues.
+**Changed 2026-11-13:** first a **closed beta**. 0.1.0-beta and 0.2.0-beta are pre-releases in the private repository `mblees/calibly` for invited testers; items 1, 2 and the update hint of the "Done when" move to the open beta.
+
+1. *(open beta)* A public download page: a user README (German and English: what calibly is, screenshots, system requirements Windows 11 64-bit, install, where the library lives, how to report bugs), issue templates (bug report asks for version and log file).
+2. *(open beta)* **Code signing** (open decision, see section 4): without a signature, Windows SmartScreen warns "Der Computer wurde durch Windows geschützt" at the first downloads; the README explains "Weitere Informationen → Trotzdem ausführen".
+3. Manual test with the checklist (section 5) on the developer PC and in Windows Sandbox. **Done** (2026-11-13).
+4. Tag `v0.1.0-beta` in the private repository, GitHub **pre-release** with the setup file, release notes and known issues. **Done** (`v0.1.0-beta`, `v0.2.0-beta`).
 - **Done when:** the beta can be downloaded from the public page and installed, and the app of an older test build shows the update hint for it.
 
 ### Step 6 – Towards 1.0
 1. **Beta feedback**: fix reported bugs, each with a test where possible; further betas (`0.2.0-beta` …) as needed.
    - **0.2.0-beta** (2026-11-13): phases 11–13 of the UI plan (accent color, export, series and combining that can be undone, selecting stacks, import whitelist) and the new icon; library schema 6. Release notes in [Release-Notes.md](Release-Notes.md).
-2. **Views "Autoren" and "Sprecher"** (separate small plan, like the phases of the UI plan): a list of all authors / narrators with the number of titles and a small cover row, a click shows their titles in the cover grid (as the series do). Sidebar counts.
+2. ~~**Views "Autoren" and "Sprecher"**~~ **Dropped 2026-11-13:** calibly should stay uncluttered; authors and narrators are found with the search.
 3. Feature freeze: from here on only fixes.
 4. Translations complete (`update_translations`, no unfinished entries), README and release notes in both languages.
 5. Full checklist (section 5) on a clean Windows, then version `1.0.0`, tag `v1.0.0`, release (not a pre-release).
@@ -136,19 +140,19 @@ On the way, the installed folder lost five SQL drivers calibly never uses (Oracl
 
 | Question | Recommendation | Latest by |
 |---|---|---|
-| Code signing | Start **unsigned** for the beta (explained in the README). For 1.0 consider **Azure Trusted Signing** (about 10 $ per month, needs identity verification) – much cheaper than a classic certificate (several hundred € per year). | Step 6 |
+| Code signing | Not needed for the closed beta. Start the open beta **unsigned** (explained in the README); for 1.0 consider **Azure Trusted Signing** (about 10 $ per month, needs identity verification) – much cheaper than a classic certificate (several hundred € per year). | Open beta |
 | ~~Name of the releases repository~~ | **Decided:** the working repository `mblees/calibly` (`CALIBLY_RELEASES_REPO`) | done |
 | TagLib: MPL 1.1 or DLL | MPL 1.1 (no build change) | Step 2 |
-| Text of the end-user license | Short proprietary license as above; have it checked if calibly spreads widely | Step 2 |
+| Text of the end-user license | Short proprietary license as above (draft); have it checked before the open beta | Open beta |
 | Crash reports | Only the log file, sent by the user with a bug report – no automatic reporting (no data leaves the PC unasked) | Step 3 |
-| Windows 10 | Support it if the clean-test on Windows 10 passes (Qt 6.12 still runs there); otherwise state "Windows 11" | Step 5 |
+| ~~Windows 10~~ | **Decided:** not supported, Windows 11 only | done |
 
 ## 5. Release checklist (manual)
 
 Run before every release, on the developer PC and in Windows Sandbox:
 - Install, start, uninstall; reinstall over the old version keeps library and settings.
-- First start with an empty library; drag & drop and "Hinzufügen" of EPUB, PDF, MOBI, TXT, M4B, an MP3 folder; drop on a cover.
-- Detail view, metadata editor (save, ‹ ›), cover states, "Weitermachen", series, selection, merge, remove.
+- First start with an empty library; drag & drop and "Hinzufügen" of EPUB, PDF, MOBI, M4B, an MP3 folder; drop on a cover.
+- Detail view, metadata editor (save, ‹ ›), cover states, "Weitermachen", series, selection, remove.
 - Player: play, skip, chapters, speed, sleep timer, position after restart.
 - Reader: EPUB and PDF, turning pages (keys, wheel, click zones), contents, links, text settings, fullscreen and back (also from a maximized window), Esc order, position after restart and after changing the font size, finished at the last page.
 - Settings: language switch, other library folder, update check (with a test release).

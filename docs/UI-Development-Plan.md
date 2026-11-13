@@ -243,7 +243,7 @@ Every phase ends with a **runnable app**. A phase only starts once the previous 
 ### Phase 0 – Skeleton
 - CMake project, folder and module structure as described above.
 - `Theme` singleton with colors, spacing and font sizes. `Icon` based on `QtQuick.Shapes`.
-- `Main.qml` with sidebar (Library, Continue, Series, Authors, Narrators) and a placeholder for the content.
+- `Main.qml` with sidebar (Library, Continue, Series) and a placeholder for the content.
 - Empty `ComponentGallery`.
 - **Done when:** the app starts, navigation switches between placeholders and `qmllint` runs without warnings.
 
@@ -320,7 +320,7 @@ The sidebar entry "Weitermachen" opens `ContinueView`: all titles that were star
 - *Entfernen* (`LibraryController::removeWorks()`, `LibraryBackend::removeWork()`): removes the works from the database and moves their files inside the library folder (formats, parts of audiobooks, covers) to the recycle bin; folders that are empty afterwards are removed. Files outside the library folder are never touched.
 Before works are merged or removed the controller emits `worksAboutToChange`, so the player stores its position and unloads the audiobook.
 *Context menu:* a right click on a cover opens `WorkMenu` (built on the neutral `AppMenu`). For a title: Details, Lesen / Hören, Metadaten bearbeiten, "Als fertig markieren" per format, Auswählen, Entfernen (after the question, with the name of the title). If the title is one of several selected ones, the menu is about the selection and offers what the bar offers. For a series stack it opens the series. Every entry is also reachable elsewhere (detail view, bar), as interaction principle 2 asks.
-*Series:* with `groupSeries` the shown works of one series (two or more; names are compared without case and accents) are one row, a stack: the first volume stands for it, `seriesCount` / `seriesFirst` / `seriesLast` describe it ("Band 1–4", "4 Bände · Serie"), it has the formats that any volume has, and it sorts by the name of the series or by its most recently opened volume. A search or format selection that leaves one volume shows that volume. Stacks cannot be selected and are not a drop target. A click sets `seriesFilter`: the volumes in the order of their numbers, with "‹ Bibliothek" (or Esc) leading back. "Gruppieren: Keine / Serien" next to the sorting switches the stacks off and on (kept between starts, on by default). The sidebar entry "Serien" opens `SeriesView`: the library view with `seriesOnly`, where every series is a stack, also one with a single volume; the entry shows the number of series. Authors and narrators are still placeholders.
+*Series:* with `groupSeries` the shown works of one series (two or more; names are compared without case and accents) are one row, a stack: the first volume stands for it, `seriesCount` / `seriesFirst` / `seriesLast` describe it ("Band 1–4", "4 Bände · Serie"), it has the formats that any volume has, and it sorts by the name of the series or by its most recently opened volume. A search or format selection that leaves one volume shows that volume. Stacks cannot be selected and are not a drop target. A click sets `seriesFilter`: the volumes in the order of their numbers, with "‹ Bibliothek" (or Esc) leading back. "Gruppieren: Keine / Serien" next to the sorting switches the stacks off and on (kept between starts, on by default). The sidebar entry "Serien" opens `SeriesView`: the library view with `seriesOnly`, where every series is a stack, also one with a single volume; the entry shows the number of series.
 
 ### Phase 10 – Ebook reader
 calibly reads ebooks itself instead of handing them to the system's default application. **Only EPUB and PDF** at first; further formats only if the chosen EPUB rendering brings them almost for free (see 10.4). MOBI / AZW3 and every other format keep opening in the default application, as do PDFs when calibly is built without Qt PDF.
@@ -480,7 +480,6 @@ Issues found while testing (2026-11-13), implemented right away (decided with th
 ### Afterwards (separate plans)
 - The way to a public release (0.1 Beta, then 1.0): [Release Plan](Release-Plan.md).
 - Further ebook formats, if not covered by 10.4 (e.g. MOBI / AZW3), and search in the book.
-- The views "Autoren" and "Sprecher" of the sidebar (still placeholders).
 - Light theme, Linux build, adaptation for Android and iOS.
 
 ---
