@@ -1,8 +1,10 @@
 calibly @CALIBLY_VERSION@ – Third-party software
 ==================================================
 
-calibly itself is proprietary software (see LICENSE.txt). It uses the
-open-source software listed below. The full license texts are in the folder
+calibly itself is free software under the GNU General Public License
+version 3 (see LICENSE.txt); its source code is available at
+https://github.com/mblees/calibly. It uses the open-source software listed
+below. The full license texts are in the folder
 "licenses" next to calibly.exe, or further down in this file.
 
 Source code
@@ -45,8 +47,10 @@ without changes.
 Copyright (C) Scott Wheeler and the TagLib authors
 (https://github.com/taglib/taglib/blob/v2.3.2/AUTHORS).
 License: TagLib is available under the GNU LGPL 2.1 or the Mozilla Public
-License 1.1; calibly uses it under the Mozilla Public License 1.1
-(licenses/MPL-1.1.txt).
+License 1.1; calibly uses it under the GNU Lesser General Public License
+version 2.1 (licenses/LGPL-2.1.txt). Its source code is available from the
+link below and is part of calibly's source code (fetched by
+cmake/Dependencies.cmake).
 Source: https://github.com/taglib/taglib/releases/tag/v2.3.2
 
 

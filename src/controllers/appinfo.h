@@ -10,10 +10,12 @@
 //
 // In QML (import Calibly.Controllers):
 //   AppInfo.version          e.g. "0.1.0-beta"
+//   AppInfo.copyright        e.g. "Copyright (C) 2026 mblees"
 //   AppInfo.releasesUrl      the download page
+//   AppInfo.sourceUrl        the source code (calibly is GPL 3)
+//   AppInfo.licenseUrl       LICENSE.txt (the GNU GPL 3)
 //   AppInfo.noticesUrl       THIRD-PARTY-NOTICES.txt
 //   AppInfo.logFolderUrl     the folder of the log files
-//   AppInfo.licenseUrl(language)   LICENSE.de.txt for "de", else LICENSE.txt
 //   AppInfo.folderUrl(path)  a local folder or file as URL, e.g. for
 //                            Qt.openUrlExternally()
 class AppInfo : public QObject
@@ -23,7 +25,10 @@ class AppInfo : public QObject
     QML_SINGLETON
 
     Q_PROPERTY(QString version READ version CONSTANT)
+    Q_PROPERTY(QString copyright READ copyright CONSTANT)
     Q_PROPERTY(QUrl releasesUrl READ releasesUrl CONSTANT)
+    Q_PROPERTY(QUrl sourceUrl READ sourceUrl CONSTANT)
+    Q_PROPERTY(QUrl licenseUrl READ licenseUrl CONSTANT)
     Q_PROPERTY(QUrl noticesUrl READ noticesUrl CONSTANT)
     Q_PROPERTY(QUrl logFolderUrl READ logFolderUrl CONSTANT)
 
@@ -34,10 +39,12 @@ public:
     static AppInfo *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
     QString version() const;
+    QString copyright() const;
     QUrl releasesUrl() const;
+    QUrl sourceUrl() const;
+    QUrl licenseUrl() const;
     QUrl noticesUrl() const;
     QUrl logFolderUrl() const;
-    Q_INVOKABLE QUrl licenseUrl(const QString &language) const;
     Q_INVOKABLE QUrl folderUrl(const QString &path) const;
 
 private:

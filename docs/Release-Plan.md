@@ -81,6 +81,8 @@ Checked: the deployed `calibly.exe` starts with a `PATH` without Qt, imports an 
 Source code of the LGPL libraries: the notices link to the sources and promise the exact sources of the shipped versions on request for three years (via the issues of the releases repository) – step 5 should check whether that is enough or whether the Qt and FFmpeg sources should be attached to each release.
 On the way, the installed folder lost five SQL drivers calibly never uses (Oracle, PostgreSQL, ODBC, InterBase, Mimer). "Über calibly" (step 4) will show both files.
 
+**Changed after 0.2.0-beta (2026-11-13): calibly is open source under the GNU GPL 3.** `LICENSE.txt` is the unchanged GPL 3 text (GitHub recognizes it); `LICENSE.de.txt` is gone, because only the English text is official – the installer shows `LICENSE.txt` in both languages and deletes the German file of older versions. TagLib is now used under the LGPL 2.1 (MPL 1.1 is not compatible with the GPL; `licenses/texts/MPL-1.1.txt` was removed); static linking is fine, because calibly's complete source code is public. All other components (Qt LGPL 3, FFmpeg LGPL 2.1+, the Qt-internal parts under MIT, BSD, Apache 2.0, MPL 2.0, FreeType License …) are compatible with the GPL 3. "Über calibly" shows the notices section 5 d of the GPL asks for (copyright, GPL 3, no warranty) and links to the license and the source code (`AppInfo.copyright`, `sourceUrl`, `licenseUrl`; `CALIBLY_SOURCE_URL` in `CMakeLists.txt`). The third-party notices name the source code of calibly.
+
 ### Step 3 – Robustness
 1. **Library cannot be opened** (folder gone, e.g. an unplugged drive; database damaged; created by a newer calibly): no sample data any more. A message says what happened and offers "Erneut versuchen", "Anderen Ordner wählen" and "Neue Bibliothek anlegen"; a damaged database is never overwritten.
 2. **One instance only** (`QLockFile` in the settings folder): a second start brings the running window to the front.
@@ -142,8 +144,8 @@ On the way, the installed folder lost five SQL drivers calibly never uses (Oracl
 |---|---|---|
 | Code signing | Not needed for the closed beta. Start the open beta **unsigned** (explained in the README); for 1.0 consider **Azure Trusted Signing** (about 10 $ per month, needs identity verification) – much cheaper than a classic certificate (several hundred € per year). | Open beta |
 | ~~Name of the releases repository~~ | **Decided:** the working repository `mblees/calibly` (`CALIBLY_RELEASES_REPO`) | done |
-| TagLib: MPL 1.1 or DLL | MPL 1.1 (no build change) | Step 2 |
-| Text of the end-user license | Short proprietary license as above (draft); have it checked before the open beta | Open beta |
+| ~~TagLib: MPL 1.1 or DLL~~ | **Decided:** MPL 1.1 while calibly was proprietary; since calibly is GPL 3 (2026-11-13) TagLib is used under the LGPL 2.1, still linked statically | done |
+| ~~License of calibly~~ | **Decided (2026-11-13):** open source under the GNU GPL 3 instead of the proprietary end-user license | done |
 | Crash reports | Only the log file, sent by the user with a bug report – no automatic reporting (no data leaves the PC unasked) | Step 3 |
 | ~~Windows 10~~ | **Decided:** not supported, Windows 11 only | done |
 

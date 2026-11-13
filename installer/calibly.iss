@@ -46,8 +46,9 @@ CloseApplications=yes
 RestartApplications=no
 
 [Languages]
-; The license of calibly is shown before installing (LICENSE.txt).
-Name: "de"; MessagesFile: "compiler:Languages\German.isl"; LicenseFile: "..\LICENSE.de.txt"
+; The license of calibly (GNU GPL 3, LICENSE.txt) is shown before installing.
+; Only the English text is official, so both languages show it.
+Name: "de"; MessagesFile: "compiler:Languages\German.isl"; LicenseFile: "..\LICENSE.txt"
 Name: "en"; MessagesFile: "compiler:Default.isl"; LicenseFile: "..\LICENSE.txt"
 
 [Tasks]
@@ -58,6 +59,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; ships; the new version brings them again where needed.
 Type: filesandordirs; Name: "{app}\plugins"
 Type: filesandordirs; Name: "{app}\qml"
+; The German license terms of versions up to 0.2 (calibly is GPL 3 since then).
+Type: files; Name: "{app}\LICENSE.de.txt"
 
 [Files]
 Source: "{#BuildDir}\deploy\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs

@@ -341,16 +341,26 @@ ViewBase {
                 Hint {
                     text: qsTr("Eine Bibliothek für E-Books und Hörbücher. calibly verwendet Open-Source-Software, unter anderem Qt, FFmpeg und TagLib; die Hinweise dazu nennen alle mit ihren Lizenzen.")
                 }
+                // The legal notices the GNU GPL 3 (section 5 d) asks for.
+                Hint {
+                    text: qsTr("%1. calibly ist freie Software: Du darfst es unter den Bedingungen der GNU General Public License Version 3 weitergeben und verändern. calibly wird ohne jede Gewährleistung bereitgestellt; Einzelheiten stehen in der Lizenz.").arg(AppInfo.copyright)
+                }
                 Flow {
                     width: parent.width
                     spacing: Theme.spacingL
 
                     LinkButton {
-                        enabled: AppInfo.licenseUrl(Qt.uiLanguage).toString() !== ""
+                        enabled: AppInfo.licenseUrl.toString() !== ""
                         iconName: "book"
-                        text: qsTr("Lizenzbedingungen")
+                        text: qsTr("Lizenz (GNU GPL 3)")
                         font.pixelSize: Theme.fontBody
-                        onClicked: Qt.openUrlExternally(AppInfo.licenseUrl(Qt.uiLanguage))
+                        onClicked: Qt.openUrlExternally(AppInfo.licenseUrl)
+                    }
+                    LinkButton {
+                        iconName: "externalLink"
+                        text: qsTr("Quellcode")
+                        font.pixelSize: Theme.fontBody
+                        onClicked: Qt.openUrlExternally(AppInfo.sourceUrl)
                     }
                     LinkButton {
                         enabled: AppInfo.noticesUrl.toString() !== ""

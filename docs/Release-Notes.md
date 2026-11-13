@@ -50,6 +50,118 @@
 - The library is updated to version 6 at the first start. calibly writes a backup `calibly.db.v5-….bak` into the library folder first. Older calibly versions cannot open the updated library.
 - Works merged with 0.1 still behave like one book. To make them volumes, use "Dissolve combination" once and then "Combine" the titles again.
 
-## 0.1.0-beta
+## 0.1.0-beta (2026-11-12)
 
-First public beta: library for ebooks and audiobooks with import by drag & drop, metadata editor, audiobook player, ebook reader (EPUB, PDF), "Continue", series stacks, multi-selection, installer, settings and update hint.
+Erste Testversion von calibly: eine Bibliothek für E-Books und Hörbücher, mit Hörbuch-Player und E-Book-Reader.
+
+### Deutsch
+
+**Installieren**
+- `calibly-0.1.0-beta-setup.exe` herunterladen und starten. calibly wird nur für den aktuellen Benutzer installiert, Administratorrechte sind nicht nötig. Voraussetzung ist Windows 11 (64 Bit).
+- Der Installer ist nicht signiert. Windows SmartScreen meldet deshalb „Der Computer wurde durch Windows geschützt“; über „Weitere Informationen“ → „Trotzdem ausführen“ geht es weiter.
+- Beim Deinstallieren bleibt die Bibliothek erhalten.
+
+**Bibliothek**
+- Cover-Wand mit Suche (Titel, Autor, Sprecher, Serie), Auswahl nach Format (E-Books, Hörbücher, beides), Sortierung und einstellbarer Cover-Größe.
+- Die Bände einer Serie liegen als Stapel zusammen; „Serien“ in der Seitenleiste listet alle Serien.
+- **Weitermachen:** Die zuletzt geöffneten, nicht fertigen Titel stehen oben in der Bibliothek und als eigene Ansicht in der Seitenleiste.
+- Kennzeichen auf den Covern: „NEU“, „FERTIG“ und „DATEI FEHLT“.
+
+**Importieren**
+- Dateien oder ganze Ordner ins Fenster ziehen oder über „Hinzufügen“ wählen: EPUB, PDF, MOBI, Text, Markdown, M4B, MP3 und weitere Audioformate.
+- Auf ein Cover gezogen wird die Datei zu einem weiteren Format dieses Titels, z. B. das Hörbuch zum E-Book. Die MP3-Dateien eines Ordners werden ein Hörbuch.
+- Die Dateien werden in den Bibliotheksordner `Dokumente\calibly-Bibliothek` kopiert, sortiert nach Autor und Titel.
+- Die Import-Liste unten rechts zeigt jeden Titel; „Prüfen“ öffnet die Metadaten von Titeln, deren Name nur aus dem Dateinamen stammt.
+
+**Hören**
+- Player-Leiste am unteren Rand und Vollbild-Player mit Kapitelliste, Tempo und Schlaftimer.
+- Leertaste: Wiedergabe / Pause, ← / →: 30 Sekunden zurück / vor.
+- Die Position wird gespeichert, das letzte Hörbuch ist nach einem Neustart wieder bereit.
+
+**Lesen**
+- Reader im Fenster für EPUB, PDF, Text und Markdown, mit Inhaltsverzeichnis.
+- „Aa“ öffnet die Texteinstellungen: Größe, Themen, Seitenfarbe, Schrift, Abstände, Ränder, Blocksatz; bei PDFs der Zoom.
+- Vollbild mit F11, Blättern mit Pfeiltasten, Bild ↑/↓, Leertaste, Mausrad oder Klick an den Seitenrand.
+- Die Stelle wird gespeichert; die letzte Seite markiert das E-Book als fertig.
+
+**Bearbeiten und Auswählen**
+- Detailansicht mit einer Karte pro Format, „Weiterlesen“ / „Weiterhören“ und „Als fertig markieren“.
+- Metadaten-Editor: Felder mit 🔗 gelten für alle Formate eines Titels. Strg+S speichert, Strg+Bild ↑/↓ wechselt zum vorigen / nächsten Titel.
+- Mehrfachauswahl mit dem Kreis auf dem Cover, Strg+Klick oder Strg+A: Metadaten nacheinander bearbeiten, „Zu einem Werk verbinden“ oder entfernen (die Dateien wandern in den Papierkorb).
+- Rechtsklick auf ein Cover öffnet ein Menü mit denselben Aktionen.
+
+**Einstellungen**
+- Bibliothek: im Explorer öffnen, eine andere Bibliothek öffnen oder eine neue anlegen (es werden keine Dateien verschoben).
+- Sprache: wie das System, Deutsch oder English.
+- Neue Versionen: höchstens einmal am Tag bei GitHub nachsehen, es werden keine persönlichen Daten gesendet.
+- Über calibly: Version, Lizenzbedingungen, Hinweise zu Software Dritter und Log-Dateien.
+
+**Sicherheit für deine Daten**
+- Ist die Bibliothek nicht erreichbar (z. B. ein nicht angeschlossenes Laufwerk) oder beschädigt, sagt calibly das und bietet „Erneut versuchen“, eine andere oder eine neue Bibliothek an. Eine bisherige Bibliothek wird nie stillschweigend ersetzt.
+- Bevor eine neue Version die Datenbank umstellt, legt calibly eine Sicherung `calibly.db.v<alte Version>-<Datum>.bak` an; die neuesten drei bleiben.
+- Mit einer Bibliothek arbeitet immer nur ein calibly; ein zweiter Start holt das offene Fenster nach vorn.
+- Log-Dateien unter `%LOCALAPPDATA%\calibly\logs`, eine pro Tag, 14 Tage lang.
+
+**Bekannte Einschränkungen**
+- MOBI und AZW3 öffnen im Standardprogramm.
+- „Zu einem Werk verbinden“ lässt sich nicht rückgängig machen. Ab 0.2 heißt es „Kombinieren“ und lässt sich wieder auflösen.
+- Der Hinweis auf neue Versionen funktioniert in der geschlossenen Beta nicht, weil das Repository privat ist.
+
+**Fehler melden:** Bitte mit Version und der Log-Datei des Tages (Einstellungen → Über calibly → Log-Dateien).
+
+### English
+
+**Install**
+- Download and run `calibly-0.1.0-beta-setup.exe`. calibly is installed for the current user only, no admin rights needed. It requires Windows 11 (64-bit).
+- The installer is not signed, so Windows SmartScreen says "Windows protected your PC"; continue with "More info" → "Run anyway".
+- Uninstalling keeps the library.
+
+**Library**
+- Cover wall with search (title, author, narrator, series), format selection (ebooks, audiobooks, both), sorting and adjustable cover size.
+- The volumes of a series are shown as one stack; "Series" in the sidebar lists all series.
+- **Continue:** the titles opened last that are not finished are shown at the top of the library and as a view of their own in the sidebar.
+- Labels on the covers: "NEW", "FINISHED" and "FILE MISSING".
+
+**Import**
+- Drag files or whole folders into the window, or pick them with "Add": EPUB, PDF, MOBI, text, Markdown, M4B, MP3 and other audio formats.
+- Dropped on a cover, a file becomes another format of that title, e.g. the audiobook of an ebook. The MP3 files of one folder become one audiobook.
+- The files are copied into the library folder `Documents\calibly-Bibliothek`, sorted by author and title.
+- The import queue at the bottom right shows each title; "Review" opens the metadata of titles whose name could only be taken from the file name.
+
+**Listen**
+- Player bar at the bottom and a fullscreen player with the chapter list, speed and sleep timer.
+- Space: play / pause, ← / →: 30 seconds back / forward.
+- The position is saved, and the last audiobook is ready again after a restart.
+
+**Read**
+- Reader inside the window for EPUB, PDF, text and Markdown, with the contents.
+- "Aa" opens the text settings: size, themes, page color, font, spacing, margins, justified text; for PDFs the zoom.
+- Fullscreen with F11; turn pages with the arrow keys, PgUp / PgDn, Space, the mouse wheel or a click on the edge of the page.
+- The place is saved; the last page marks the ebook as finished.
+
+**Edit and select**
+- Detail view with one card per format, "Continue reading" / "Continue listening" and "Mark as finished".
+- Metadata editor: fields marked with 🔗 apply to all formats of a title. Ctrl+S saves, Ctrl+PgUp / PgDn go to the previous / next title.
+- Multi-selection with the circle on a cover, Ctrl + click or Ctrl + A: edit the metadata one after the other, "Merge into one work" or remove (the files go to the recycle bin).
+- A right click on a cover opens a menu with the same actions.
+
+**Settings**
+- Library: show in Explorer, open another library or create a new one (no files are moved).
+- Language: like the system, German or English.
+- New versions: looks on GitHub at most once a day; no personal data is sent.
+- About calibly: version, license terms, third-party notices and log files.
+
+**Safety for your data**
+- If the library cannot be reached (e.g. a drive that is not connected) or is damaged, calibly says so and offers "Try again", another library or a new one. A library that was used before is never replaced silently.
+- Before a new version changes the database, calibly writes a backup `calibly.db.v<old version>-<date>.bak`; the newest three are kept.
+- Only one calibly works with a library at a time; starting it again brings the open window to the front.
+- Log files in `%LOCALAPPDATA%\calibly\logs`, one per day, kept for 14 days.
+
+**Known limitations**
+- MOBI and AZW3 open in the default application.
+- "Merge into one work" cannot be undone. From 0.2 on it is called "Combine" and can be dissolved again.
+- The update hint does not work during the closed beta, because the repository is private.
+
+**Reporting bugs:** please include the version and the log file of the day (Settings → About calibly → Log files).
+
+SHA-256 of the installer: `2F8486E982775870C0C52AEA2BE90126C7D33AC41C556816DD8C9714551984A9`

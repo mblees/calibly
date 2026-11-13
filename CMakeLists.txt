@@ -18,6 +18,8 @@ set(CALIBLY_COPYRIGHT "Copyright (C) 2026 mblees")
 # The releases are published in the working repository (decided 2026-11-12).
 set(CALIBLY_RELEASES_REPO "mblees/calibly")
 set(CALIBLY_RELEASES_URL "https://github.com/${CALIBLY_RELEASES_REPO}/releases")
+# calibly is free software under the GNU GPL 3 (LICENSE.txt); its source code.
+set(CALIBLY_SOURCE_URL "https://github.com/${CALIBLY_RELEASES_REPO}")
 if(CALIBLY_VERSION_SUFFIX)
     set(CALIBLY_DISPLAY_VERSION "${PROJECT_VERSION}-${CALIBLY_VERSION_SUFFIX}")
 else()
@@ -180,7 +182,6 @@ install(TARGETS calibly
 install(FILES
     resources/icon/calibly.ico
     LICENSE.txt
-    LICENSE.de.txt
     DESTINATION .
 )
 install(DIRECTORY licenses/texts/

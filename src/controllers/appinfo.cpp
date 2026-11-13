@@ -9,6 +9,12 @@
 #ifndef CALIBLY_RELEASES_URL
 #define CALIBLY_RELEASES_URL "https://github.com/mblees/calibly/releases"
 #endif
+#ifndef CALIBLY_SOURCE_URL
+#define CALIBLY_SOURCE_URL "https://github.com/mblees/calibly"
+#endif
+#ifndef CALIBLY_COPYRIGHT
+#define CALIBLY_COPYRIGHT "Copyright (C) 2026 mblees"
+#endif
 
 AppInfo::AppInfo(QQmlEngine *engine, QObject *parent)
     : QObject(parent)
@@ -35,9 +41,19 @@ QString AppInfo::version() const
     return QCoreApplication::applicationVersion();
 }
 
+QString AppInfo::copyright() const
+{
+    return QStringLiteral(CALIBLY_COPYRIGHT);
+}
+
 QUrl AppInfo::releasesUrl() const
 {
     return QUrl(QStringLiteral(CALIBLY_RELEASES_URL));
+}
+
+QUrl AppInfo::sourceUrl() const
+{
+    return QUrl(QStringLiteral(CALIBLY_SOURCE_URL));
 }
 
 QUrl AppInfo::noticesUrl() const
@@ -51,10 +67,9 @@ QUrl AppInfo::logFolderUrl() const
     return folder.isEmpty() ? QUrl() : QUrl::fromLocalFile(folder);
 }
 
-QUrl AppInfo::licenseUrl(const QString &language) const
+QUrl AppInfo::licenseUrl() const
 {
-    return besideProgram(language == QLatin1String("de") ? QStringLiteral("LICENSE.de.txt")
-                                                         : QStringLiteral("LICENSE.txt"));
+    return besideProgram(QStringLiteral("LICENSE.txt"));
 }
 
 QUrl AppInfo::folderUrl(const QString &path) const

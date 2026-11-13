@@ -41,11 +41,13 @@ target_include_directories(calibly_controllers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR
 target_link_libraries(calibly_controllers PUBLIC Qt6::Qml Qt6::Gui Qt6::Quick Qt6::Multimedia Qt6::Network calibly_models
     calibly_backend calibly_import calibly_reader calibly_core)
 
-# The releases page (see the top of the root CMakeLists.txt), for the update
-# check and "Über calibly".
+# The releases page, the source code and the copyright line (see the top of the
+# root CMakeLists.txt), for the update check and "Über calibly".
 target_compile_definitions(calibly_controllers PRIVATE
     CALIBLY_RELEASES_REPO="${CALIBLY_RELEASES_REPO}"
     CALIBLY_RELEASES_URL="${CALIBLY_RELEASES_URL}"
+    CALIBLY_SOURCE_URL="${CALIBLY_SOURCE_URL}"
+    CALIBLY_COPYRIGHT="${CALIBLY_COPYRIGHT}"
 )
 
 # Qt PDF draws PDFs in the reader; without it PDFs open in the default application.

@@ -1801,17 +1801,17 @@
         <translation>Series</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="41"/>
+        <location filename="../qml/Main.qml" line="39"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="279"/>
+        <location filename="../qml/Main.qml" line="277"/>
         <source>Ordner für die neue Bibliothek</source>
         <translation>Folder for the new library</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="279"/>
+        <location filename="../qml/Main.qml" line="277"/>
         <source>Bibliothek öffnen</source>
         <translation>Open library</translation>
     </message>
@@ -2559,22 +2559,32 @@
         <translation>One library for ebooks and audiobooks. calibly uses open-source software, among it Qt, FFmpeg and TagLib; the notices list all of it with its licenses.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/SettingsView.qml" line="351"/>
-        <source>Lizenzbedingungen</source>
-        <translation>License terms</translation>
+        <location filename="../qml/Views/SettingsView.qml" line="346"/>
+        <source>%1. calibly ist freie Software: Du darfst es unter den Bedingungen der GNU General Public License Version 3 weitergeben und verändern. calibly wird ohne jede Gewährleistung bereitgestellt; Einzelheiten stehen in der Lizenz.</source>
+        <translation>%1. calibly is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License version 3. calibly comes without any warranty; see the license for details.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/SettingsView.qml" line="358"/>
+        <location filename="../qml/Views/SettingsView.qml" line="355"/>
+        <source>Lizenz (GNU GPL 3)</source>
+        <translation>License (GNU GPL 3)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="361"/>
+        <source>Quellcode</source>
+        <translation>Source code</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/SettingsView.qml" line="368"/>
         <source>Hinweise zu Software Dritter</source>
         <translation>Third-party notices</translation>
     </message>
     <message>
-        <location filename="../qml/Views/SettingsView.qml" line="365"/>
+        <location filename="../qml/Views/SettingsView.qml" line="375"/>
         <source>Log-Dateien (für Fehlerberichte)</source>
         <translation>Log files (for bug reports)</translation>
     </message>
     <message>
-        <location filename="../qml/Views/SettingsView.qml" line="371"/>
+        <location filename="../qml/Views/SettingsView.qml" line="381"/>
         <source>Download-Seite</source>
         <translation>Download page</translation>
     </message>

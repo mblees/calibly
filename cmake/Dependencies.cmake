@@ -4,7 +4,8 @@
 include(FetchContent)
 
 # --- TagLib: metadata, cover and length of audio files (M4B, MP3, ...) -------
-# License: LGPL 2.1 / MPL 1.1. Built as a static library.
+# License: LGPL 2.1 / MPL 1.1; calibly (GPL 3) uses it under the LGPL 2.1.
+# Built as a static library.
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
