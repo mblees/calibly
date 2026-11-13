@@ -133,6 +133,7 @@ On the way, the installed folder lost five SQL drivers calibly never uses (Oracl
 1. **Beta feedback**: fix reported bugs, each with a test where possible; further betas (`0.2.0-beta` …) as needed.
    - **0.2.0-beta** (2026-11-13): phases 11–13 of the UI plan (accent color, export, series and combining that can be undone, selecting stacks, import whitelist) and the new icon; library schema 6. Release notes in [Release-Notes.md](Release-Notes.md).
    - **0.3.0-beta** (2026-11-13): calibly is open source under the GNU GPL 3 (`GPL-3.0-only`, see step 2); no other changes. Release notes in [Release-Notes.md](Release-Notes.md).
+   - **0.4.0-beta** (2026-11-13): the views "Autoren" (stacks or all titles per author) and "Neu" (added in the last 10 minutes), choosing the order of a series, removing only one format in the format tabs, removing titles from "Weitermachen", the Delete key, a new sidebar order. Library schema unchanged. Release notes in [Release-Notes.md](Release-Notes.md).
 2. ~~**Views "Autoren" and "Sprecher"**~~ **Dropped 2026-11-13:** calibly should stay uncluttered; authors and narrators are found with the search.
 3. Feature freeze: from here on only fixes.
 4. Translations complete (`update_translations`, no unfinished entries), README and release notes in both languages.

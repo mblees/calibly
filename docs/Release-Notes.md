@@ -1,5 +1,49 @@
 # Release Notes
 
+## 0.4.0-beta (2026-11-13)
+
+### Deutsch
+
+**Neu**
+- **Autoren:** Neue Ansicht in der Seitenleiste. Unter „Anordnung“ wählst du zwischen „Stapel“ (jeder Autor ein Stapel; ein Klick zeigt seine Titel, Serien wieder als Stapel) und „Alle Titel“ (jeder Autor als Überschrift, darunter alle seine Werke einzeln mit Cover). Ein Stapel zeigt das Cover des ersten Bands der ersten Serie oder des ersten Einzeltitels.
+- **Neu:** Neue Ansicht mit den Titeln, die in den letzten 10 Minuten hinzugefügt wurden, die neuesten zuerst. Metadaten bearbeiten oder einen Titel öffnen macht ihn nicht wieder neu.
+- **Reihenfolge einer Serie festlegen:** Haben Titel beim „Als Serie zusammenfassen“ keine Bandnummern, fehlen Nummern oder kommen sie doppelt vor, klickst du die Bände in ihrer Reihenfolge an; die Nummer erscheint auf dem Cover. „Überspringen“ nummeriert wie bisher automatisch.
+- **Aus „Weitermachen“ entfernen:** Rechtsklick auf eine Karte unter „Weitermachen“ (oben in der Bibliothek und in der eigenen Ansicht). Der Lese- bzw. Hörstand dieses Formats wird auf den Anfang gesetzt.
+- **Entf-Taste:** Entfernt die markierten Titel, nach derselben Rückfrage wie der Knopf „Entfernen“.
+
+**Geändert**
+- In den Tabs „E-Books“ und „Hörbücher“ entfernt „Entfernen“ nur das jeweilige Format. Ein Titel mit beiden Formaten bleibt mit dem anderen in der Bibliothek; nur dessen Dateien kommen in den Papierkorb. Unter „Alle“ und „Beides“ wird wie bisher der ganze Titel entfernt.
+- Die Seitenleiste ist neu geordnet: Bibliothek, Autoren, Serien, Neu, Weitermachen.
+- Im Schriftzug „calibly“ steht „cal“ in der Akzentfarbe.
+- Markierte Cover haben einen deutlich sichtbareren Rahmen.
+
+**Behoben**
+- „Als nicht fertig markieren“ zeigte einen Titel danach mit 0 % unter „Weitermachen“, und der Reader öffnete ein E-Book wieder am Ende.
+
+**Hinweise**
+- Die Bibliothek wird nicht umgestellt; ein Update über 0.3 behält Bibliothek und Einstellungen.
+
+### English
+
+**New**
+- **Authors:** a new view in the sidebar. Under "Layout" you choose between "Stacks" (each author is a stack; a click shows their titles, series again as stacks) and "All titles" (each author as a heading with all their works below, one by one with their covers). A stack shows the cover of the first volume of the first series or of the first single title.
+- **New:** a new view with the titles added in the last 10 minutes, newest first. Editing the metadata or opening a title does not make it new again.
+- **Choose the order of a series:** if titles have no volume numbers when you "Group as series", or numbers are missing or appear twice, you click the volumes in their order; the number appears on the cover. "Skip" numbers them automatically as before.
+- **Remove from "Continue":** right click a card under "Continue" (at the top of the library and in its own view). The reading or listening position of that format goes back to the start.
+- **Delete key:** removes the selected titles, after the same question as the "Remove" button.
+
+**Changed**
+- In the tabs "Ebooks" and "Audiobooks", "Remove" only removes that format. A title with both formats stays in the library with the other one; only the removed format's files go to the recycle bin. Under "All" and "Both" the whole title is removed as before.
+- The sidebar has a new order: Library, Authors, Series, New, Continue.
+- In the wordmark "calibly", "cal" is in the accent color.
+- Selected covers have a clearly visible frame.
+
+**Fixed**
+- "Mark as not finished" then showed a title at 0 % under "Continue", and the reader opened an ebook at its end again.
+
+**Notes**
+- The library is not updated; updating over 0.3 keeps the library and the settings.
+
 ## 0.3.0-beta (2026-11-13)
 
 ### Deutsch
