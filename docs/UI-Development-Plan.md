@@ -359,7 +359,7 @@ calibly reads ebooks itself instead of handing them to the system's default appl
 | Option | For | Against |
 |---|---|---|
 | **A: Qt's own text engine** (`QTextDocument`, a C++ item draws the pages) | No new dependency; works with MinGW and later on Android / iOS; full control over font, colors and page breaks; reading the EPUB reuses `QZipReader` and `QXmlStreamReader` from the import | Understands only a subset of HTML / CSS: novels look clean, layout-heavy books (textbooks, comics, fixed-layout EPUB) look plain; pagination is our own code |
-| **B: MuPDF** (C library that renders EPUB, PDF, MOBI, FB2, CBZ, XPS to pages) | Much better CSS; one engine for all formats, more formats come almost for free | AGPL license (calibly would have to be AGPL if it is ever passed on); own build system, integrating it into the CMake / MinGW build is extra work |
+| **B: MuPDF** (C library that renders EPUB, PDF, MOBI, FB2, CBZ, XPS to pages) | Much better CSS; one engine for all formats, more formats come almost for free | AGPL license (calibly, which is GPL 3 only, would have to become AGPL); own build system, integrating it into the CMake / MinGW build is extra work |
 | **C: Qt WebEngine** (Chromium) | Complete HTML / CSS, what most EPUB readers use | Not available with MinGW: the whole project would have to move to MSVC; large; not on Android / iOS |
 
 **Decided: A** (2026-11-12). calibly is a personal tool and mostly reads novels; A keeps the rule "only what is needed" and the MinGW build. If the layout turns out to be too plain in practice, B can replace the EPUB part later without changing the reader view.

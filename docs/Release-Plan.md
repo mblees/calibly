@@ -7,10 +7,10 @@ From the finished feature phases (1–10 of the [UI Development Plan](UI-Develop
 | Question | Decision |
 |---|---|
 | Audience | **Public**: anyone can download calibly. **Changed 2026-11-13:** first a **closed beta** for invited testers; the public download follows with an open beta. |
-| Source code | **Closed**, all rights stay with the author. The repository `mblees/calibly` stays private. |
-| Where people download | ~~A separate public repository for releases (`mblees/calibly-releases`).~~ **Changed 2026-11-12:** the releases are published in the working repository `mblees/calibly` (private for now; the update check needs it to be public). |
+| Source code | ~~**Closed**, all rights stay with the author. The repository `mblees/calibly` stays private.~~ **Changed 2026-11-13:** open source under the GNU GPL 3 (see step 2); **2026-11-16:** the repository `mblees/calibly` is public. |
+| Where people download | ~~A separate public repository for releases (`mblees/calibly-releases`).~~ **Changed 2026-11-12:** the releases are published in the working repository `mblees/calibly` (public since 2026-11-16, so the update check finds them). |
 | Package | **Installer** (`calibly-<version>-setup.exe`). |
-| Updates | **Update hint in the app**: at start calibly asks the public releases repository for the latest version and shows a hint with a link. Can be switched off. No automatic download. |
+| Updates | **Update hint in the app**: at start calibly asks the releases of `mblees/calibly` for the latest version and shows a hint with a link. Can be switched off. No automatic download. |
 | Releases | **0.1 Beta** as a GitHub pre-release first, then **1.0** after the beta feedback. |
 | New features before 1.0 | **Settings page** (in the beta). ~~The views "Autoren" and "Sprecher" (by 1.0).~~ **Changed 2026-11-13:** not built, calibly stays uncluttered. Everything else in "Afterwards" of the UI plan stays after 1.0. |
 | Windows version | **Decided 2026-11-13:** Windows 11 only; Windows 10 is not supported or tested. |
@@ -118,10 +118,10 @@ On the way, the installed folder lost five SQL drivers calibly never uses (Oracl
 - *Update check* (`UpdateChecker`): at start (3 s after, at most once a day, only with a real library) and with "Jetzt suchen" calibly asks `api.github.com/repos/<CALIBLY_RELEASES_REPO>/releases` (no account, a `User-Agent` "calibly/<version>"). Drafts never count, pre-releases only while a pre-release is installed; versions compare numerically ("0.10" > "0.9", "1.0.0" > "1.0.0-beta.2" > "1.0.0-beta"). A newer version shows `UpdateHint` at the bottom left (not in fullscreen) with "Herunterladen" (the release page) and "Ignorieren" (no hint for that version again; the settings still show it). No connection only shows on the settings page; the reason is logged. Checked with the installed build: the request reaches GitHub over HTTPS (404 until the releases repository exists).
 - *Placeholders:* "Autoren" and "Sprecher" are left out of the sidebar; they were dropped later (step 6).
 - Tests: new `tst_appsettings` (version comparison, choice of the release, hint and "Ignorieren", stored switch, language: system / chosen).
-- **Still open:** the releases are published in `mblees/calibly`, which stays private during the closed beta (step 5). The update check only finds a release once the releases are public, so "a test release is found by the app" is checked with the open beta.
+- **Still open:** the releases are published in `mblees/calibly`, which was private during the closed beta (step 5) and is public since 2026-11-16. "A test release is found by the app" is checked with the first release after that.
 
 ### Step 5 – 0.1 Beta
-**Changed 2026-11-13:** first a **closed beta**. 0.1.0-beta and 0.2.0-beta are pre-releases in the private repository `mblees/calibly` for invited testers; items 1, 2 and the update hint of the "Done when" move to the open beta.
+**Changed 2026-11-13:** first a **closed beta**. 0.1.0-beta and 0.2.0-beta are pre-releases in the private repository `mblees/calibly` for invited testers; items 1, 2 and the update hint of the "Done when" move to the open beta. **2026-11-16:** the repository is public, so the source code and the existing pre-releases can be seen by anyone.
 
 1. *(open beta)* A public download page: a user README (German and English: what calibly is, screenshots, system requirements Windows 11 64-bit, install, where the library lives, how to report bugs), issue templates (bug report asks for version and log file).
 2. *(open beta)* **Code signing** (open decision, see section 4): without a signature, Windows SmartScreen warns "Der Computer wurde durch Windows geschützt" at the first downloads; the README explains "Weitere Informationen → Trotzdem ausführen".
