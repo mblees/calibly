@@ -24,7 +24,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/ComponentGallery.qml" line="998"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1051"/>
         <source>%Ln Titel entfernen?</source>
         <translation>
             <numerusform>%Ln Titel entfernen?</numerusform>
@@ -148,7 +148,7 @@
     <message numerus="yes">
         <location filename="../qml/Views/LibraryView.qml" line="521"/>
         <location filename="../qml/Views/LibraryView.qml" line="523"/>
-        <location filename="../qml/Views/LibraryView.qml" line="723"/>
+        <location filename="../qml/Views/LibraryView.qml" line="755"/>
         <source>%Ln Titel</source>
         <translation>
             <numerusform>%Ln Titel</numerusform>
@@ -188,7 +188,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="913"/>
+        <location filename="../qml/Views/LibraryView.qml" line="954"/>
         <source>%Ln Titel kombinieren?</source>
         <translation>
             <numerusform>%Ln Titel kombinieren?</numerusform>
@@ -196,7 +196,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="959"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1000"/>
         <source>%Ln Titel als neu markieren?</source>
         <translation>
             <numerusform>%Ln Titel als neu markieren?</numerusform>
@@ -204,7 +204,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="976"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1017"/>
         <source>E-Books von %Ln Titeln entfernen?</source>
         <translation>
             <numerusform>E-Book von %Ln Titel entfernen?</numerusform>
@@ -212,7 +212,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="979"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1020"/>
         <source>Hörbücher von %Ln Titeln entfernen?</source>
         <translation>
             <numerusform>Hörbuch von %Ln Titel entfernen?</numerusform>
@@ -220,7 +220,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="981"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1022"/>
         <source>%Ln Titel entfernen?</source>
         <translation>
             <numerusform>%Ln Titel entfernen?</numerusform>
@@ -228,7 +228,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="1027"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1068"/>
         <source>Keine neuen Titel. Hier erscheint, was in den letzten %Ln Minuten hinzugefügt wurde.</source>
         <translation>
             <numerusform>Keine neuen Titel. Hier erscheint, was in der letzten Minute hinzugefügt wurde.</numerusform>
@@ -255,6 +255,25 @@
         <translation>
             <numerusform>%n Stern</numerusform>
             <numerusform>%n Sterne</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>SearchPanel</name>
+    <message numerus="yes">
+        <location filename="../qml/Components/SearchPanel.qml" line="61"/>
+        <source>Die ersten %Ln Treffer (es gibt mehr)</source>
+        <translation>
+            <numerusform>Der erste Treffer (es gibt mehr)</numerusform>
+            <numerusform>Die ersten %Ln Treffer (es gibt mehr)</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Components/SearchPanel.qml" line="64"/>
+        <source>%Ln Treffer</source>
+        <translation>
+            <numerusform>%Ln Treffer</numerusform>
+            <numerusform>%Ln Treffer</numerusform>
         </translation>
     </message>
 </context>

@@ -137,7 +137,7 @@
     </message>
     <message>
         <location filename="../qml/Views/ComponentGallery.qml" line="227"/>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1000"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1053"/>
         <source>Entfernen</source>
         <translation>Remove</translation>
     </message>
@@ -159,7 +159,7 @@
     </message>
     <message>
         <location filename="../qml/Views/ComponentGallery.qml" line="245"/>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1430"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1558"/>
         <source>Einstellungen</source>
         <translation>Settings</translation>
     </message>
@@ -525,92 +525,117 @@
         <translation>Rating (clickable)</translation>
     </message>
     <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="721"/>
+        <source>Cover im Metadaten-Editor</source>
+        <translation>Cover in the metadata editor</translation>
+    </message>
+    <message>
         <location filename="../qml/Views/ComponentGallery.qml" line="734"/>
+        <source>Cover des Hörbuchs übernehmen</source>
+        <translation>Use the audiobook's cover</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="739"/>
+        <source>E-Book mit Cover</source>
+        <translation>Ebook with cover</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="755"/>
+        <source>Allgemein: geändert, gilt für beide Formate</source>
+        <translation>General: changed, applies to both formats</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="767"/>
+        <source>Ohne Cover (Platzhalter)</source>
+        <translation>Without cover (placeholder)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="787"/>
         <source>Metadaten-Formular</source>
         <translation>Metadata form</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="739"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="792"/>
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="739"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="792"/>
         <source>Hörbuch</source>
         <translation>Audiobook</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="739"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="792"/>
         <source>E-Book</source>
         <translation>Ebook</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="797"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="850"/>
         <source>Player</source>
         <translation>Player</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="832"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="885"/>
         <source>Die Datei konnte nicht abgespielt werden.</source>
         <translation>The file could not be played.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="836"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="889"/>
         <source>Player-Leiste: spielt, mit Fehler</source>
         <translation>Player bar: playing, with error</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="872"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="925"/>
         <source>Vollbild: Steuerung, Kapitel-Position, Tempo und Schlaftimer</source>
         <translation>Fullscreen: controls, chapter position, speed and sleep timer</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="897"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="950"/>
         <source>Kapitelliste: gehört, aktuell, offen</source>
         <translation>Chapter list: heard, current, open</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="904"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="957"/>
         <source>Mehrfachauswahl</source>
         <translation>Multi-selection</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="918"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="971"/>
         <source>Aktionsleiste: zwei Titel (Metadaten nur bei einem Titel), ein Titel (Kombinieren nicht möglich, ein Export läuft schon). „⋯“ öffnet „Alle als fertig / neu markieren“, „Entfernen“ die Rückfrage.</source>
         <translation>Action bar: two titles (metadata only for one title), one title (combining not possible, an export is already running). “⋯” opens “Mark all as finished / new”, “Remove” the confirmation.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="927"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="980"/>
         <source>Menü eines Titels</source>
         <translation>Menu of a title</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="933"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="986"/>
         <source>Menü einer Auswahl</source>
         <translation>Menu of a selection</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="939"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="992"/>
         <source>Menü eines Serien-Stapels</source>
         <translation>Menu of a series stack</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="945"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="998"/>
         <source>Menü eines kombinierten Titels</source>
         <translation>Menu of a combined title</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="949"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1002"/>
         <source>Als Serie zusammenfassen …</source>
         <translation>Group as series …</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="957"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1010"/>
         <source>Kontextmenü (Rechtsklick auf ein Cover): ein Titel mit beiden Formaten, eine Auswahl, ein Serien-Stapel, ein kombinierter Titel; die Frage nach dem Seriennamen</source>
         <translation>Context menu (right click on a cover): a title with both formats, a selection, a series stack, a combined title; the question for the series name</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/ComponentGallery.qml" line="998"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1051"/>
         <source>%Ln Titel entfernen?</source>
         <translation>
             <numerusform>Remove %Ln title?</numerusform>
@@ -618,144 +643,174 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="999"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1052"/>
         <source>Die Titel werden aus der Bibliothek entfernt. Ihre Dateien im Bibliotheksordner kommen in den Papierkorb.</source>
         <translation>The titles are removed from the library. Their files in the library folder go to the recycle bin.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1255"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1176"/>
+        <source>Leiste im Fenster: Suche offen</source>
+        <translation>Bar in the window: search open</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1197"/>
+        <source>Leiste eines PDFs (Zoom-Lupe statt „Aa“), geöffnet aus „Weitermachen“</source>
+        <translation>Bar of a PDF (zoom magnifier instead of "Aa"), opened from "Continue"</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1239"/>
+        <source>Suche: Treffer, der zweite ist aktuell</source>
+        <translation>Search: results, the second one is current</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1248"/>
+        <source>Suche: läuft noch</source>
+        <translation>Search: still running</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1259"/>
+        <source>Suche: noch leer</source>
+        <translation>Search: still empty</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1266"/>
+        <source>Suche: nichts gefunden</source>
+        <translation>Search: nothing found</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1275"/>
+        <source>Suche: zu viele Treffer</source>
+        <translation>Search: too many results</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1383"/>
         <source>Bibliothek nicht verfügbar</source>
         <translation>Library not available</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1287"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1415"/>
         <source>Statt der Bibliothek: nicht gefunden, nicht anlegbar, beschädigt, neuere Version, Umstellung fehlgeschlagen, schon geöffnet</source>
         <translation>Instead of the library: not found, cannot be created, damaged, newer version, update failed, already open</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1292"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1420"/>
         <source>Neue Version</source>
         <translation>New version</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1299"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1427"/>
         <source>Hinweis auf eine neue Version (unten links über der Bibliothek)</source>
         <translation>Hint about a new version (bottom left over the library)</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1304"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1432"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1340"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1468"/>
         <source>„Dracula.m4b“ konnte nicht kopiert werden. 6 von 14 Dateien liegen im Export-Ordner.</source>
         <translation>“Dracula.m4b” could not be copied. 6 of 14 files are in the export folder.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1344"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1472"/>
         <source>Export der Auswahl (unten links): läuft, fertig, fertig mit fehlenden Dateien, abgebrochen, fehlgeschlagen</source>
         <translation>Export of the selection (bottom left): running, done, done with missing files, cancelled, failed</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1349"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1477"/>
         <source>Import (Drag &amp; Drop)</source>
         <translation>Import (drag &amp; drop)</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1359"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1487"/>
         <source>Hinweis beim Ziehen: über freier Fläche</source>
         <translation>Hint while dragging: over free space</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1366"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1494"/>
         <source>Hinweis beim Ziehen: über einem Cover</source>
         <translation>Hint while dragging: over a cover</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1391"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1519"/>
         <source>Import-Warteschlange: fertig, ergänzt, läuft, prüfen, liest, wartet, übersprungen, Fehler</source>
         <translation>Import queue: done, added, running, review, reading, waiting, skipped, error</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1400"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1528"/>
         <source>Spinner</source>
         <translation>Spinner</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1407"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1535"/>
         <source>Seitenleiste</source>
         <translation>Sidebar</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1423"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1551"/>
         <source>Bibliothek</source>
         <translation>Library</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1006"/>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1120"/>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1424"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1059"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1191"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1552"/>
         <source>Weitermachen</source>
         <translation>Continue</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1065"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1118"/>
         <source>Weitermachen-Karten: Hörbuch mit Kapitel, E-Book mit Seite (PDF), E-Book mit Kapitel (EPUB), E-Book ohne Fortschritt, Datei fehlt</source>
         <translation>Continue cards: audiobook with chapter, ebook with page (PDF), ebook with chapter (EPUB), ebook without progress, file missing</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1094"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1155"/>
         <source>Reader</source>
         <translation>Reader</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1105"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1166"/>
         <source>Leiste im Fenster: Inhalt eingeblendet</source>
         <translation>Bar in the window: contents shown</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1116"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1187"/>
         <source>Leiste im Vollbild: Texteinstellungen offen</source>
         <translation>Bar in fullscreen: text settings open</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1126"/>
-        <source>Leiste eines PDFs (Lupe statt „Aa“), geöffnet aus „Weitermachen“</source>
-        <translation>Bar of a PDF (magnifier instead of “Aa”), opened from “Continue”</translation>
-    </message>
-    <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1141"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1212"/>
         <source>Inhalt: Unterkapitel aktuell, letzte Seite noch nicht gezählt</source>
         <translation>Contents: sub-chapter current, last page not counted yet</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1147"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1218"/>
         <source>Inhalt: Buch ohne Inhaltsverzeichnis</source>
         <translation>Contents: book without table of contents</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1219"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1347"/>
         <source>Texteinstellungen (zum Ausprobieren)</source>
         <translation>Text settings (try them out)</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1248"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1376"/>
         <source>Ansicht eines PDFs: Zoom</source>
         <translation>View of a PDF: zoom</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1425"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1553"/>
         <source>Serien</source>
         <translation>Series</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1426"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1554"/>
         <source>Autoren</source>
         <translation>Authors</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ComponentGallery.qml" line="1427"/>
+        <location filename="../qml/Views/ComponentGallery.qml" line="1555"/>
         <source>Sprecher</source>
         <translation>Narrators</translation>
     </message>
@@ -924,6 +979,54 @@
         <location filename="../qml/Views/ContinueView.qml" line="167"/>
         <source>Titel, die du liest oder hörst, stehen hier, bis sie fertig sind.</source>
         <translation>Titles you are reading or listening to stay here until they are finished.</translation>
+    </message>
+</context>
+<context>
+    <name>CoverPicker</name>
+    <message>
+        <location filename="../qml/Components/CoverPicker.qml" line="60"/>
+        <source>Cover</source>
+        <translation>Cover</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/CoverPicker.qml" line="88"/>
+        <source>Als Cover verwenden</source>
+        <translation>Use as cover</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/CoverPicker.qml" line="136"/>
+        <source>Cover ändern</source>
+        <translation>Change cover</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/CoverPicker.qml" line="162"/>
+        <source>Geändert · wird mit „Speichern“ übernommen</source>
+        <translation>Changed · applied with "Save"</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/CoverPicker.qml" line="163"/>
+        <source>oder ein Bild auf das Cover ziehen</source>
+        <translation>or drag a picture onto the cover</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/CoverPicker.qml" line="173"/>
+        <source>Bild auswählen …</source>
+        <translation>Choose picture …</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/CoverPicker.qml" line="179"/>
+        <source>Bild einfügen (Strg+V)</source>
+        <translation>Paste picture (Ctrl+V)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/CoverPicker.qml" line="191"/>
+        <source>Cover aus der Datei</source>
+        <translation>Cover from the file</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/CoverPicker.qml" line="201"/>
+        <source>Cover entfernen</source>
+        <translation>Remove cover</translation>
     </message>
 </context>
 <context>
@@ -1497,7 +1600,7 @@
     </message>
     <message>
         <location filename="../qml/Views/LibraryView.qml" line="332"/>
-        <location filename="../qml/Views/LibraryView.qml" line="1042"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1083"/>
         <source>E-Books und Hörbücher hinzufügen</source>
         <translation>Add ebooks and audiobooks</translation>
     </message>
@@ -1603,7 +1706,7 @@
     <message numerus="yes">
         <location filename="../qml/Views/LibraryView.qml" line="521"/>
         <location filename="../qml/Views/LibraryView.qml" line="523"/>
-        <location filename="../qml/Views/LibraryView.qml" line="723"/>
+        <location filename="../qml/Views/LibraryView.qml" line="755"/>
         <source>%Ln Titel</source>
         <translation>
             <numerusform>%Ln title</numerusform>
@@ -1647,17 +1750,17 @@
         <translation>Vol. %1–%2</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="841"/>
+        <location filename="../qml/Views/LibraryView.qml" line="882"/>
         <source>Wohin sollen die Dateien exportiert werden?</source>
         <translation>Where should the files be exported to?</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="842"/>
+        <location filename="../qml/Views/LibraryView.qml" line="883"/>
         <source>Hierhin exportieren</source>
         <translation>Export here</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="913"/>
+        <location filename="../qml/Views/LibraryView.qml" line="954"/>
         <source>%Ln Titel kombinieren?</source>
         <translation>
             <numerusform>Combine %Ln title?</numerusform>
@@ -1665,12 +1768,12 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="916"/>
+        <location filename="../qml/Views/LibraryView.qml" line="957"/>
         <source>Sie werden ein Eintrag „%1“, der sich am Stück lesen und hören lässt: E-Books als Bände nach ihrer Bandnummer, Hörbücher nacheinander. Mit „Kombination auflösen“ (Rechtsklick) werden es wieder einzelne Titel.</source>
         <translation>They become one entry “%1” that can be read and listened to in one go: ebooks as volumes by their volume number, audiobooks one after the other. “Dissolve combination” (right click) makes them single titles again.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="914"/>
+        <location filename="../qml/Views/LibraryView.qml" line="955"/>
         <source>Hörbuch-Dateien verbinden?</source>
         <translation>Join audiobook files?</translation>
     </message>
@@ -1706,37 +1809,37 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="917"/>
+        <location filename="../qml/Views/LibraryView.qml" line="958"/>
         <source>Die Hörbuch-Dateien von „%1“ werden zu einem Hörbuch mit einem Kapitel pro Datei. Das lässt sich nicht rückgängig machen.</source>
         <translation>The audiobook files of “%1” become one audiobook with one chapter per file. This cannot be undone.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="918"/>
+        <location filename="../qml/Views/LibraryView.qml" line="959"/>
         <source>Verbinden</source>
         <translation>Merge</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="918"/>
+        <location filename="../qml/Views/LibraryView.qml" line="959"/>
         <source>Kombinieren</source>
         <translation>Combine</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="949"/>
+        <location filename="../qml/Views/LibraryView.qml" line="990"/>
         <source>Serie „%1“ auflösen?</source>
         <translation>Dissolve the series “%1”?</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="950"/>
+        <location filename="../qml/Views/LibraryView.qml" line="991"/>
         <source>Die Bände bleiben in der Bibliothek, verlieren aber den Seriennamen und ihre Bandnummer.</source>
         <translation>The volumes stay in the library but lose the series name and their volume number.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="951"/>
+        <location filename="../qml/Views/LibraryView.qml" line="992"/>
         <source>Auflösen</source>
         <translation>Dissolve</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="959"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1000"/>
         <source>%Ln Titel als neu markieren?</source>
         <translation>
             <numerusform>Mark %Ln title as new?</numerusform>
@@ -1744,22 +1847,22 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="960"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1001"/>
         <source>Fortschritt, Lese- und Hörpositionen gehen verloren. Die Titel erscheinen wieder als „Neu“ und nicht mehr unter „Weitermachen“.</source>
         <translation>Progress and reading and listening positions are lost. The titles show as “New” again and no longer under “Continue”.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="961"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1002"/>
         <source>Als neu markieren</source>
         <translation>Mark as new</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="975"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1016"/>
         <source>E-Book von „%1“ entfernen?</source>
         <translation>Remove the e-book of “%1”?</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="976"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1017"/>
         <source>E-Books von %Ln Titeln entfernen?</source>
         <translation>
             <numerusform>Remove the e-book of %Ln title?</numerusform>
@@ -1767,12 +1870,12 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="978"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1019"/>
         <source>Hörbuch von „%1“ entfernen?</source>
         <translation>Remove the audiobook of “%1”?</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="979"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1020"/>
         <source>Hörbücher von %Ln Titeln entfernen?</source>
         <translation>
             <numerusform>Remove the audiobook of %Ln title?</numerusform>
@@ -1780,12 +1883,12 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="980"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1021"/>
         <source>„%1“ entfernen?</source>
         <translation>Remove “%1”?</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="981"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1022"/>
         <source>%Ln Titel entfernen?</source>
         <translation>
             <numerusform>Remove %Ln title?</numerusform>
@@ -1793,72 +1896,72 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="986"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1027"/>
         <source>Nur die E-Books werden entfernt, Hörbücher derselben Titel bleiben. Die Dateien im Bibliotheksordner kommen in den Papierkorb.</source>
         <translation>Only the e-books are removed; audiobooks of the same titles stay. The files in the library folder go to the recycle bin.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="987"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1028"/>
         <source>Nur die E-Books werden entfernt, Hörbücher derselben Titel bleiben.</source>
         <translation>Only the e-books are removed; audiobooks of the same titles stay.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="991"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1032"/>
         <source>Nur die Hörbücher werden entfernt, E-Books derselben Titel bleiben. Die Dateien im Bibliotheksordner kommen in den Papierkorb.</source>
         <translation>Only the audiobooks are removed; e-books of the same titles stay. The files in the library folder go to the recycle bin.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="992"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1033"/>
         <source>Nur die Hörbücher werden entfernt, E-Books derselben Titel bleiben.</source>
         <translation>Only the audiobooks are removed; e-books of the same titles stay.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="996"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1037"/>
         <source>Der Titel wird aus der Bibliothek entfernt. Seine Dateien im Bibliotheksordner kommen in den Papierkorb.</source>
         <translation>The title is removed from the library. Its files in the library folder go to the recycle bin.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="997"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1038"/>
         <source>Der Titel wird aus der Bibliothek entfernt.</source>
         <translation>The title is removed from the library.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1000"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1041"/>
         <source>Die Titel werden aus der Bibliothek entfernt. Ihre Dateien im Bibliotheksordner kommen in den Papierkorb.</source>
         <translation>The titles are removed from the library. Their files in the library folder go to the recycle bin.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1001"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1042"/>
         <source>Die Titel werden aus der Bibliothek entfernt.</source>
         <translation>The titles are removed from the library.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1003"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1044"/>
         <source>Entfernen</source>
         <translation>Remove</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1023"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1064"/>
         <source>Noch keine Titel in der Bibliothek.</source>
         <translation>No titles in the library yet.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1024"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1065"/>
         <source>Keine Treffer für „%1“.</source>
         <translation>No results for “%1”.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1025"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1066"/>
         <source>Noch keine Serien. Eine Serie entsteht, sobald sie in den Metadaten eines Titels steht.</source>
         <translation>No series yet. A series appears as soon as it is named in the metadata of a title.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1026"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1067"/>
         <source>Noch keine Autoren. Ein Autor erscheint, sobald er in den Metadaten eines Titels steht.</source>
         <translation>No authors yet. An author appears as soon as it is in the metadata of a title.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Views/LibraryView.qml" line="1027"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1068"/>
         <source>Keine neuen Titel. Hier erscheint, was in den letzten %Ln Minuten hinzugefügt wurde.</source>
         <translation>
             <numerusform>No new titles. What was added in the last minute appears here.</numerusform>
@@ -1866,34 +1969,34 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1028"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1069"/>
         <source>Keine Titel in dieser Auswahl.</source>
         <translation>No titles in this selection.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1035"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1076"/>
         <source>Filter zurücksetzen</source>
         <translation>Reset filters</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1053"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1094"/>
         <source>Oder Dateien und ganze Ordner in dieses Fenster ziehen. Sie werden in die Bibliothek kopiert:
 %1</source>
         <translation>Or drag files and whole folders into this window. They are copied into the library:
 %1</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1081"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1122"/>
         <source>Als Hörbuch zu „%1“ hinzufügen</source>
         <translation>Add as audiobook to “%1”</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1083"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1124"/>
         <source>Als E-Book zu „%1“ hinzufügen</source>
         <translation>Add as ebook to “%1”</translation>
     </message>
     <message>
-        <location filename="../qml/Views/LibraryView.qml" line="1084"/>
+        <location filename="../qml/Views/LibraryView.qml" line="1125"/>
         <source>Zu „%1“ hinzufügen</source>
         <translation>Add to “%1”</translation>
     </message>
@@ -1947,76 +2050,125 @@
     </message>
 </context>
 <context>
+    <name>MediaControls</name>
+    <message>
+        <location filename="../src/controllers/mediacontrols.cpp" line="351"/>
+        <source>Kapitel %1</source>
+        <translation>Chapter %1</translation>
+    </message>
+</context>
+<context>
     <name>MetadataEditor</name>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="54"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="57"/>
+        <source>Die Zwischenablage enthält kein Bild.</source>
+        <translation>The clipboard holds no picture.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="73"/>
         <source>Der Titel darf nicht leer sein.</source>
         <translation>The title must not be empty.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="58"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="77"/>
         <source>Die Änderungen konnten nicht gespeichert werden.</source>
         <translation>The changes could not be saved.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="110"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="129"/>
         <source>Allgemein</source>
         <translation>General</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="112"/>
-        <location filename="../qml/Views/MetadataEditor.qml" line="193"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="131"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="231"/>
         <source>Hörbuch</source>
         <translation>Audiobook</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="114"/>
-        <location filename="../qml/Views/MetadataEditor.qml" line="193"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="133"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="231"/>
         <source>E-Book</source>
         <translation>Ebook</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="180"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="218"/>
         <source>Metadaten bearbeiten</source>
         <translation>Edit metadata</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="192"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="230"/>
         <source>E-Book + Hörbuch</source>
         <translation>Ebook + audiobook</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="212"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="250"/>
         <source>Voriger Titel</source>
         <translation>Previous title</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="218"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="256"/>
         <source>%1 / %2</source>
         <translation>%1 / %2</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="227"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="265"/>
         <source>Nächster Titel</source>
         <translation>Next title</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="233"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="271"/>
         <source>Schließen</source>
         <translation>Close</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="361"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="304"/>
+        <source>Cover des Hörbuchs übernehmen</source>
+        <translation>Use the audiobook's cover</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="305"/>
+        <source>Cover des E-Books übernehmen</source>
+        <translation>Use the ebook's cover</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="314"/>
+        <source>Die Datei enthält kein Cover.</source>
+        <translation>The file has no cover.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="319"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="331"/>
+        <source>Das Bild konnte nicht gelesen werden.</source>
+        <translation>The picture could not be read.</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="326"/>
+        <source>Bild für das Cover auswählen</source>
+        <translation>Choose a picture for the cover</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="327"/>
+        <source>Bilder (%1)</source>
+        <translation>Pictures (%1)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="328"/>
+        <source>Alle Dateien (*)</source>
+        <translation>All files (*)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Views/MetadataEditor.qml" line="435"/>
         <source>= gilt für E-Book und Hörbuch</source>
         <translation>= applies to ebook and audiobook</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="376"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="450"/>
         <source>Abbrechen</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location filename="../qml/Views/MetadataEditor.qml" line="380"/>
+        <location filename="../qml/Views/MetadataEditor.qml" line="454"/>
         <source>Speichern</source>
         <translation>Save</translation>
     </message>
@@ -2366,122 +2518,140 @@
 <context>
     <name>ReaderBar</name>
     <message>
-        <location filename="../qml/Components/ReaderBar.qml" line="29"/>
+        <location filename="../qml/Components/ReaderBar.qml" line="31"/>
         <source>Bibliothek</source>
         <translation>Library</translation>
     </message>
     <message>
-        <location filename="../qml/Components/ReaderBar.qml" line="67"/>
+        <location filename="../qml/Components/ReaderBar.qml" line="71"/>
         <source>Zurück: %1</source>
         <translation>Back: %1</translation>
     </message>
     <message>
-        <location filename="../qml/Components/ReaderBar.qml" line="176"/>
+        <location filename="../qml/Components/ReaderBar.qml" line="180"/>
+        <source>Suche schließen</source>
+        <translation>Close search</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/ReaderBar.qml" line="180"/>
+        <source>Im Buch suchen (Strg+F)</source>
+        <translation>Search in the book (Ctrl+F)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/ReaderBar.qml" line="188"/>
         <source>Inhalt ausblenden</source>
         <translation>Hide contents</translation>
     </message>
     <message>
-        <location filename="../qml/Components/ReaderBar.qml" line="176"/>
+        <location filename="../qml/Components/ReaderBar.qml" line="188"/>
         <source>Inhalt einblenden</source>
         <translation>Show contents</translation>
     </message>
     <message>
-        <location filename="../qml/Components/ReaderBar.qml" line="187"/>
+        <location filename="../qml/Components/ReaderBar.qml" line="199"/>
         <source>Ansicht</source>
         <translation>View</translation>
     </message>
     <message>
-        <location filename="../qml/Components/ReaderBar.qml" line="187"/>
+        <location filename="../qml/Components/ReaderBar.qml" line="199"/>
         <source>Texteinstellungen</source>
         <translation>Text settings</translation>
     </message>
     <message>
-        <location filename="../qml/Components/ReaderBar.qml" line="204"/>
+        <location filename="../qml/Components/ReaderBar.qml" line="216"/>
         <source>Vollbild beenden</source>
         <translation>Exit fullscreen</translation>
     </message>
     <message>
-        <location filename="../qml/Components/ReaderBar.qml" line="204"/>
+        <location filename="../qml/Components/ReaderBar.qml" line="216"/>
         <source>Vollbild</source>
         <translation>Fullscreen</translation>
     </message>
 </context>
 <context>
+    <name>ReaderController</name>
+    <message>
+        <location filename="../src/controllers/readercontroller.cpp" line="1136"/>
+        <source>Seite %1</source>
+        <translation>Page %1</translation>
+    </message>
+</context>
+<context>
     <name>ReaderView</name>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="35"/>
+        <location filename="../qml/Views/ReaderView.qml" line="39"/>
         <source>Bibliothek</source>
         <translation>Library</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="57"/>
-        <location filename="../qml/Views/ReaderView.qml" line="510"/>
-        <location filename="../qml/Views/ReaderView.qml" line="537"/>
+        <location filename="../qml/Views/ReaderView.qml" line="63"/>
+        <location filename="../qml/Views/ReaderView.qml" line="587"/>
+        <location filename="../qml/Views/ReaderView.qml" line="614"/>
         <source>%1 %</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="63"/>
+        <location filename="../qml/Views/ReaderView.qml" line="69"/>
         <source>Seite %1–%2 von %3 · %4</source>
         <translation>Pages %1–%2 of %3 · %4</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="65"/>
+        <location filename="../qml/Views/ReaderView.qml" line="71"/>
         <source>Seite %1 von %2 · %3</source>
         <translation>Page %1 of %2 · %3</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="323"/>
+        <location filename="../qml/Views/ReaderView.qml" line="365"/>
         <source>Vorige Seite</source>
         <translation>Previous page</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="335"/>
+        <location filename="../qml/Views/ReaderView.qml" line="377"/>
         <source>Nächste Seite</source>
         <translation>Next page</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="357"/>
+        <location filename="../qml/Views/ReaderView.qml" line="399"/>
         <source>Datei fehlt</source>
         <translation>File missing</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="357"/>
+        <location filename="../qml/Views/ReaderView.qml" line="399"/>
         <source>Dieses Buch lässt sich hier nicht anzeigen</source>
         <translation>This book cannot be shown here</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="367"/>
+        <location filename="../qml/Views/ReaderView.qml" line="409"/>
         <source>Die Datei dieses Buchs wurde nicht gefunden. Vielleicht wurde sie verschoben oder gelöscht.</source>
         <translation>The file of this book was not found. Maybe it was moved or deleted.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="368"/>
+        <location filename="../qml/Views/ReaderView.qml" line="410"/>
         <source>Die Datei ist beschädigt oder kopiergeschützt (DRM). Ein anderes Programm kann sie vielleicht öffnen.</source>
         <translation>The file is damaged or copy-protected (DRM). Another app may be able to open it.</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="382"/>
+        <location filename="../qml/Views/ReaderView.qml" line="424"/>
         <source>Mit Standardprogramm öffnen</source>
         <translation>Open with default app</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="389"/>
+        <location filename="../qml/Views/ReaderView.qml" line="431"/>
         <source>Zurück</source>
         <translation>Back</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="424"/>
+        <location filename="../qml/Views/ReaderView.qml" line="491"/>
         <source>Band %1 von %2</source>
         <translation>Volume %1 of %2</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="495"/>
+        <location filename="../qml/Views/ReaderView.qml" line="572"/>
         <source>Stelle im Buch</source>
         <translation>Place in the book</translation>
     </message>
     <message>
-        <location filename="../qml/Views/ReaderView.qml" line="568"/>
+        <location filename="../qml/Views/ReaderView.qml" line="645"/>
         <source>Leisten erscheinen bei Mausbewegung · Esc verlässt das Vollbild</source>
         <translation>Bars appear when the mouse moves · Esc leaves fullscreen</translation>
     </message>
@@ -2492,6 +2662,75 @@
         <location filename="../qml/Controls/SearchField.qml" line="110"/>
         <source>Suche leeren</source>
         <translation>Clear search</translation>
+    </message>
+</context>
+<context>
+    <name>SearchPanel</name>
+    <message>
+        <location filename="../qml/Components/SearchPanel.qml" line="56"/>
+        <source>Wörter oder Sätze im Buch finden</source>
+        <translation>Find words or sentences in the book</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/SearchPanel.qml" line="59"/>
+        <source>Sucht …</source>
+        <translation>Searching …</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/SearchPanel.qml" line="59"/>
+        <source>Nichts gefunden</source>
+        <translation>Nothing found</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Components/SearchPanel.qml" line="61"/>
+        <source>Die ersten %Ln Treffer (es gibt mehr)</source>
+        <translation>
+            <numerusform>The first result (there are more)</numerusform>
+            <numerusform>The first %Ln results (there are more)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/SearchPanel.qml" line="63"/>
+        <source>%1 von %2</source>
+        <translation>%1 of %2</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/Components/SearchPanel.qml" line="64"/>
+        <source>%Ln Treffer</source>
+        <translation>
+            <numerusform>%Ln result</numerusform>
+            <numerusform>%Ln results</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/SearchPanel.qml" line="85"/>
+        <source>Suchen</source>
+        <translation>Search</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/SearchPanel.qml" line="100"/>
+        <source>Suche schließen</source>
+        <translation>Close search</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/SearchPanel.qml" line="113"/>
+        <source>Im Buch suchen</source>
+        <translation>Search in the book</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/SearchPanel.qml" line="160"/>
+        <source>Vorheriger Treffer (Umschalt+F3)</source>
+        <translation>Previous result (Shift+F3)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/SearchPanel.qml" line="165"/>
+        <source>Nächster Treffer (F3)</source>
+        <translation>Next result (F3)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/SearchPanel.qml" line="187"/>
+        <source>Suchergebnisse</source>
+        <translation>Search results</translation>
     </message>
 </context>
 <context>

@@ -15,6 +15,8 @@ qt_add_library(calibly_reader STATIC
     htmlprep.cpp
     booklayout.h
     booklayout.cpp
+    textsearch.h
+    textsearch.cpp
 )
 
 target_include_directories(calibly_reader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

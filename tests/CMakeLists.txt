@@ -69,3 +69,7 @@ add_test(NAME tst_export COMMAND tst_export)
 qt_add_executable(tst_appsettings tst_appsettings.cpp)
 target_link_libraries(tst_appsettings PRIVATE Qt6::Test calibly_controllers)
 add_test(NAME tst_appsettings COMMAND tst_appsettings)
+
+qt_add_executable(tst_mediacontrols tst_mediacontrols.cpp)
+target_link_libraries(tst_mediacontrols PRIVATE Qt6::Test calibly_models calibly_controllers)
+add_test(NAME tst_mediacontrols COMMAND tst_mediacontrols)

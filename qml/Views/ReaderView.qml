@@ -20,6 +20,9 @@ import Calibly.Controllers
 // Turning pages: ← → PgUp PgDn Space Home End, the mouse wheel and a click
 // on the left or right third of the page; Ctrl + / Ctrl − change the font
 // size (PDF: the zoom).
+// Ctrl+F or the magnifier open the search in the book (SearchPanel, phase 14)
+// in place of the contents; F3 / Shift+F3 go to the next / previous result,
+// Esc closes the search first.
 //
 // Properties:
 //   backText    label of the way back, e.g. "Bibliothek"
@@ -29,6 +32,7 @@ import Calibly.Controllers
 //   handleKey(event)    the keys of the reader; Main.qml passes on the keys
 //                       no control used while a book is open
 //   toggleFullscreen()
+//   openSearch(), closeSearch()
 Item {
     id: root
 
@@ -39,6 +43,7 @@ Item {
     property int windowVisibility: Window.Windowed  // to return to after fullscreen
     property bool contentsShown: false
     property bool contentsShownInWindow: false
+    property bool searchShown: false
     property bool barsShown: true
     property bool overLink: false
     property real wheelDelta: 0
@@ -48,7 +53,8 @@ Item {
     readonly property var colors: Theme.readerPageColors[ReaderSettings.pageColor] ?? Theme.readerPageColors["nacht"]
     // The bars stay while the user works with them.
     readonly property bool barsBusy: settingsPopup.visible || topHover.hovered || bottomHover.hovered
-                                     || (root.inFullscreen && root.contentsShown) || root.hasError
+                                     || (root.inFullscreen && (root.contentsShown || root.searchShown))
+                                     || root.hasError
     // Space next to the page in the window for the ‹ › buttons.
     readonly property real sideSpace: root.inFullscreen ? 0 : Theme.controlHeight + Theme.spacingS
 
@@ -63,6 +69,21 @@ Item {
             return qsTr("Seite %1–%2 von %3 · %4").arg(page + 1).arg(ReaderController.lastPage + 1)
                        .arg(count).arg(percent)
         return qsTr("Seite %1 von %2 · %3").arg(page + 1).arg(count).arg(percent)
+    }
+
+    function openSearch() {
+        if (root.hasError)
+            return
+        root.searchShown = true
+        if (root.inFullscreen)
+            root.showBars()
+        searchPanel.focusField()
+    }
+
+    function closeSearch() {
+        root.searchShown = false
+        ReaderController.searchText = ""
+        root.forceActiveFocus()
     }
 
     function toggleFullscreen() {
@@ -138,8 +159,21 @@ Item {
         case Qt.Key_F11:
             root.toggleFullscreen()
             break
+        case Qt.Key_F:
+            if (!control)
+                return
+            root.openSearch()
+            break
+        case Qt.Key_F3:
+            if ((event.modifiers & Qt.ShiftModifier) !== 0)
+                ReaderController.previousSearchResult()
+            else
+                ReaderController.nextSearchResult()
+            break
         case Qt.Key_Escape:
-            if (root.inFullscreen)
+            if (root.searchShown)
+                root.closeSearch()
+            else if (root.inFullscreen)
                 root.toggleFullscreen()
             else
                 ReaderController.close()
@@ -170,6 +204,7 @@ Item {
                 root.forceActiveFocus()
             } else {
                 settingsPopup.close()
+                root.searchShown = false
                 if (root.inFullscreen)
                     root.toggleFullscreen()
             }
@@ -201,6 +236,11 @@ Item {
         property: "linkColor"
         value: root.colors.link
     }
+    Binding {
+        target: ReaderController
+        property: "highlightColor"
+        value: Theme.readerSearchHighlight
+    }
 
     Timer {
         id: hideTimer
@@ -219,7 +259,9 @@ Item {
         id: pageArea
 
         anchors.left: parent.left
-        anchors.right: root.contentsShown && !root.inFullscreen ? contents.left : parent.right
+        anchors.right: root.inFullscreen ? parent.right
+                     : root.searchShown ? searchPanel.left
+                     : root.contentsShown ? contents.left : parent.right
         anchors.top: root.inFullscreen ? parent.top : topBar.bottom
         anchors.bottom: root.inFullscreen ? parent.bottom : bottomBar.top
         color: root.isPdf || root.hasError ? Theme.background : root.colors.page
@@ -401,12 +443,37 @@ Item {
         anchors.right: parent.right
         anchors.top: topBar.bottom
         anchors.bottom: bottomBar.top
-        visible: root.contentsShown && !root.hasError && (!root.inFullscreen || root.barsShown)
+        visible: root.contentsShown && !root.searchShown && !root.hasError && (!root.inFullscreen || root.barsShown)
         entries: ReaderController.contents
         currentIndex: ReaderController.contentsIndex
         onEntryActivated: function(index) {
             ReaderController.goToContents(index)
         }
+    }
+
+    // --- search in the book: in place of the contents ----------------------------------
+    SearchPanel {
+        id: searchPanel
+
+        anchors.right: parent.right
+        anchors.top: topBar.bottom
+        anchors.bottom: bottomBar.top
+        visible: root.searchShown && !root.hasError && (!root.inFullscreen || root.barsShown)
+        text: ReaderController.searchText
+        results: ReaderController.searchResults
+        currentIndex: ReaderController.searchIndex
+        searching: ReaderController.searching
+        limited: ReaderController.searchLimited
+
+        onTextEdited: function(text) {
+            ReaderController.searchText = text
+        }
+        onResultActivated: function(index) {
+            ReaderController.goToSearchResult(index)
+        }
+        onNextRequested: ReaderController.nextSearchResult()
+        onPreviousRequested: ReaderController.previousSearchResult()
+        onCloseRequested: root.closeSearch()
     }
 
     // --- bars ----------------------------------------------------------------------
@@ -427,11 +494,21 @@ Item {
         chapterTitle: ReaderController.chapterTitle
         pdf: root.isPdf
         fullscreen: root.inFullscreen
-        contentsShown: root.contentsShown
+        contentsShown: root.contentsShown && !root.searchShown
+        searchShown: root.searchShown
         settingsOpen: settingsPopup.visible
 
         onBackRequested: ReaderController.close()
-        onContentsToggled: root.contentsShown = !root.contentsShown
+        onSearchToggled: root.searchShown ? root.closeSearch() : root.openSearch()
+        onContentsToggled: {
+            // The contents take the place of the search.
+            if (root.searchShown) {
+                root.closeSearch()
+                root.contentsShown = true
+            } else {
+                root.contentsShown = !root.contentsShown
+            }
+        }
         onSettingsToggled: settingsPopup.visible ? settingsPopup.close() : settingsPopup.open()
         onFullscreenToggled: root.toggleFullscreen()
 

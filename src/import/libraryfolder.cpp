@@ -7,7 +7,9 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QPainter>
 
+#include <algorithm>
 #include <utility>
 
 namespace LibraryFolder {
@@ -81,6 +83,61 @@ QString saveCover(const QImage &cover, const QString &formatFilePath)
                               : cover;
     const QString path = formatFilePath + QStringLiteral(".cover.jpg");
     return scaled.convertToFormat(QImage::Format_RGB32).save(path, "JPG", 90) ? path : QString();
+}
+
+namespace {
+
+// Number of a cover name of this format file: 1 for "<file>.cover.jpg",
+// n for "<file>.cover-n.jpg", 0 for any other path.
+int coverNumber(const QString &coverPath, const QString &formatFilePath)
+{
+    if (formatFilePath.isEmpty())
+        return 0;
+    const QString prefix = formatFilePath + QStringLiteral(".cover");
+    if (!coverPath.startsWith(prefix, Qt::CaseInsensitive)
+        || !coverPath.endsWith(QLatin1String(".jpg"), Qt::CaseInsensitive))
+        return 0;
+    const QString middle = coverPath.mid(prefix.size(), coverPath.size() - prefix.size() - 4);
+    if (middle.isEmpty())
+        return 1;
+    if (!middle.startsWith(u'-'))
+        return 0;
+    bool ok = false;
+    const int number = middle.mid(1).toInt(&ok);
+    return ok && number >= 2 ? number : 0;
+}
+
+} // namespace
+
+QString saveNewCover(const QImage &cover, const QString &formatFilePath, const QString &oldCoverPath)
+{
+    if (cover.isNull() || formatFilePath.isEmpty())
+        return QString();
+    constexpr int maxSide = 1200; // as saveCover()
+    const QImage scaled = cover.width() > maxSide || cover.height() > maxSide
+                              ? cover.scaled(maxSide, maxSide, Qt::KeepAspectRatio, Qt::SmoothTransformation)
+                              : cover;
+    // A transparent picture (e.g. a PNG) would turn black where it is
+    // transparent: put it on white.
+    QImage opaque(scaled.size(), QImage::Format_RGB32);
+    opaque.fill(Qt::white);
+    {
+        QPainter painter(&opaque);
+        painter.drawImage(0, 0, scaled);
+    }
+    for (int number = std::max(1, coverNumber(oldCoverPath, formatFilePath) + 1); number < 10000; ++number) {
+        const QString path = number == 1 ? formatFilePath + QStringLiteral(".cover.jpg")
+                                         : QStringLiteral("%1.cover-%2.jpg").arg(formatFilePath).arg(number);
+        if (QFileInfo::exists(path))
+            continue;
+        return opaque.save(path, "JPG", 90) ? path : QString();
+    }
+    return QString();
+}
+
+bool isOwnCover(const QString &coverPath, const QString &formatFilePath)
+{
+    return coverNumber(coverPath, formatFilePath) > 0;
 }
 
 QStringList workFiles(const QString &libraryRoot, const Work &work)

@@ -37,6 +37,8 @@ qt_add_qml_module(calibly_controllers
         appearancesettings.cpp
         exportcontroller.h
         exportcontroller.cpp
+        mediacontrols.h
+        mediacontrols.cpp
 )
 
 target_include_directories(calibly_controllers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -44,6 +46,12 @@ target_include_directories(calibly_controllers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR
 # Qt Multimedia for the audiobook player, Qt Network for LibraryLock.
 target_link_libraries(calibly_controllers PUBLIC Qt6::Qml Qt6::Gui Qt6::Quick Qt6::Multimedia Qt6::Network calibly_models
     calibly_backend calibly_import calibly_reader calibly_core)
+
+# The media keys and the media overlay of Windows (MediaControls): WinRT
+# activation, streams over memory.
+if(WIN32)
+    target_link_libraries(calibly_controllers PRIVATE runtimeobject shcore shlwapi)
+endif()
 
 # The releases page, the source code and the copyright line (see the top of the
 # root CMakeLists.txt), for the update check and "Über calibly".

@@ -4,12 +4,20 @@
 
 #include "workeditor.h"
 
+#include <QClipboard>
 #include <QCollator>
+#include <QFile>
+#include <QFileInfo>
+#include <QGuiApplication>
+#include <QImageReader>
+#include <QMimeData>
 #include <QVariantMap>
 
 #include <algorithm>
 
 #include "librarycontroller.h"
+#include "libraryfolder.h"
+#include "metadatareader.h"
 #include "textutils.h"
 
 namespace {
@@ -48,12 +56,42 @@ void setFormatValue(Work &work, Format::Kind kind, QString Format::*field, const
     }
 }
 
+// A cover counts as square like on import (see ImportWorker).
+bool isSquare(const QImage &image)
+{
+    const double ratio = double(image.width()) / std::max(1, image.height());
+    return ratio > 0.9 && ratio < 1.1;
+}
+
+QUrl urlOfPath(const QString &path)
+{
+    if (path.isEmpty())
+        return QUrl();
+    return path.startsWith(u':') ? QUrl(QStringLiteral("qrc") + path) : QUrl::fromLocalFile(path);
+}
+
+QImage readImage(const QString &path)
+{
+    QImageReader reader(path);
+    reader.setAutoTransform(true); // photos turned by their EXIF data
+    return reader.read();
+}
+
+// The picture of a local file URL, null if it is none.
+QImage imageOfUrl(const QUrl &url)
+{
+    const QString path = url.isLocalFile() ? url.toLocalFile() : QString();
+    return path.isEmpty() ? QImage() : readImage(path);
+}
+
 } // namespace
 
 WorkEditor::WorkEditor(QObject *parent)
     : QObject(parent)
 {
 }
+
+WorkEditor::~WorkEditor() = default;
 
 WorkEditor::Fields WorkEditor::Fields::of(const Work &work)
 {
@@ -113,6 +151,7 @@ void WorkEditor::load(const Work &work)
     m_original = work;
     m_originalFields = Fields::of(work);
     m_fields = m_originalFields;
+    clearCovers();
     emit loaded();
     emit fieldsChanged();
     updateModified();
@@ -170,7 +209,7 @@ void WorkEditor::setEbookIsbn(const QString &value) { setField(&Fields::ebookIsb
 
 void WorkEditor::updateModified()
 {
-    const bool modified = m_valid && !m_fields.sameAs(m_originalFields);
+    const bool modified = m_valid && (!m_fields.sameAs(m_originalFields) || coverModified());
     if (modified == m_modified)
         return;
     m_modified = modified;
@@ -218,8 +257,14 @@ bool WorkEditor::save()
         return false;
 
     // Start from the current state, so e.g. progress saved meanwhile is kept.
-    const Work work = applied(*current);
-    if (!library->saveWork(work))
+    Work work = applied(*current);
+    QStringList written;
+    QStringList replaced;
+    const bool stored = applyCovers(work, &written, &replaced) && library->saveWork(work);
+    // The covers that are not used (any more) go.
+    for (const QString &path : stored ? replaced : written)
+        QFile::remove(path);
+    if (!stored)
         return false;
     load(work);
     return true;
@@ -228,6 +273,195 @@ bool WorkEditor::save()
 void WorkEditor::revert()
 {
     m_fields = m_originalFields;
+    clearCovers();
     emit fieldsChanged();
     updateModified();
+}
+
+// --- covers -------------------------------------------------------------------
+
+QList<Format::Kind> WorkEditor::kindsOf(CoverTarget target) const
+{
+    QList<Format::Kind> kinds;
+    if (target != AudiobookCover && m_original.hasEbook())
+        kinds.append(Format::Kind::Ebook);
+    if (target != EbookCover && m_original.hasAudiobook())
+        kinds.append(Format::Kind::Audiobook);
+    return kinds;
+}
+
+QUrl WorkEditor::coverUrl(Format::Kind kind) const
+{
+    const PendingCover &cover = pending(kind);
+    if (cover.changed)
+        return urlOfPath(cover.previewPath);
+    return urlOfPath(m_original.coverPath(kind));
+}
+
+bool WorkEditor::coverIsSquare(Format::Kind kind) const
+{
+    const PendingCover &cover = pending(kind);
+    if (!cover.changed)
+        return m_original.coverIsSquare(kind);
+    // No cover: the placeholder of an audiobook is square (see Work::coverIsSquare()).
+    return cover.image.isNull() ? kind == Format::Kind::Audiobook : isSquare(cover.image);
+}
+
+QImage WorkEditor::currentCover(Format::Kind kind) const
+{
+    const PendingCover &cover = pending(kind);
+    if (cover.changed)
+        return cover.image;
+    const QString path = m_original.coverPath(kind);
+    return path.isEmpty() ? QImage() : readImage(path);
+}
+
+void WorkEditor::clearCovers()
+{
+    const bool had = coverModified();
+    m_ebookCover = PendingCover();
+    m_audiobookCover = PendingCover();
+    m_previewDir.reset();
+    if (had)
+        emit coverChanged();
+}
+
+void WorkEditor::setCover(CoverTarget target, const QImage &image)
+{
+    const QList<Format::Kind> kinds = kindsOf(target);
+    if (!m_valid || kinds.isEmpty())
+        return;
+    // The view shows the picture from a file: a new name each time, so it
+    // does not keep showing an older one from its image cache.
+    QString previewPath;
+    if (!image.isNull()) {
+        if (!m_previewDir)
+            m_previewDir = std::make_unique<QTemporaryDir>();
+        previewPath = m_previewDir->isValid()
+                          ? m_previewDir->filePath(QStringLiteral("cover-%1.png").arg(++m_previewNumber)) : QString();
+        if (previewPath.isEmpty() || !image.save(previewPath, "PNG"))
+            previewPath.clear();
+    }
+    for (const Format::Kind kind : kinds)
+        pending(kind) = PendingCover{ true, image, previewPath };
+    emit coverChanged();
+    updateModified();
+}
+
+bool WorkEditor::setCoverFromUrl(CoverTarget target, const QUrl &url)
+{
+    const QImage image = imageOfUrl(url);
+    if (image.isNull())
+        return false;
+    setCover(target, image);
+    return true;
+}
+
+bool WorkEditor::canPasteCover() const
+{
+    const QClipboard *clipboard = QGuiApplication::clipboard();
+    const QMimeData *data = clipboard ? clipboard->mimeData() : nullptr;
+    if (!data)
+        return false;
+    if (data->hasImage())
+        return true;
+    // A picture file copied in the Explorer.
+    const QList<QUrl> urls = data->urls();
+    return urls.size() == 1 && urls.first().isLocalFile()
+        && !QImageReader::imageFormat(urls.first().toLocalFile()).isEmpty();
+}
+
+bool WorkEditor::pasteCover(CoverTarget target)
+{
+    const QClipboard *clipboard = QGuiApplication::clipboard();
+    const QMimeData *data = clipboard ? clipboard->mimeData() : nullptr;
+    if (!data)
+        return false;
+    QImage image;
+    if (data->hasImage())
+        image = qvariant_cast<QImage>(data->imageData());
+    if (image.isNull() && data->urls().size() == 1)
+        image = imageOfUrl(data->urls().first());
+    if (image.isNull())
+        return false;
+    setCover(target, image);
+    return true;
+}
+
+bool WorkEditor::coverFromFile(CoverTarget target)
+{
+    // Each format kind from its own file, so "Allgemein" gives both back.
+    bool found = false;
+    for (const Format::Kind kind : kindsOf(target)) {
+        const Format *format = m_original.format(kind);
+        if (!format || format->filePath.isEmpty() || !QFileInfo::exists(format->filePath))
+            continue;
+        const QImage image = readMetadata(format->filePath).cover;
+        if (image.isNull())
+            continue;
+        setCover(kind == Format::Kind::Ebook ? EbookCover : AudiobookCover, image);
+        found = true;
+    }
+    return found;
+}
+
+bool WorkEditor::canUseOtherCover(CoverTarget target) const
+{
+    if (target == AllFormats || kindsOf(target).isEmpty())
+        return false;
+    const Format::Kind other = target == EbookCover ? Format::Kind::Audiobook : Format::Kind::Ebook;
+    if (!m_original.hasFormat(other))
+        return false;
+    const PendingCover &cover = pending(other);
+    return cover.changed ? !cover.image.isNull() : !m_original.coverPath(other).isEmpty();
+}
+
+bool WorkEditor::useOtherCover(CoverTarget target)
+{
+    if (!canUseOtherCover(target))
+        return false;
+    const QImage image = currentCover(target == EbookCover ? Format::Kind::Audiobook : Format::Kind::Ebook);
+    if (image.isNull())
+        return false;
+    setCover(target, image);
+    return true;
+}
+
+void WorkEditor::removeCover(CoverTarget target)
+{
+    setCover(target, QImage());
+}
+
+bool WorkEditor::applyCovers(Work &work, QStringList *written, QStringList *replaced) const
+{
+    for (const Format::Kind kind : { Format::Kind::Ebook, Format::Kind::Audiobook }) {
+        const PendingCover &cover = pending(kind);
+        if (!cover.changed)
+            continue;
+        for (int i = 0; i < work.formats.size(); ++i) {
+            Format &format = work.formats[i];
+            if (format.kind != kind)
+                continue;
+            // A combined work: only the volume that gives the work its cover.
+            if (work.isCombined() && i != work.formatIndex(kind))
+                continue;
+            const QString old = format.coverPath;
+            if (cover.image.isNull()) {
+                format.coverPath.clear();
+                format.coverIsSquare = false;
+            } else {
+                const QString path = LibraryFolder::saveNewCover(cover.image, format.filePath, old);
+                if (path.isEmpty()) {
+                    qWarning("Cover: cannot save next to %s", qPrintable(format.filePath));
+                    return false;
+                }
+                written->append(path);
+                format.coverPath = path;
+                format.coverIsSquare = isSquare(cover.image);
+            }
+            if (!old.isEmpty() && LibraryFolder::isOwnCover(old, format.filePath))
+                replaced->append(old);
+        }
+    }
+    return true;
 }

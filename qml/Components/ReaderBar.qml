@@ -8,21 +8,23 @@ import Calibly.Theme
 import Calibly.Controls
 
 // The bar at the top of the reader: "‹ Bibliothek", title, author and
-// chapter, and the buttons for the contents, the text settings ("Aa") and
-// fullscreen. In fullscreen it lies over the page, with the title in the
+// chapter, and the buttons for the search, the contents, the text settings
+// ("Aa") and fullscreen. In fullscreen it lies over the page, with the title in the
 // middle. Presentation only.
 //
 // Properties:
 //   backText          label of the way back, e.g. "Bibliothek"
 //   title, author
 //   chapterTitle      the chapter of the shown page, "" = none
-//   pdf               the "Aa" button shows a magnifier: PDFs only zoom
+//   pdf               the "Aa" button shows a zoom magnifier: PDFs only zoom
 //   fullscreen        the look in fullscreen and the button to leave it
 //   contentsShown     the contents button is shown as switched on
+//   searchShown       the search button is shown as switched on
 //   settingsOpen      the "Aa" button is shown as switched on
 //   settingsButton    the "Aa" button, to open the text settings at it (read-only)
 // Signals:
-//   backRequested(), contentsToggled(), settingsToggled(), fullscreenToggled()
+//   backRequested(), searchToggled(), contentsToggled(), settingsToggled(),
+//   fullscreenToggled()
 Rectangle {
     id: root
 
@@ -33,10 +35,12 @@ Rectangle {
     property bool pdf: false
     property bool fullscreen: false
     property bool contentsShown: false
+    property bool searchShown: false
     property bool settingsOpen: false
     readonly property Item settingsButton: aaButton
 
     signal backRequested()
+    signal searchToggled()
     signal contentsToggled()
     signal settingsToggled()
     signal fullscreenToggled()
@@ -172,6 +176,14 @@ Rectangle {
 
         IconButton {
             round: false
+            iconName: "search"
+            text: root.searchShown ? qsTr("Suche schließen") : qsTr("Im Buch suchen (Strg+F)")
+            checked: root.searchShown
+            onClicked: root.searchToggled()
+        }
+
+        IconButton {
+            round: false
             iconName: "list"
             text: root.contentsShown ? qsTr("Inhalt ausblenden") : qsTr("Inhalt einblenden")
             checked: root.contentsShown
@@ -183,7 +195,7 @@ Rectangle {
             id: aaButton
 
             round: false
-            iconName: root.pdf ? "search" : ""
+            iconName: root.pdf ? "zoomIn" : ""
             text: root.pdf ? qsTr("Ansicht") : qsTr("Texteinstellungen")
             checked: root.settingsOpen
             onClicked: root.settingsToggled()

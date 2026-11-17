@@ -8,6 +8,7 @@
 #include <QImage>
 #include <QList>
 #include <QObject>
+#include <QRectF>
 #include <QQmlEngine>
 #include <QSizeF>
 #include <QTimer>
@@ -20,6 +21,7 @@ class BookSource;
 class LibraryController;
 class QPainter;
 class QPdfDocument;
+class QPdfSearchModel;
 class ReaderSettings;
 
 // The ebook reader (phase 10): opens the EPUB, PDF or text file of a work,
@@ -68,6 +70,21 @@ class ReaderSettings;
 //   pageColor, textColor, linkColor   colors of EPUB / text pages
 //   zoomMode (FitPage, FitWidth, Custom), zoom (PDF, 1 = 100 %)
 //
+// Search in the book (phase 14): setting searchText searches the open book
+// (of a combined work: the open volume) in the background, chapter by
+// chapter (PDF: page by page, with Qt PDF). The results are listed with the
+// words around them; the places on the shown pages are highlighted, the
+// current one more strongly.
+//   searchText      what is searched, "" = no search
+//   searchResults   [{ title (chapter or "Seite n"), before, match, after }],
+//                   at most kMaxSearchResults
+//   searchIndex     the current result, -1 = none yet
+//   searching       still searching; searchLimited: stopped at the maximum
+//   highlightColor  color of the highlighted places (set by the view)
+//   goToSearchResult(index), nextSearchResult(), previousSearchResult():
+//   the next / previous result after the current one, or from the shown
+//   page if there is none; both wrap around
+//
 // The position is stored (Format::readingPosition and the progress) a moment
 // after turning a page, when the book is closed and when the app quits – only
 // once the user moved, so opening a finished book does not undo "finished".
@@ -105,6 +122,12 @@ class ReaderController : public QObject
     Q_PROPERTY(QColor linkColor READ linkColor WRITE setLinkColor NOTIFY layoutChanged)
     Q_PROPERTY(ZoomMode zoomMode READ zoomMode NOTIFY layoutChanged)
     Q_PROPERTY(double zoom READ zoom NOTIFY layoutChanged)
+    Q_PROPERTY(QString searchText READ searchText WRITE setSearchText NOTIFY searchChanged)
+    Q_PROPERTY(QVariantList searchResults READ searchResults NOTIFY searchChanged)
+    Q_PROPERTY(int searchIndex READ searchIndex NOTIFY searchChanged)
+    Q_PROPERTY(bool searching READ searching NOTIFY searchChanged)
+    Q_PROPERTY(bool searchLimited READ searchLimited NOTIFY searchChanged)
+    Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor NOTIFY layoutChanged)
 
 public:
     enum DocumentType { NoDocument, Text, Pdf };
@@ -152,6 +175,16 @@ public:
     void setLinkColor(const QColor &color);
     ZoomMode zoomMode() const { return m_zoomMode; }
     double zoom() const;
+    QString searchText() const { return m_searchText; }
+    void setSearchText(const QString &text);
+    QVariantList searchResults() const;
+    int searchIndex() const { return m_searchIndex; }
+    bool searching() const;
+    bool searchLimited() const { return m_searchResults.size() >= kMaxSearchResults; }
+    QColor highlightColor() const { return m_highlightColor; }
+    void setHighlightColor(const QColor &color);
+
+    static constexpr int kMaxSearchResults = 1000;
 
     // The format of the work calibly can read itself, -1 if there is none.
     int readableFormat(const QString &workId) const;
@@ -175,6 +208,9 @@ public:
     Q_INVOKABLE void fitWidth();
     Q_INVOKABLE void zoomIn();
     Q_INVOKABLE void zoomOut();
+    Q_INVOKABLE void goToSearchResult(int index);
+    Q_INVOKABLE void nextSearchResult();
+    Q_INVOKABLE void previousSearchResult();
 
     // Draws the shown page(s) into an item of this size (see BookPage).
     void paint(QPainter *painter, const QSizeF &itemSize, qreal devicePixelRatio);
@@ -186,6 +222,7 @@ signals:
     void contentsChanged();
     void positionChanged();
     void layoutChanged();
+    void searchChanged();
 
 private:
     struct Contents
@@ -222,6 +259,28 @@ private:
     double pdfScale() const;     // pixels per point
     QSizeF pdfPageSize(int page) const;
     QImage pdfImage(int page, const QSize &size);
+    // Search in the book.
+    struct SearchResult
+    {
+        int chapter = 0;     // text books
+        int offset = 0;
+        int length = 0;
+        int page = 0;        // PDF
+        QList<QRectF> rects; // PDF, in points on the page
+        QString title;       // the chapter, PDF: "Seite n"
+        QString before;
+        QString match;
+        QString after;
+    };
+    void startSearch();
+    void stopSearch();       // drops the results, keeps the text
+    void searchNextChapter();
+    void takePdfResults();
+    // The result at or after (forward) / before (back) the shown place.
+    int searchResultFromHere(bool forward) const;
+    // Title of the contents entry the place belongs to.
+    QString contentsTitleAt(int chapter, int offset) const;
+    void paintPdfHighlights(QPainter *painter, int page, const QPointF &topLeft, double scale);
 
     LibraryController &m_library;
     ReaderSettings &m_settings;
@@ -262,6 +321,15 @@ private:
     QColor m_linkColor;
     QTimer m_saveTimer;
     bool m_moved = false;                  // the user turned a page since the book was opened
+
+    QString m_searchText;
+    QList<SearchResult> m_searchResults;
+    int m_searchIndex = -1;
+    int m_searchNext = -1;                 // text books: the chapter to search next, -1 = done
+    std::unique_ptr<BookLayout> m_searchLayout;
+    QTimer m_searchTimer;
+    QPdfSearchModel *m_pdfSearch = nullptr;
+    QColor m_highlightColor = QColor(255, 196, 0);
 
     static inline ReaderController *s_instance = nullptr;
 };

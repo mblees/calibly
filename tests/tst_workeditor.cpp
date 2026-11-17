@@ -2,13 +2,19 @@
 // Copyright (C) 2026 mblees
 // SPDX-License-Identifier: GPL-3.0-only
 
+#include <QFile>
+#include <QFileInfo>
+#include <QImage>
 #include <QSignalSpy>
+#include <QTemporaryDir>
 #include <QTest>
+#include <QUrl>
 
 #include <memory>
 
 #include "librarybackend.h"
 #include "librarycontroller.h"
+#include "libraryfolder.h"
 #include "workdetails.h"
 #include "workeditor.h"
 #include "workmodel.h"
@@ -239,7 +245,205 @@ private slots:
         QVERIFY(!codes.contains(QString()));
     }
 
+    // --- covers (phase 14) ---------------------------------------------------
+
+    void newCoverNames()
+    {
+        QTemporaryDir dir;
+        const QString book = dir.filePath(QStringLiteral("book.epub"));
+        const QImage image = coloredImage(120, 180, Qt::red);
+
+        const QString first = LibraryFolder::saveNewCover(image, book, QString());
+        QCOMPARE(first, book + QStringLiteral(".cover.jpg"));
+        const QString second = LibraryFolder::saveNewCover(image, book, first);
+        QCOMPARE(second, book + QStringLiteral(".cover-2.jpg"));
+        // Counts on from the old one, even when an older name is free again.
+        QFile::remove(first);
+        QCOMPARE(LibraryFolder::saveNewCover(image, book, second), book + QStringLiteral(".cover-3.jpg"));
+        // A name that is taken is skipped.
+        QFile(book + QStringLiteral(".cover-5.jpg")).open(QIODevice::WriteOnly);
+        QCOMPARE(LibraryFolder::saveNewCover(image, book, book + QStringLiteral(".cover-4.jpg")),
+                 book + QStringLiteral(".cover-6.jpg"));
+        QVERIFY(LibraryFolder::saveNewCover(QImage(), book, QString()).isEmpty());
+
+        QVERIFY(LibraryFolder::isOwnCover(first, book));
+        QVERIFY(LibraryFolder::isOwnCover(second, book));
+        QVERIFY(!LibraryFolder::isOwnCover(dir.filePath(QStringLiteral("other.jpg")), book));
+        QVERIFY(!LibraryFolder::isOwnCover(book + QStringLiteral(".cover-x.jpg"), book));
+        QVERIFY(!LibraryFolder::isOwnCover(QStringLiteral(":/mock/covers/a.jpg"), book));
+        QVERIFY(!LibraryFolder::isOwnCover(QString(), book));
+    }
+
+    void savesCoverForAllFormats()
+    {
+        QTemporaryDir dir;
+        Work work = coverWork(dir);
+        const QString oldCover = work.formats[0].filePath + QStringLiteral(".cover.jpg");
+        QVERIFY(coloredImage(100, 150, Qt::blue).save(oldCover));
+        work.formats[0].coverPath = oldCover;
+        m_backend->works = { work };
+        m_controller->reload();
+
+        WorkEditor editor;
+        editor.setWorkId(QStringLiteral("dracula"));
+        QCOMPARE(editor.ebookCoverUrl(), QUrl::fromLocalFile(oldCover));
+        QVERIFY(editor.audiobookCoverUrl().isEmpty());
+        QVERIFY(editor.audiobookCoverIsSquare()); // placeholder of an audiobook
+
+        QSignalSpy changed(&editor, &WorkEditor::coverChanged);
+        editor.setCover(WorkEditor::AllFormats, coloredImage(200, 300, Qt::red));
+        QCOMPARE(changed.count(), 1);
+        QVERIFY(editor.coverModified());
+        QVERIFY(editor.modified());
+        QVERIFY(editor.canSave());
+        // The preview is a file of its own, the stored cover is unchanged.
+        QVERIFY(editor.ebookCoverUrl().isLocalFile());
+        QVERIFY(QFileInfo::exists(editor.ebookCoverUrl().toLocalFile()));
+        QVERIFY(editor.ebookCoverUrl() != QUrl::fromLocalFile(oldCover));
+        QVERIFY(!editor.audiobookCoverIsSquare());
+        QCOMPARE(m_backend->saveCount, 0);
+
+        QVERIFY(editor.save());
+        QVERIFY(!editor.modified());
+        QVERIFY(!editor.coverModified());
+        const Work &saved = m_backend->works.first();
+        const QString epub = saved.formats[0].filePath;
+        QCOMPARE(saved.formats[0].coverPath, epub + QStringLiteral(".cover-2.jpg"));
+        QVERIFY(QFileInfo::exists(saved.formats[0].coverPath));
+        QVERIFY(!QFileInfo::exists(oldCover)); // replaced: deleted
+        QCOMPARE(saved.formats[1].coverPath, saved.formats[1].filePath + QStringLiteral(".cover.jpg"));
+        QCOMPARE(saved.formats[2].coverPath, saved.formats[2].filePath + QStringLiteral(".cover.jpg"));
+        QVERIFY(!saved.formats[2].coverIsSquare);
+        QCOMPARE(QImage(saved.formats[2].coverPath).size(), QSize(200, 300));
+        // The editor shows what is stored now.
+        QCOMPARE(editor.ebookCoverUrl(), QUrl::fromLocalFile(saved.formats[0].coverPath));
+    }
+
+    void changesCoverOfOneFormat()
+    {
+        QTemporaryDir dir;
+        Work work = coverWork(dir);
+        const QString ebookCover = dir.filePath(QStringLiteral("ebook.jpg"));
+        QVERIFY(coloredImage(100, 150, Qt::blue).save(ebookCover));
+        work.formats[0].coverPath = ebookCover;
+        m_backend->works = { work };
+        m_controller->reload();
+
+        WorkEditor editor;
+        editor.setWorkId(QStringLiteral("dracula"));
+        QVERIFY(editor.canUseOtherCover(WorkEditor::AudiobookCover)); // the ebook has one
+        QVERIFY(!editor.canUseOtherCover(WorkEditor::EbookCover));    // the audiobook has none
+        QVERIFY(!editor.canUseOtherCover(WorkEditor::AllFormats));
+
+        editor.setCover(WorkEditor::AudiobookCover, coloredImage(300, 300, Qt::green));
+        QVERIFY(editor.audiobookCoverIsSquare());
+        QCOMPARE(editor.ebookCoverUrl(), QUrl::fromLocalFile(ebookCover)); // untouched
+        QVERIFY(editor.canUseOtherCover(WorkEditor::EbookCover));          // the new one counts
+
+        QVERIFY(editor.useOtherCover(WorkEditor::EbookCover));
+        QVERIFY(editor.ebookCoverIsSquare());
+        editor.removeCover(WorkEditor::AudiobookCover);
+        QVERIFY(editor.audiobookCoverUrl().isEmpty());
+        QVERIFY(editor.audiobookCoverIsSquare());
+
+        editor.revert();
+        QVERIFY(!editor.coverModified());
+        QVERIFY(!editor.modified());
+        QCOMPARE(editor.ebookCoverUrl(), QUrl::fromLocalFile(ebookCover));
+
+        // Removing a cover the user brought in keeps that file.
+        editor.removeCover(WorkEditor::EbookCover);
+        QVERIFY(editor.save());
+        QVERIFY(m_backend->works.first().formats[0].coverPath.isEmpty());
+        QVERIFY(m_backend->works.first().formats[1].coverPath.isEmpty());
+        QVERIFY(QFileInfo::exists(ebookCover));
+    }
+
+    void combinedWorkChangesFirstVolume()
+    {
+        QTemporaryDir dir;
+        Work work = coverWork(dir);
+        work.formats.removeLast(); // ebooks only: two volumes
+        WorkPart first;
+        first.id = QStringLiteral("dracula");
+        first.files = { work.formats[0].filePath };
+        WorkPart second;
+        second.id = QStringLiteral("dracula-2");
+        second.files = { work.formats[1].filePath };
+        work.parts = { first, second };
+        m_backend->works = { work };
+        m_controller->reload();
+
+        WorkEditor editor;
+        editor.setWorkId(QStringLiteral("dracula"));
+        editor.setCover(WorkEditor::EbookCover, coloredImage(100, 150, Qt::red));
+        QVERIFY(editor.save());
+        QVERIFY(!m_backend->works.first().formats[0].coverPath.isEmpty());
+        QVERIFY(m_backend->works.first().formats[1].coverPath.isEmpty());
+    }
+
+    void coverSources()
+    {
+        QTemporaryDir dir;
+        m_backend->works = { coverWork(dir) };
+        m_controller->reload();
+        WorkEditor editor;
+        editor.setWorkId(QStringLiteral("dracula"));
+
+        const QString picture = dir.filePath(QStringLiteral("picture.png"));
+        QVERIFY(coloredImage(60, 90, Qt::yellow).save(picture));
+        const QString text = dir.filePath(QStringLiteral("notes.txt"));
+        QFile file(text);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.write("no picture");
+        file.close();
+
+        QVERIFY(!editor.setCoverFromUrl(WorkEditor::EbookCover, QUrl::fromLocalFile(text)));
+        QVERIFY(!editor.setCoverFromUrl(WorkEditor::EbookCover, QUrl(QStringLiteral("https://example.org/a.jpg"))));
+        QVERIFY(!editor.coverModified());
+        QVERIFY(editor.setCoverFromUrl(WorkEditor::EbookCover, QUrl::fromLocalFile(picture)));
+        QVERIFY(editor.coverModified());
+        QVERIFY(editor.audiobookCoverUrl().isEmpty());
+
+        // The format files of this work do not exist: nothing to read.
+        editor.revert();
+        QVERIFY(!editor.coverFromFile(WorkEditor::AllFormats));
+        QVERIFY(!editor.coverModified());
+    }
+
+    void coverThatCannotBeSaved()
+    {
+        Work work = makeWork(); // its files are in no folder that exists
+        for (Format &format : work.formats)
+            format.filePath = QStringLiteral("Z:/does/not/exist/") + format.filePath;
+        m_backend->works = { work };
+        m_controller->reload();
+
+        WorkEditor editor;
+        editor.setWorkId(QStringLiteral("dracula"));
+        editor.setCover(WorkEditor::AllFormats, coloredImage(100, 150, Qt::red));
+        QVERIFY(!editor.save());
+        QCOMPARE(m_backend->saveCount, 0);
+        QVERIFY(editor.coverModified()); // kept for another try
+    }
+
 private:
+    static QImage coloredImage(int width, int height, Qt::GlobalColor color)
+    {
+        QImage image(width, height, QImage::Format_RGB32);
+        image.fill(color);
+        return image;
+    }
+
+    // makeWork() with its format files in dir.
+    static Work coverWork(const QTemporaryDir &dir)
+    {
+        Work work = makeWork();
+        for (Format &format : work.formats)
+            format.filePath = dir.filePath(format.filePath);
+        return work;
+    }
+
     std::unique_ptr<RecordingBackend> m_backend;
     std::unique_ptr<LibraryController> m_controller;
 };

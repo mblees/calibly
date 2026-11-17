@@ -505,6 +505,126 @@ private slots:
         QVERIFY(m_backend->works.first().formats.at(0).finished()); // looking did not undo it
     }
 
+    // --- search in the book (phase 14) ---------------------------------------
+
+    void searchEpub()
+    {
+        // letsGoOfRemovedWork() deleted the book.
+        if (!QFile::exists(m_epub))
+            writeEpub(m_epub);
+        QVERIFY(m_reader->open(QStringLiteral("epub")));
+        QCOMPARE(m_reader->error(), ReaderController::NoError);
+        m_reader->setViewSize(QSizeF(600, 800));
+        QSignalSpy changed(m_reader.get(), &ReaderController::searchChanged);
+
+        m_reader->setSearchText(QStringLiteral("  das   ZIEL "));
+        QVERIFY(m_reader->searching());
+        QTRY_VERIFY(!m_reader->searching());
+        QVERIFY(changed.count() >= 2);
+        QVariantList results = m_reader->searchResults();
+        QCOMPARE(results.size(), 1);
+        QVariantMap result = results.first().toMap();
+        QCOMPARE(result.value(QStringLiteral("title")).toString(), QStringLiteral("Ziel")); // the entry with the fragment
+        QCOMPARE(result.value(QStringLiteral("match")).toString(), QStringLiteral("Das Ziel"));
+        QVERIFY(result.value(QStringLiteral("before")).toString().startsWith(QStringLiteral("…")));
+        QVERIFY(result.value(QStringLiteral("after")).toString().startsWith(QStringLiteral(" Absatz 0:")));
+        QCOMPARE(m_reader->searchIndex(), -1);
+        QVERIFY(!m_reader->searchLimited());
+
+        m_reader->nextSearchResult();
+        QCOMPARE(m_reader->searchIndex(), 0);
+        QCOMPARE(m_reader->chapterTitle(), QStringLiteral("Ziel"));
+        QVERIFY(m_reader->page() > 0);
+
+        // The shown place is highlighted.
+        m_reader->setHighlightColor(QColor(0, 255, 0));
+        const QSizeF size = m_reader->pageItemSize();
+        QImage image(size.toSize(), QImage::Format_RGB32);
+        QPainter painter(&image);
+        m_reader->paint(&painter, size, 1.0);
+        painter.end();
+        bool green = false;
+        for (int y = 0; y < image.height() && !green; ++y) {
+            for (int x = 0; x < image.width() && !green; ++x)
+                green = image.pixel(x, y) == qRgb(0, 255, 0);
+        }
+        QVERIFY(green);
+
+        // Three results in two chapters; next and previous wrap around.
+        m_reader->setSearchText(QStringLiteral("Absatz 5:"));
+        QCOMPARE(m_reader->searchIndex(), -1);
+        QTRY_VERIFY(!m_reader->searching());
+        results = m_reader->searchResults();
+        QCOMPARE(results.size(), 3);
+        QCOMPARE(results.at(0).toMap().value(QStringLiteral("title")).toString(), QStringLiteral("Kapitel Eins"));
+        QCOMPARE(results.at(1).toMap().value(QStringLiteral("title")).toString(), QStringLiteral("Kapitel Zwei"));
+        QCOMPARE(results.at(2).toMap().value(QStringLiteral("title")).toString(), QStringLiteral("Ziel"));
+        // Without a current result: the next one from the shown page on.
+        m_reader->previousSearchResult();
+        QCOMPARE(m_reader->searchIndex(), 1);
+        m_reader->nextSearchResult();
+        QCOMPARE(m_reader->searchIndex(), 2);
+        m_reader->nextSearchResult();
+        QCOMPARE(m_reader->searchIndex(), 0);
+        m_reader->previousSearchResult();
+        QCOMPARE(m_reader->searchIndex(), 2);
+        m_reader->goToSearchResult(1);
+        QCOMPARE(m_reader->chapterTitle(), QStringLiteral("Kapitel Zwei"));
+
+        m_reader->setSearchText(QStringLiteral("Absatz 5:x"));
+        m_reader->goToEnd();
+        QTRY_VERIFY(!m_reader->searching());
+        QVERIFY(m_reader->searchResults().isEmpty());
+        m_reader->nextSearchResult(); // nothing to go to
+        QCOMPARE(m_reader->searchIndex(), -1);
+
+        // Far too many: stops at the maximum.
+        m_reader->setSearchText(QStringLiteral("wort"));
+        QTRY_VERIFY(!m_reader->searching());
+        QCOMPARE(m_reader->searchResults().size(), ReaderController::kMaxSearchResults);
+        QVERIFY(m_reader->searchLimited());
+
+        m_reader->setSearchText(QString());
+        QVERIFY(m_reader->searchResults().isEmpty());
+        QVERIFY(!m_reader->searching());
+
+        // Closing the book ends the search.
+        m_reader->setSearchText(QStringLiteral("Ziel"));
+        m_reader->close();
+        QCOMPARE(m_reader->searchText(), QString());
+        QVERIFY(m_reader->searchResults().isEmpty());
+    }
+
+    void searchPdf()
+    {
+        const QString path = m_dir.filePath(QStringLiteral("text.pdf"));
+        {
+            QPdfWriter writer(path);
+            QPainter painter(&writer);
+            QFont font = painter.font();
+            font.setPointSize(24);
+            painter.setFont(font);
+            for (int i = 0; i < 3; ++i) {
+                if (i > 0)
+                    writer.newPage();
+                painter.drawText(QPointF(500, 1000), i == 1 ? QStringLiteral("Hier ist der Schatz") : QStringLiteral("Nur Text"));
+            }
+        }
+        m_backend->works.append(ebookWork(QStringLiteral("textpdf"), path));
+        m_library->reload();
+
+        QVERIFY(m_reader->open(QStringLiteral("textpdf")));
+        m_reader->setViewSize(QSizeF(800, 600));
+        m_reader->setSearchText(QStringLiteral("schatz"));
+        QTRY_VERIFY(!m_reader->searching());
+        const QVariantList results = m_reader->searchResults();
+        QCOMPARE(results.size(), 1);
+        QCOMPARE(results.first().toMap().value(QStringLiteral("title")).toString(), QStringLiteral("Seite 2"));
+        m_reader->nextSearchResult();
+        QCOMPARE(m_reader->page(), 1);
+        QCOMPARE(m_reader->searchIndex(), 0);
+    }
+
 private:
     QTemporaryDir m_dir;
     QString m_epub;

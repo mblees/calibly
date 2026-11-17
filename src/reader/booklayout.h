@@ -5,6 +5,7 @@
 #pragma once
 
 #include <QColor>
+#include <QList>
 #include <QPointF>
 #include <QSizeF>
 #include <QString>
@@ -75,9 +76,22 @@ public:
     int offsetOfFragment(int chapter, const QString &fragment);
     // Link under the point (relative to the page), "" if none.
     QString linkAt(int chapter, int page, const QPointF &point);
+    // The text of the chapter: one character per position, so positions in
+    // it are offsets in the chapter (QTextDocument::toRawText()).
+    QString chapterText(int chapter);
+
+    // Characters drawn with a colored background, e.g. the places found by
+    // the search in the book.
+    struct Highlight
+    {
+        int offset = 0;
+        int length = 0;
+        QColor color;
+    };
     // Draws the page with its top left corner at topLeft. The background is
     // not drawn.
-    void paintPage(QPainter *painter, int chapter, int page, const QPointF &topLeft);
+    void paintPage(QPainter *painter, int chapter, int page, const QPointF &topLeft,
+                   const QList<Highlight> &highlights = {});
 
     // The laid out chapter (owned by the layout), nullptr for an invalid one.
     QTextDocument *document(int chapter);

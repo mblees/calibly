@@ -12,8 +12,9 @@ One library for ebooks and audiobooks - calibre's library management combined wi
 ## Features
 - Classical calibre interface which also accepts audiobooks.
 - Modify the metadata of audiobooks and ebooks the same way you can modify ebooks in calibre.
-- Integrated player for audiobooks similar to Audibly.
-- Integrated reader for ebooks (EPUB and PDF) with text settings like Apple Books.
+- Integrated player for audiobooks similar to Audibly, with the media keys and the media overlay of Windows.
+- Integrated reader for ebooks (EPUB and PDF) with text settings like Apple Books and search in the book.
+- Change the cover of a title: pick, drag or paste a picture, or take the cover of the other format.
 - Importing ebooks (EPUB, PDF, MOBI, AZW3) and audiobooks (M4B, M4A, MP3, AAC, OGG, Opus, FLAC) by pulling the files in the interface.
 - Export selected titles: their files are copied into a folder of your choice, split into `Ebooks` and `Audiobooks`.
 - Group selected titles as a series, or combine them into one entry that reads and plays on from volume to volume (and dissolve it again).
@@ -41,6 +42,7 @@ The screenshots show the sample library of the development build in English.
 - A click on a cover opens the **detail view**: one card per format with "Continue reading" / "Continue listening", "Open with default app" and "Mark as finished"; below it the overview and the chapters.
 - ✎ opens the **metadata editor**. Fields marked with 🔗 apply to all formats of the title, the others only to the audiobook or the ebook.
 - Ctrl+S saves, Ctrl+PgUp / Ctrl+PgDown go to the previous / next title.
+- **Cover:** "Change cover" below the cover picks a picture, pastes one (Ctrl+V, after a click on the cover), takes the cover of the other format, reads the cover from the file again (a PDF: its first page) or removes it; a picture can also be dragged onto the cover. In "General" the new cover is for all formats of the title, in "Audiobook" / "Ebook" only for that one. Like the fields, it is stored with "Save".
 
 ![Metadata editor](docs/images/editor.png)
 
@@ -49,6 +51,7 @@ The screenshots show the sample library of the development build in English.
 
 - "Continue listening" starts the **player bar** at the bottom; it opens the fullscreen player with the chapter list, speed and sleep timer.
 - Space plays / pauses, ← / → skip 30 seconds.
+- **Media keys:** once an audiobook was played, calibly appears in the media overlay of Windows (volume keys, lock screen) with title, author, chapter and cover. The play/pause keys of the keyboard and of headphones work also while calibly is in the background; next / previous skip 30 seconds.
 - The position is saved, and the last audiobook is ready again after a restart.
 
 ### Reading
@@ -64,7 +67,9 @@ The screenshots show the sample library of the development build in English.
 | Home / End | Start / end of the book |
 | Ctrl + / Ctrl − | Text size |
 | F11 or the fullscreen button | Fullscreen (only the page; moving the mouse shows the bars) |
-| Esc | Leave fullscreen, a second Esc closes the book |
+| Ctrl+F or the magnifier | Search in the book: the results with the words around them replace the contents; the places are highlighted on the page |
+| F3 / Shift+F3, Enter / Shift+Enter in the search field | Next / previous result |
+| Esc | Close the search, leave fullscreen, a further Esc closes the book |
 
 ![Text settings of the reader](docs/images/textsettings.png)
 

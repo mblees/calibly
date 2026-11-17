@@ -10,6 +10,7 @@ qt_add_qml_module(calibly_components
     QML_FILES
         SidebarNav.qml
         CoverArt.qml
+        CoverPicker.qml
         CoverTile.qml
         FormatCard.qml
         MetadataForm.qml
@@ -23,6 +24,7 @@ qt_add_qml_module(calibly_components
         ContinueMenu.qml
         BulkActionBar.qml
         WorkMenu.qml
+        SearchPanel.qml
         TableOfContents.qml
         TextSettings.qml
         ReaderBar.qml

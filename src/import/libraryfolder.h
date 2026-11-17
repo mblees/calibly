@@ -31,6 +31,17 @@ QString copyInto(const QString &sourcePath, const QString &folder, QString *erro
 // image is null or cannot be saved.
 QString saveCover(const QImage &cover, const QString &formatFilePath);
 
+// Saves a cover chosen by the user (phase 14) next to the format file, under
+// a name the format never had: "<file>.cover.jpg", then "<file>.cover-2.jpg",
+// "-3" … counting on from oldCoverPath. A new name makes the views load the
+// new image instead of showing the old one from their image cache. Returns
+// its path, empty if the image is null or cannot be saved.
+QString saveNewCover(const QImage &cover, const QString &formatFilePath, const QString &oldCoverPath);
+
+// The cover was saved by calibly for this format file (saveCover() or
+// saveNewCover()), so it may be deleted when it is replaced.
+bool isOwnCover(const QString &coverPath, const QString &formatFilePath);
+
 // The files of the work inside the library folder: the format files, the
 // files of audiobooks of several files and the covers. Files outside the
 // library folder (e.g. of sample data) are never part of it.

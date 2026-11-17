@@ -16,6 +16,8 @@
 #ifdef CALIBLY_HAS_QTPDF
 #include <QPdfBookmarkModel>
 #include <QPdfDocument>
+#include <QPdfLink>
+#include <QPdfSearchModel>
 #endif
 
 #include <algorithm>
@@ -29,6 +31,7 @@
 #include "readersettings.h"
 #include "readingposition.h"
 #include "textbook.h"
+#include "textsearch.h"
 
 namespace {
 
@@ -70,6 +73,8 @@ ReaderController::ReaderController(LibraryController &library, ReaderSettings &s
     connect(&m_saveTimer, &QTimer::timeout, this, &ReaderController::savePosition);
     m_countTimer.setInterval(0);
     connect(&m_countTimer, &QTimer::timeout, this, &ReaderController::countNextChapter);
+    m_searchTimer.setInterval(0);
+    connect(&m_searchTimer, &QTimer::timeout, this, &ReaderController::searchNextChapter);
     connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &ReaderController::savePosition);
     connect(&m_settings, &ReaderSettings::changed, this, &ReaderController::applyLayout);
     // The book is about to be merged or removed: store and let go of it.
@@ -312,6 +317,9 @@ bool ReaderController::openAt(QString workId, int formatIndex, Placement placeme
         m_saveTimer.stop();
     }
     emit contentsChanged();
+    // Another volume: the search goes on in it.
+    if (!m_searchText.isEmpty())
+        startSearch();
     return true;
 }
 
@@ -321,16 +329,19 @@ void ReaderController::close()
         return;
     savePosition();
     reset();
+    m_searchText.clear();
     emit openChanged();
     emit contentsChanged();
     emit positionChanged();
     emit layoutChanged();
+    emit searchChanged();
 }
 
 void ReaderController::reset()
 {
     m_saveTimer.stop();
     m_countTimer.stop();
+    stopSearch(); // before the book and the PDF it searches go
     m_layout.reset();
     m_counter.reset();
     m_book.reset();
@@ -985,6 +996,7 @@ void ReaderController::paint(QPainter *painter, const QSizeF &itemSize, qreal de
             painter->fillRect(target, Qt::white);
             if (!image.isNull())
                 painter->drawImage(target, image);
+            paintPdfHighlights(painter, m_pdfPage + i, target.topLeft(), scale);
             x += size.width();
         }
         return;
@@ -997,6 +1009,256 @@ void ReaderController::paint(QPainter *painter, const QSizeF &itemSize, qreal de
     painter->setRenderHint(QPainter::SmoothPixmapTransform);
     const double width = pageWidth();
     const int count = m_layout->pageCount(m_chapter);
+    // The places found in this chapter; the current one more strongly.
+    QList<BookLayout::Highlight> highlights;
+    const QColor other = QColor(m_highlightColor.red(), m_highlightColor.green(), m_highlightColor.blue(),
+                                m_highlightColor.alpha() * 2 / 5);
+    for (int i = 0; i < m_searchResults.size(); ++i) {
+        const SearchResult &result = m_searchResults.at(i);
+        if (result.chapter == m_chapter)
+            highlights.append({ result.offset, result.length, i == m_searchIndex ? m_highlightColor : other });
+    }
     for (int i = 0; i < pagesShown() && m_page + i < count; ++i)
-        m_layout->paintPage(painter, m_chapter, m_page + i, QPointF(i * width, 0));
+        m_layout->paintPage(painter, m_chapter, m_page + i, QPointF(i * width, 0), highlights);
+}
+
+// --- search in the book ----------------------------------------------------------------
+
+void ReaderController::setSearchText(const QString &text)
+{
+    if (text == m_searchText)
+        return;
+    m_searchText = text;
+    startSearch();
+}
+
+void ReaderController::setHighlightColor(const QColor &color)
+{
+    if (color == m_highlightColor)
+        return;
+    m_highlightColor = color;
+    emit layoutChanged();
+}
+
+void ReaderController::stopSearch()
+{
+    m_searchTimer.stop();
+    m_searchNext = -1;
+    m_searchLayout.reset();
+#ifdef CALIBLY_HAS_QTPDF
+    delete m_pdfSearch;
+#endif
+    m_pdfSearch = nullptr;
+    m_searchResults.clear();
+    m_searchIndex = -1;
+}
+
+void ReaderController::startSearch()
+{
+    const bool hadResults = !m_searchResults.isEmpty();
+    stopSearch();
+    if (TextSearch::normalizedQuery(m_searchText).isEmpty() || !isOpen() || m_error != NoError) {
+        emit searchChanged();
+        if (hadResults)
+            emit layoutChanged(); // no highlights any more
+        return;
+    }
+    if (m_book && m_layout) {
+        // A layout of its own, so the shown chapters stay in the cache of
+        // m_layout. The text does not depend on the page size or the style.
+        m_searchLayout = std::make_unique<BookLayout>(m_book.get());
+        m_searchLayout->setStyle(m_layout->style());
+        m_searchNext = 0;
+        m_searchTimer.start();
+    }
+#ifdef CALIBLY_HAS_QTPDF
+    if (m_pdf) {
+        m_pdfSearch = new QPdfSearchModel(this);
+        connect(m_pdfSearch, &QPdfSearchModel::countChanged, this, &ReaderController::takePdfResults);
+        connect(m_pdfSearch, &QPdfSearchModel::statusChanged, this, &ReaderController::takePdfResults);
+        m_pdfSearch->setDocument(m_pdf);
+        m_pdfSearch->setSearchString(m_searchText.simplified());
+    }
+#endif
+    emit searchChanged();
+    emit layoutChanged();
+}
+
+void ReaderController::searchNextChapter()
+{
+    if (!m_book || !m_searchLayout || m_searchNext < 0 || m_searchNext >= m_book->chapterCount()
+        || searchLimited()) {
+        m_searchTimer.stop();
+        m_searchNext = -1;
+        emit searchChanged();
+        return;
+    }
+    const int chapter = m_searchNext++;
+    const QString text = m_searchLayout->chapterText(chapter);
+    const QList<TextSearch::Match> matches
+        = TextSearch::findAll(text, m_searchText, kMaxSearchResults - int(m_searchResults.size()));
+    for (const TextSearch::Match &match : matches) {
+        const TextSearch::Excerpt excerpt = TextSearch::excerpt(text, match);
+        SearchResult result;
+        result.chapter = chapter;
+        result.offset = match.offset;
+        result.length = match.length;
+        result.title = contentsTitleAt(chapter, match.offset);
+        result.before = excerpt.before;
+        result.match = excerpt.match;
+        result.after = excerpt.after;
+        m_searchResults.append(result);
+    }
+    if (m_searchNext >= m_book->chapterCount() || searchLimited()) {
+        m_searchTimer.stop();
+        m_searchNext = -1;
+    }
+    if (!matches.isEmpty() || m_searchNext < 0)
+        emit searchChanged();
+    if (chapter == m_chapter && !matches.isEmpty())
+        emit layoutChanged(); // highlights on the shown page
+}
+
+void ReaderController::takePdfResults()
+{
+#ifdef CALIBLY_HAS_QTPDF
+    if (!m_pdfSearch)
+        return;
+    const int count = std::min(m_pdfSearch->count(), kMaxSearchResults);
+    bool shownPage = false;
+    for (int i = int(m_searchResults.size()); i < count; ++i) {
+        const QPdfLink link = m_pdfSearch->resultAtIndex(i);
+        if (!link.isValid())
+            break;
+        SearchResult result;
+        result.page = link.page();
+        result.rects = link.rectangles();
+        result.title = tr("Seite %1").arg(result.page + 1);
+        result.before = link.contextBefore().simplified();
+        result.match = m_searchText.simplified();
+        result.after = link.contextAfter().simplified();
+        if (!result.before.isEmpty())
+            result.before.prepend(QStringLiteral("…"));
+        if (!result.after.isEmpty())
+            result.after.append(QStringLiteral("…"));
+        shownPage = shownPage || (result.page >= m_pdfPage && result.page < m_pdfPage + pagesShown());
+        m_searchResults.append(result);
+    }
+    emit searchChanged();
+    if (shownPage)
+        emit layoutChanged();
+#endif
+}
+
+bool ReaderController::searching() const
+{
+#ifdef CALIBLY_HAS_QTPDF
+    if (m_pdfSearch)
+        return m_pdfSearch->status() != QPdfSearchModel::Status::Finished && !searchLimited();
+#endif
+    return m_searchNext >= 0;
+}
+
+QString ReaderController::contentsTitleAt(int chapter, int offset) const
+{
+    // The last entry of the contents that starts before the place.
+    QString title;
+    for (const Contents &entry : m_contents) {
+        if (entry.chapter > chapter)
+            break;
+        if (entry.chapter == chapter && !entry.fragment.isEmpty() && m_searchLayout) {
+            const int start = m_searchLayout->offsetOfFragment(chapter, entry.fragment);
+            if (start > offset)
+                break;
+        }
+        title = entry.title;
+    }
+    return title;
+}
+
+QVariantList ReaderController::searchResults() const
+{
+    QVariantList list;
+    list.reserve(m_searchResults.size());
+    for (const SearchResult &result : m_searchResults) {
+        list.append(QVariantMap{ { QStringLiteral("title"), result.title },
+                                 { QStringLiteral("before"), result.before },
+                                 { QStringLiteral("match"), result.match },
+                                 { QStringLiteral("after"), result.after } });
+    }
+    return list;
+}
+
+void ReaderController::goToSearchResult(int index)
+{
+    if (index < 0 || index >= m_searchResults.size())
+        return;
+    m_searchIndex = index;
+    const SearchResult &result = m_searchResults.at(index);
+    if (m_type == Pdf) {
+        movePdfTo(result.page);
+    } else if (m_layout && m_book) {
+        m_chapter = std::clamp(result.chapter, 0, m_book->chapterCount() - 1);
+        m_page = firstOfSpread(m_layout->pageOf(m_chapter, result.offset));
+        // The place stays on the page when the layout changes.
+        m_anchor = result.offset;
+        positionMoved();
+    }
+    emit searchChanged();
+    emit layoutChanged();
+}
+
+int ReaderController::searchResultFromHere(bool forward) const
+{
+    // Before the shown page.
+    const auto before = [this](const SearchResult &result) {
+        if (m_type == Pdf)
+            return result.page < m_pdfPage;
+        return result.chapter < m_chapter
+            || (result.chapter == m_chapter && m_layout
+                && result.offset < m_layout->offsetOfPage(m_chapter, m_page));
+    };
+    if (forward) {
+        for (int i = 0; i < m_searchResults.size(); ++i) {
+            if (!before(m_searchResults.at(i)))
+                return i;
+        }
+        return m_searchResults.isEmpty() ? -1 : 0;
+    }
+    for (int i = int(m_searchResults.size()) - 1; i >= 0; --i) {
+        if (before(m_searchResults.at(i)))
+            return i;
+    }
+    return int(m_searchResults.size()) - 1;
+}
+
+void ReaderController::nextSearchResult()
+{
+    if (m_searchResults.isEmpty())
+        return;
+    goToSearchResult(m_searchIndex < 0 ? searchResultFromHere(true)
+                                       : (m_searchIndex + 1) % int(m_searchResults.size()));
+}
+
+void ReaderController::previousSearchResult()
+{
+    if (m_searchResults.isEmpty())
+        return;
+    const int count = int(m_searchResults.size());
+    goToSearchResult(m_searchIndex < 0 ? searchResultFromHere(false) : (m_searchIndex - 1 + count) % count);
+}
+
+void ReaderController::paintPdfHighlights(QPainter *painter, int page, const QPointF &topLeft, double scale)
+{
+    // PDF pages are pictures: the highlight lies over the text and must let
+    // it show through.
+    for (int i = 0; i < m_searchResults.size(); ++i) {
+        const SearchResult &result = m_searchResults.at(i);
+        if (result.page != page || result.rects.isEmpty())
+            continue;
+        QColor color = m_highlightColor;
+        color.setAlphaF(color.alphaF() * (i == m_searchIndex ? 0.5 : 0.2));
+        for (const QRectF &rect : result.rects)
+            painter->fillRect(QRectF(topLeft + rect.topLeft() * scale, rect.size() * scale), color);
+    }
 }

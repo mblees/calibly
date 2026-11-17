@@ -12,6 +12,7 @@
 #include <QTextBlock>
 #include <QTextDocument>
 #include <QTextFrame>
+#include <QTextCursor>
 #include <QTextLayout>
 
 #include <private/qzipwriter_p.h>
@@ -22,6 +23,7 @@
 #include "htmlprep.h"
 #include "readingposition.h"
 #include "textbook.h"
+#include "textsearch.h"
 
 namespace {
 
@@ -381,6 +383,97 @@ private slots:
         QVERIFY(plain.contents().isEmpty());
         BookLayout plainLayout(&plain);
         QVERIFY(plainLayout.document(0)->toPlainText().startsWith(QLatin1String("# kein")));
+    }
+
+    // --- search in the book (phase 14) ---------------------------------------
+
+    void textSearch()
+    {
+        using TextSearch::Match;
+        QCOMPARE(TextSearch::normalizedQuery(QStringLiteral("  Das   ZIEL ")), QStringLiteral("das ziel"));
+        QVERIFY(TextSearch::normalizedQuery(QStringLiteral(" \t ")).isEmpty());
+        QVERIFY(TextSearch::findAll(QStringLiteral("abc"), QStringLiteral("  ")).isEmpty());
+
+        // Case does not count; matches do not overlap.
+        QCOMPARE(TextSearch::findAll(QStringLiteral("Wort wort WORT"), QStringLiteral("wort")),
+                 (QList<Match>{ { 0, 4 }, { 5, 4 }, { 10, 4 } }));
+        QCOMPARE(TextSearch::findAll(QStringLiteral("aaaa"), QStringLiteral("aa")), (QList<Match>{ { 0, 2 }, { 2, 2 } }));
+        QCOMPARE(TextSearch::findAll(QStringLiteral("Wort wort WORT"), QStringLiteral("wort"), 2).size(), 2);
+
+        // Every kind of space and line break is one space.
+        const QString breaks = QStringLiteral("das Ziel und das  Ziel, dasZiel");
+        QCOMPARE(TextSearch::findAll(breaks, QStringLiteral("das ziel")), (QList<Match>{ { 0, 8 }, { 13, 9 } }));
+
+        // Soft hyphens in the text are skipped; accents count.
+        const QString hyphen = QStringLiteral("Der Kapi­tän und der Kapitan");
+        QCOMPARE(TextSearch::findAll(hyphen, QStringLiteral("kapitän")), (QList<Match>{ { 4, 8 } }));
+        QVERIFY(TextSearch::findAll(QStringLiteral("Bär"), QStringLiteral("bar")).isEmpty());
+    }
+
+    void textSearchExcerpt()
+    {
+        const QString text = QStringLiteral("Am Anfang war das Wort und das Wort war bei Gott, und Gott war das Wort. "
+                                            "Dasselbe war im Anfang bei Gott.");
+        const QList<TextSearch::Match> matches = TextSearch::findAll(text, QStringLiteral("gott,"));
+        QCOMPARE(matches.size(), 1);
+        const TextSearch::Excerpt excerpt = TextSearch::excerpt(text, matches.first(), 20);
+        QCOMPARE(excerpt.match, QStringLiteral("Gott,"));
+        // Cut at word borders, with "…" where it was cut.
+        QCOMPARE(excerpt.before, QStringLiteral("…das Wort war bei "));
+        QCOMPARE(excerpt.after, QStringLiteral(" und Gott war das…"));
+
+        // The start of the text is not cut; a paragraph break is a space.
+        const QString paragraphs = QStringLiteral("Erster Absatz Zweiter");
+        const TextSearch::Excerpt short_ = TextSearch::excerpt(paragraphs, { 0, 6 });
+        QCOMPARE(short_.before, QString());
+        QCOMPARE(short_.match, QStringLiteral("Erster"));
+        QCOMPARE(short_.after, QStringLiteral(" Absatz Zweiter"));
+    }
+
+    // Offsets in chapterText() are positions in the laid out chapter, so a
+    // place found there is the place that is highlighted and shown.
+    void chapterTextMatchesLayout()
+    {
+        QTemporaryDir dir;
+        const QString path = dir.filePath(QStringLiteral("book.epub"));
+        writeEpub(path, true);
+        EpubBook book;
+        QVERIFY(book.open(path));
+        BookLayout layout(&book);
+        layout.setPageSize(QSizeF(600, 800));
+
+        const QString text = layout.chapterText(1);
+        const QList<TextSearch::Match> matches = TextSearch::findAll(text, QStringLiteral("die mitte"));
+        QCOMPARE(matches.size(), 1);
+        QTextCursor cursor(layout.document(1));
+        cursor.setPosition(matches.first().offset);
+        cursor.setPosition(matches.first().offset + matches.first().length, QTextCursor::KeepAnchor);
+        QCOMPARE(cursor.selectedText(), QStringLiteral("Die Mitte"));
+        QCOMPARE(matches.first().offset, layout.offsetOfFragment(1, QStringLiteral("middle")));
+        QVERIFY(layout.pageOf(1, matches.first().offset) > 0);
+        QVERIFY(layout.chapterText(99).isEmpty());
+
+        // A highlight is drawn behind the text.
+        const int page = layout.pageOf(1, matches.first().offset);
+        QImage plain(600, 800, QImage::Format_RGB32);
+        plain.fill(Qt::white);
+        QImage marked = plain;
+        {
+            QPainter painter(&plain);
+            layout.paintPage(&painter, 1, page, QPointF(0, 0));
+        }
+        {
+            QPainter painter(&marked);
+            layout.paintPage(&painter, 1, page, QPointF(0, 0),
+                             { { matches.first().offset, matches.first().length, QColor(0, 255, 0) } });
+        }
+        QVERIFY(plain != marked);
+        int green = 0;
+        for (int y = 0; y < marked.height(); ++y) {
+            for (int x = 0; x < marked.width(); ++x)
+                green += marked.pixel(x, y) == qRgb(0, 255, 0) ? 1 : 0;
+        }
+        QVERIFY(green > 100);
     }
 };
 

@@ -184,6 +184,7 @@ QtObject {
     })
     readonly property color readerBar: "#f00f1013"      // bars over the page in fullscreen
     readonly property color readerHint: "#eb2a2b32"     // hint when entering fullscreen
+    readonly property color readerSearchHighlight: "#8cffc21a" // places found by the search, behind the text
     readonly property int readerBarHeight: 48
     readonly property int readerBottomBarHeight: 56
     readonly property int readerProgressHeight: 2       // fine progress line in fullscreen
@@ -193,6 +194,7 @@ QtObject {
     readonly property int readerNarrowWidth: 900        // narrower windows hide the contents at first
     readonly property int contentsWidth: 240
     readonly property int contentsRowHeight: 32
+    readonly property int searchPanelWidth: 300           // search in the book, instead of the contents
     readonly property int textSettingsWidth: 360
     readonly property int textSettingsLabelWidth: 118
     readonly property int fontStepButtonWidth: 52

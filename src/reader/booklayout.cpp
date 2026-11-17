@@ -295,7 +295,14 @@ QString BookLayout::linkAt(int chapter, int page, const QPointF &point)
     return doc->documentLayout()->anchorAt(QPointF(point.x(), page * m_pageSize.height() + point.y()));
 }
 
-void BookLayout::paintPage(QPainter *painter, int chapter, int page, const QPointF &topLeft)
+QString BookLayout::chapterText(int chapter)
+{
+    QTextDocument *doc = document(chapter);
+    return doc ? doc->toRawText() : QString();
+}
+
+void BookLayout::paintPage(QPainter *painter, int chapter, int page, const QPointF &topLeft,
+                           const QList<Highlight> &highlights)
 {
     QTextDocument *doc = document(chapter);
     if (!doc)
@@ -306,6 +313,14 @@ void BookLayout::paintPage(QPainter *painter, int chapter, int page, const QPoin
     QAbstractTextDocumentLayout::PaintContext context;
     context.clip = QRectF(0, page * height, m_pageSize.width(), height);
     context.palette.setColor(QPalette::Text, m_style.textColor);
+    for (const Highlight &highlight : highlights) {
+        QAbstractTextDocumentLayout::Selection selection;
+        selection.cursor = QTextCursor(doc);
+        selection.cursor.setPosition(highlight.offset);
+        selection.cursor.setPosition(highlight.offset + highlight.length, QTextCursor::KeepAnchor);
+        selection.format.setBackground(highlight.color);
+        context.selections.append(selection);
+    }
     painter->setClipRect(context.clip);
     doc->documentLayout()->draw(painter, context);
     painter->restore();

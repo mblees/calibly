@@ -17,6 +17,7 @@
 #include "languagemanager.h"
 #include "appinfo.h"
 #include "librarycontroller.h"
+#include "mediacontrols.h"
 #include "librarylock.h"
 #include "logfile.h"
 #include "mockbackend.h"
@@ -142,7 +143,7 @@ int main(int argc, char *argv[])
     }
     auto *importController = new ImportController(*libraryController, &engine, &engine);
     // Created after the library: it loads the last audiobook from it.
-    new PlayerController(*libraryController, &engine, &engine);
+    auto *playerController = new PlayerController(*libraryController, &engine, &engine);
     auto *readerSettings = new ReaderSettings(&engine, &engine);
     new ReaderController(*libraryController, *readerSettings, &engine, &engine);
     new AppInfo(&engine, &engine);
@@ -167,6 +168,14 @@ int main(int argc, char *argv[])
     auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().value(0));
     if (!window)
         return EXIT_FAILURE;
+
+    // The media keys and the media overlay of Windows. Not with sample data:
+    // their files do not exist.
+    if (!mockBackend) {
+        // A child of the window: gone before the controllers it uses.
+        auto *mediaControls = new MediaControls(*playerController, *libraryController, window);
+        mediaControls->attach(window);
+    }
 
     if (parser.isSet(importOption)) {
         QList<QUrl> urls;

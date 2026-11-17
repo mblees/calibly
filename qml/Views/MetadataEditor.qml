@@ -5,6 +5,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Templates as T
 import Calibly.Theme
 import Calibly.Controls
@@ -17,6 +18,11 @@ import Calibly.Models
 // "Speichern". ‹ / › go to the previous / next title of the given list and
 // keep the changes made so far (like calibre). Esc, ✕ and "Abbrechen" drop
 // unsaved changes.
+// The cover on the left (CoverPicker, phase 14) belongs to the tab: in
+// "Allgemein" a new cover is for all formats, in "Hörbuch" / "E-Book" for
+// that format only. A picture can be picked, dropped on the cover or pasted
+// with Ctrl+V (when no text field has the focus); like the fields it is only
+// stored with "Speichern".
 //
 // Properties:
 //   navigationModel  the list to step through, e.g. the filtered gallery (optional)
@@ -36,6 +42,19 @@ T.Popup {
     // revision and count are only passed so the binding of "row" depends on them.
     function rowOf(workId: string, revision: int, count: int): int {
         return workId !== "" && count > 0 && revision >= 0 ? root.navigationModel.rowOf(workId) : -1
+    }
+
+    // The covers are only passed so a binding depends on them.
+    function otherCoverOffered(target: int, ebookCover: url, audiobookCover: url): bool {
+        return editor.canUseOtherCover(target)
+    }
+
+    function textHasFocus(item: Item): bool {
+        return item instanceof TextInput || item instanceof TextEdit
+    }
+
+    function pasteCover() {
+        root.errorText = editor.pasteCover(root.coverTarget) ? "" : qsTr("Die Zwischenablage enthält kein Bild.")
     }
 
     function openFor(workId: string) {
@@ -113,6 +132,25 @@ T.Popup {
         if (editor.hasEbook)
             result.push({ title: qsTr("E-Book"), section: MetadataForm.Ebook })
         return result
+    }
+    // Whose cover the cover on the left shows and changes: that of the tab.
+    readonly property int coverTarget: {
+        switch (root.sections[sectionTabs.currentIndex]?.section) {
+        case MetadataForm.Audiobook:
+            return WorkEditor.AudiobookCover
+        case MetadataForm.Ebook:
+            return WorkEditor.EbookCover
+        default:
+            return WorkEditor.AllFormats
+        }
+    }
+
+    // Ctrl+V pastes a picture as the cover; a text field keeps Ctrl+V for
+    // itself (it takes the shortcut first).
+    Shortcut {
+        sequences: [StandardKey.Paste]
+        enabled: root.opened && !root.textHasFocus(cover.Window.activeFocusItem)
+        onActivated: root.pasteCover()
     }
 
     Shortcut {
@@ -244,18 +282,54 @@ T.Popup {
         }
 
         // --- body: cover and form --------------------------------------------
-        CoverArt {
+        // The cover of the tab: "Allgemein" changes the covers of all
+        // formats and shows the one of the work.
+        CoverPicker {
             id: cover
+
+            readonly property bool audiobookShown: root.coverTarget === WorkEditor.AudiobookCover
+                                                   || (root.coverTarget === WorkEditor.AllFormats && !editor.hasEbook)
 
             anchors.left: parent.left
             anchors.top: header.bottom
             anchors.margins: Theme.spacingXl
             width: Theme.editorCoverWidth
-            height: details.coverIsSquare ? width : Math.round(width * Theme.coverAspect)
-            title: details.title
-            author: details.authors.join(", ")
-            coverUrl: details.coverUrl
-            coverIsSquare: false // the frame already has the cover's shape
+            title: editor.title !== "" ? editor.title : details.title
+            author: editor.authors
+            coverUrl: cover.audiobookShown ? editor.audiobookCoverUrl : editor.ebookCoverUrl
+            coverIsSquare: cover.audiobookShown ? editor.audiobookCoverIsSquare : editor.ebookCoverIsSquare
+            shared: root.coverTarget === WorkEditor.AllFormats && editor.hasEbook && editor.hasAudiobook
+            modified: editor.coverModified
+            otherText: !root.otherCoverOffered(root.coverTarget, editor.ebookCoverUrl, editor.audiobookCoverUrl) ? ""
+                       : root.coverTarget === WorkEditor.EbookCover ? qsTr("Cover des Hörbuchs übernehmen")
+                                                                     : qsTr("Cover des E-Books übernehmen")
+            canReadFile: editor.valid
+
+            onMenuAboutToOpen: cover.canPaste = editor.canPasteCover()
+            onPickRequested: coverDialog.open()
+            onPasteRequested: root.pasteCover()
+            onOtherRequested: editor.useOtherCover(root.coverTarget)
+            onFileRequested: {
+                root.errorText = editor.coverFromFile(root.coverTarget)
+                        ? "" : qsTr("Die Datei enthält kein Cover.")
+            }
+            onRemoveRequested: editor.removeCover(root.coverTarget)
+            onImageDropped: function(fileUrl) {
+                root.errorText = editor.setCoverFromUrl(root.coverTarget, fileUrl)
+                        ? "" : qsTr("Das Bild konnte nicht gelesen werden.")
+            }
+        }
+
+        FileDialog {
+            id: coverDialog
+
+            title: qsTr("Bild für das Cover auswählen")
+            nameFilters: [qsTr("Bilder (%1)").arg("*.jpg *.jpeg *.png *.webp *.bmp *.gif *.tif *.tiff"),
+                          qsTr("Alle Dateien (*)")]
+            onAccepted: {
+                root.errorText = editor.setCoverFromUrl(root.coverTarget, coverDialog.selectedFile)
+                        ? "" : qsTr("Das Bild konnte nicht gelesen werden.")
+            }
         }
 
         Tabs {

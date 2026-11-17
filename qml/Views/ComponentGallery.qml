@@ -718,6 +718,59 @@ ViewBase {
             }
 
             Section {
+                heading: qsTr("Cover im Metadaten-Editor")
+                width: page.width
+
+                Row {
+                    spacing: Theme.spacingXxl
+
+                    Column {
+                        spacing: Theme.spacingS
+
+                        CoverPicker {
+                            title: "Moby Dick"
+                            author: "Herman Melville"
+                            coverUrl: "qrc:/mock/covers/moby-dick.jpg"
+                            otherText: qsTr("Cover des Hörbuchs übernehmen")
+                            canReadFile: true
+                            canPaste: true
+                        }
+                        Caption {
+                            text: qsTr("E-Book mit Cover")
+                        }
+                    }
+                    Column {
+                        spacing: Theme.spacingS
+
+                        CoverPicker {
+                            title: "Dracula"
+                            author: "Bram Stoker"
+                            coverUrl: "qrc:/mock/covers/dracula.jpg"
+                            coverIsSquare: true
+                            shared: true
+                            modified: true
+                            canReadFile: true
+                        }
+                        Caption {
+                            text: qsTr("Allgemein: geändert, gilt für beide Formate")
+                        }
+                    }
+                    Column {
+                        spacing: Theme.spacingS
+
+                        CoverPicker {
+                            title: "Der Schimmelreiter"
+                            author: "Theodor Storm"
+                            canReadFile: true
+                        }
+                        Caption {
+                            text: qsTr("Ohne Cover (Platzhalter)")
+                        }
+                    }
+                }
+            }
+
+            Section {
                 id: metadataSection
 
                 // Sample values; the form reports edits, the gallery stores them here.
@@ -1090,6 +1143,14 @@ ViewBase {
                     { title: "II", level: 0, page: 35 },
                     { title: "III", level: 0, page: -1 }
                 ]
+                readonly property var searchResults: [
+                    { title: "I", before: "…aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren ",
+                      match: "Ungeziefer", after: " verwandelt…" },
+                    { title: "Gregors Zimmer", before: "…Sein ", match: "Zimmer", after: ", ein richtiges, nur etwas zu kleines Menschenzimmer…" },
+                    { title: "Gregors Zimmer", before: "…lag ruhig zwischen den vier wohlbekannten Wänden. Über dem Tisch, auf dem eine… ",
+                      match: "Zimmer", after: "…" },
+                    { title: "II", before: "Erst in der Abenddämmerung erwachte Gregor aus seinem schweren ", match: "Zimmer", after: "schlaf…" }
+                ]
 
                 heading: qsTr("Reader")
                 width: page.width
@@ -1103,6 +1164,16 @@ ViewBase {
                 }
                 Caption {
                     text: qsTr("Leiste im Fenster: Inhalt eingeblendet")
+                }
+                ReaderBar {
+                    width: page.width
+                    title: "Die Verwandlung"
+                    author: "Franz Kafka"
+                    chapterTitle: "I"
+                    searchShown: true
+                }
+                Caption {
+                    text: qsTr("Leiste im Fenster: Suche offen")
                 }
                 ReaderBar {
                     width: page.width
@@ -1123,7 +1194,7 @@ ViewBase {
                     pdf: true
                 }
                 Caption {
-                    text: qsTr("Leiste eines PDFs (Lupe statt „Aa“), geöffnet aus „Weitermachen“")
+                    text: qsTr("Leiste eines PDFs (Zoom-Lupe statt „Aa“), geöffnet aus „Weitermachen“")
                 }
 
                 Row {
@@ -1145,6 +1216,63 @@ ViewBase {
                         }
                         Caption {
                             text: qsTr("Inhalt: Buch ohne Inhaltsverzeichnis")
+                        }
+                    }
+
+                    Column {
+                        spacing: Theme.spacingS
+
+                        SearchPanel {
+                            id: searchSample
+
+                            height: Theme.popupMaxHeight
+                            text: "Zimmer"
+                            results: readerSection.searchResults
+                            currentIndex: 1
+                            onResultActivated: function(index) {
+                                searchSample.currentIndex = index
+                            }
+                            onNextRequested: searchSample.currentIndex = (searchSample.currentIndex + 1) % searchSample.results.length
+                            onPreviousRequested: searchSample.currentIndex = (searchSample.currentIndex + searchSample.results.length - 1) % searchSample.results.length
+                        }
+                        Caption {
+                            text: qsTr("Suche: Treffer, der zweite ist aktuell")
+                        }
+                        SearchPanel {
+                            height: Theme.popupMaxHeight / 2
+                            text: "Zimmer"
+                            results: readerSection.searchResults.slice(0, 2)
+                            searching: true
+                        }
+                        Caption {
+                            text: qsTr("Suche: läuft noch")
+                        }
+                    }
+
+                    Column {
+                        spacing: Theme.spacingS
+
+                        SearchPanel {
+                            height: Theme.popupMaxHeight / 2
+                        }
+                        Caption {
+                            text: qsTr("Suche: noch leer")
+                        }
+                        SearchPanel {
+                            height: Theme.popupMaxHeight / 2
+                            text: "Walfisch"
+                        }
+                        Caption {
+                            text: qsTr("Suche: nichts gefunden")
+                        }
+                        SearchPanel {
+                            height: Theme.popupMaxHeight / 2
+                            text: "und"
+                            results: readerSection.searchResults
+                            limited: true
+                        }
+                        Caption {
+                            text: qsTr("Suche: zu viele Treffer")
                         }
                     }
 
