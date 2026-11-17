@@ -276,15 +276,27 @@ bool LibraryController::removeFromContinue(const QString &workId, const QString 
     return saveWork(work);
 }
 
-int LibraryController::markWorks(const QStringList &workIds, bool finished)
+int LibraryController::markWorks(const QStringList &workIds, bool finished, const QString &kind)
 {
-    if (worksById(workIds).isEmpty())
+    // Only the formats of one kind ("ebook" / "audiobook"), or all of them.
+    const bool allKinds = kind.isEmpty();
+    const auto concerns = [&](const Format &format) { return allKinds || format.kind == kindOf(kind); };
+    QList<Work> works = worksById(workIds);
+    works.removeIf([&](const Work &work) {
+        return std::none_of(work.formats.cbegin(), work.formats.cend(), concerns);
+    });
+    if (works.isEmpty())
         return 0;
     // The player and the reader let go of these works first.
-    emit worksAboutToChange(workIds);
+    QStringList ids;
+    for (const Work &work : std::as_const(works))
+        ids.append(work.id);
+    emit worksAboutToChange(ids);
     int changed = 0;
-    for (Work work : worksById(workIds)) {
+    for (Work work : std::as_const(works)) {
         for (Format &format : work.formats) {
+            if (!concerns(format))
+                continue;
             if (finished) {
                 markFinished(format, true);
             } else {
@@ -294,8 +306,17 @@ int LibraryController::markWorks(const QStringList &workIds, bool finished)
                 format.lastOpened = QDateTime();
             }
         }
-        if (!finished)
-            work.lastOpened = QDateTime();
+        if (!finished) {
+            // "Last opened" of the work: what is left of the other formats.
+            QDateTime opened;
+            if (!allKinds) {
+                for (const Format &format : std::as_const(work.formats)) {
+                    if (format.lastOpened.isValid() && (!opened.isValid() || format.lastOpened > opened))
+                        opened = format.lastOpened;
+                }
+            }
+            work.lastOpened = opened;
+        }
         if (saveWork(work))
             ++changed;
     }

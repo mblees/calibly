@@ -388,6 +388,32 @@ private slots:
         QCOMPARE(m_library->markWorks({ QStringLiteral("unknown") }, true), 0);
     }
 
+    // In the tab "Hörbücher" only the audiobook is marked, the ebook of the
+    // same work keeps its own state (and the other way round).
+    void marksWorksOfOneKind()
+    {
+        QCOMPARE(m_library->mergeWorks({ QStringLiteral("audio"), QStringLiteral("book") }), QStringLiteral("book"));
+        const WorkModel *works = m_library->works();
+        const auto book = [works] { return works->workAt(works->rowOf(QStringLiteral("book"))); };
+        const QStringList ids = { QStringLiteral("book"), QStringLiteral("faust") };
+
+        // faust has no audiobook: not changed.
+        QCOMPARE(m_library->markWorks(ids, true, QStringLiteral("audiobook")), 1);
+        QVERIFY(book()->format(Format::Kind::Audiobook)->finished());
+        QVERIFY(!book()->format(Format::Kind::Ebook)->finished());
+        QCOMPARE(book()->state(Format::Kind::Audiobook), Work::State::Finished);
+        QVERIFY(book()->state(Format::Kind::Ebook) != Work::State::Finished);
+
+        QCOMPARE(m_library->markWorks(ids, true, QStringLiteral("ebook")), 2);
+        QVERIFY(book()->format(Format::Kind::Ebook)->finished());
+
+        // As new: only the audiobook, the ebook stays finished.
+        QCOMPARE(m_library->markWorks({ QStringLiteral("book") }, false, QStringLiteral("audiobook")), 1);
+        QCOMPARE(book()->format(Format::Kind::Audiobook)->progress, 0.0);
+        QVERIFY(book()->format(Format::Kind::Ebook)->finished());
+        QCOMPARE(book()->state(Format::Kind::Ebook), Work::State::Finished);
+    }
+
     // "Als Serie zusammenfassen": the name for all, numbers kept or given.
     void setsSeries()
     {

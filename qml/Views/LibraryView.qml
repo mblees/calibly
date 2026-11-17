@@ -181,9 +181,24 @@ ViewBase {
         seriesDialog.open()
     }
 
-    // "Alle als neu markieren" clears positions: asked first.
+    // The format of the tab "E-Books" / "Hörbücher" ("ebook", "audiobook"),
+    // "" in the other tabs: actions on the selection touch only that format.
+    function tabKind(): string {
+        return settings.formatFilter === WorkFilterModel.Ebook ? "ebook"
+             : settings.formatFilter === WorkFilterModel.Audiobook ? "audiobook" : ""
+    }
+
+    // "Alle als fertig markieren": in the tabs "E-Books" and "Hörbücher" only
+    // that format, the other one keeps its state.
+    function markFinished() {
+        LibraryController.markWorks(works.selectedIds, true, root.tabKind())
+    }
+
+    // "Alle als neu markieren" clears positions: asked first. In the tabs
+    // "E-Books" and "Hörbücher" only that format.
     function askMarkNew() {
         root.actionIds = works.selectedIds
+        root.actionKind = root.tabKind()
         markNewDialog.open()
     }
 
@@ -201,8 +216,7 @@ ViewBase {
         root.actionIds = workIds
         root.actionOnSelection = title === ""
         root.actionTitle = title
-        root.actionKind = settings.formatFilter === WorkFilterModel.Ebook ? "ebook"
-                        : settings.formatFilter === WorkFilterModel.Audiobook ? "audiobook" : ""
+        root.actionKind = root.tabKind()
         removeDialog.open()
     }
 
@@ -867,7 +881,7 @@ ViewBase {
         onMergeRequested: root.askMerge()
         onSeriesRequested: root.askSeries()
         onExportRequested: root.askExport()
-        onFinishedRequested: LibraryController.markWorks(works.selectedIds, true)
+        onFinishedRequested: root.markFinished()
         onNewRequested: root.askMarkNew()
         onRemoveRequested: root.askRemove(works.selectedIds, "")
         onCloseRequested: works.clearSelection()
@@ -928,7 +942,7 @@ ViewBase {
         onSeriesRequested: root.askSeries()
         onMarkRequested: function(finished) {
             if (finished)
-                LibraryController.markWorks(works.selectedIds, true)
+                root.markFinished()
             else
                 root.askMarkNew()
         }
@@ -1002,7 +1016,7 @@ ViewBase {
         confirmText: qsTr("Als neu markieren")
         destructive: true
 
-        onAccepted: LibraryController.markWorks(root.actionIds, false)
+        onAccepted: LibraryController.markWorks(root.actionIds, false, root.actionKind)
     }
 
     // actionTitle: the one title that is removed, "" for the selection;

@@ -41,10 +41,12 @@ class LibraryLock;
 //       position and when it was opened are cleared – so it is no longer
 //       started. The work keeps its own "last opened" (not "NEU" again).
 //       False if the work has no such format or cannot be stored.
-//   LibraryController.markWorks(workIds, finished)
+//   LibraryController.markWorks(workIds, finished, kind)
 //       finished: every format of the works read / listened to the end;
 //       otherwise "new": progress, positions and "last opened" cleared.
-//       Returns how many works were changed.
+//       kind "ebook" or "audiobook": only the formats of that kind (the
+//       other kind keeps its state); "" (default): all formats. Returns how
+//       many works were changed.
 //   LibraryController.setSeries(workIds, name)
 //       "Als Serie zusammenfassen": the works get this series; a volume
 //       number they have stays, the others get the next free numbers in the
@@ -171,7 +173,7 @@ public:
     Q_INVOKABLE bool setFinished(const QString &workId, const QString &kind, bool finished);
     Q_INVOKABLE bool setFormatFinished(const QString &workId, int formatIndex, bool finished);
     Q_INVOKABLE bool removeFromContinue(const QString &workId, const QString &kind);
-    Q_INVOKABLE int markWorks(const QStringList &workIds, bool finished);
+    Q_INVOKABLE int markWorks(const QStringList &workIds, bool finished, const QString &kind = QString());
     Q_INVOKABLE int setSeries(const QStringList &workIds, const QString &name);
     Q_INVOKABLE bool seriesNeedsOrder(const QStringList &workIds, const QString &name) const;
     Q_INVOKABLE QList<int> seriesNumbers(const QStringList &workIds, const QString &name) const;
